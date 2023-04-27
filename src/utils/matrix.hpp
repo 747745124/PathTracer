@@ -176,6 +176,16 @@ namespace gl
             }
         }
 
+        // adapt to type float* 
+        vec<N, T>(const T v[N])
+        {
+            for(int i = 0; i < N; i++)
+            {
+                data[i] = v[i];
+            }
+        }
+
+
         vec<N, T> operator/(const float divisor) const
         {
             vec<N, T> result;

@@ -1,0 +1,8 @@
+#pragma once
+#include "./base/camera.hpp"
+#include "./base/ray.hpp"
+#include "./base/material.hpp"
+#include "./base/primitive.hpp"
+#include "./base/light.hpp"
+#include "./base/framebuffer.hpp"
+#include "./utils/scene_io.hpp"

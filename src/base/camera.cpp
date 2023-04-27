@@ -5,19 +5,21 @@ gl::mat4 Camera::getViewMat() const
     return gl::getViewMat(position, position + getFront(), getUp());
 }
 
-PerspectiveCamera::PerspectiveCamera(float fov, float aspect, float zNear, float zFar)
-    : fov(fov), aspect(aspect), zNear(zNear), zFar(zFar) {}
+PerspectiveCamera::PerspectiveCamera(float fov, float aspect, float focalDist)
+    : fov(fov), aspect(aspect), focalDist(focalDist) {}
 
-gl::mat4 PerspectiveCamera::getProjectionMat() const
+PerspectiveCamera::PerspectiveCamera(float fov, float aspect, float focalDist, gl::vec3 up, gl::vec3 front, gl::vec3 position) : fov(fov), aspect(aspect), focalDist(focalDist)
 {
-    return gl::getPerspectiveMatLH(fov, aspect, zNear, zFar);
+    this->defaultUp = up;
+    this->defaultFront = front;
+    this->position = position;
 }
 
-OrthographicCamera::OrthographicCamera(
-    float left, float right, float bottom, float top, float zNear, float zFar)
-    : left(left), right(right), top(top), bottom(bottom), zNear(zNear), zFar(zFar) {}
-
-gl::mat4 OrthographicCamera::getProjectionMat() const
-{
-    return gl::getOrthoMatLH(left, right, bottom, top, zNear, zFar);
+PerspectiveCamera::PerspectiveCamera(const CameraIO* _io,float aspect) :aspect(aspect) {
+    this->defaultUp = _io->orthoUp;
+    this->defaultFront = _io->viewDirection;
+    this->position = _io->position;
+    this->fov = _io->verticalFOV;
+    this->focalDist = _io->focalDistance;
 }
+

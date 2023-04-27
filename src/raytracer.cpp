@@ -1,8 +1,9 @@
 // #include <windows.h>
 #include <stdio.h>
 #include "./utils/scene_io.hpp"
-#include "./utils/timeit.h"
+#include "./utils/timeit.hpp"
 #include "./external/stb_image.h"
+#include "./base/framebuffer.hpp"
 
 #define IMAGE_WIDTH 1500
 #define IMAGE_HEIGHT 1500

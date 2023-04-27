@@ -5,3 +5,5 @@
 /build
 .vscode
 **.jpg
+cloc_ignore
+loc.sh

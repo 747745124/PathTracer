@@ -1,5 +1,38 @@
 #pragma once
 #include "../utils/matrix.hpp"
+#include "../utils/scene_io.hpp"
+
+struct CustomMaterial
+{
+    gl::vec3 diff_color = gl::vec3(0.5f);
+    gl::vec3 ambient_color = gl::vec3(0.5);
+    gl::vec3 spec_color = gl::vec3(0.5f);
+    gl::vec3 emissive_color = gl::vec3(0.2f);
+
+    float shininess = 0.2f;
+    float ktran = 0.f;
+
+    CustomMaterial(gl::vec3 diff_color, gl::vec3 ambient_color, gl::vec3 spec_color, gl::vec3 emissive_color, float shininess, float ktran)
+    {
+        this->diff_color = diff_color;
+        this->ambient_color = ambient_color;
+        this->spec_color = spec_color;
+        this->emissive_color = emissive_color;
+        this->shininess = shininess;
+        this->ktran = ktran;
+    }
+
+    CustomMaterial(const MaterialIO* io){
+        this->ambient_color=io->ambColor;
+        this->diff_color = io->diffColor;
+        this->spec_color= io->specColor;
+        this->emissive_color = io->emissColor;
+        this->shininess = io->shininess;
+        this->ktran = io->ktran;
+    }
+
+    ~CustomMaterial() = default;
+};
 
 struct PhongMaterial
 {
@@ -102,5 +135,3 @@ struct PBRMaterial
         return normalize(sample_vec);
     };
 };
-
-

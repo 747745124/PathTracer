@@ -2,14 +2,14 @@
 #include "../utils/matrix.hpp"
 #include "../utils/quat.hpp"
 #include "../utils/transformations.hpp"
-#include "./base/object3D.hpp"
+#include "./object3D.hpp"
+#include "../utils/scene_io.hpp"
 
 // abstract camera class
 class Camera : public Object3D
 {
 public:
     gl::mat4 getViewMat() const;
-    virtual gl::mat4 getProjectionMat() const = 0;
 };
 
 class PerspectiveCamera : public Camera
@@ -17,26 +17,9 @@ class PerspectiveCamera : public Camera
 public:
     float fov;
     float aspect;
-    float zNear;
-    float zFar;
-    PerspectiveCamera(float fov, float aspect, float zNear, float zFar);
+    float focalDist;
+    PerspectiveCamera(float fov, float aspect, float focalDist);
+    PerspectiveCamera(float fov, float aspect, float focalDist, gl::vec3 up, gl::vec3 front, gl::vec3 position);
+    PerspectiveCamera(const CameraIO* cameraIO,float aspect=1.0f);
     ~PerspectiveCamera() = default;
-    gl::mat4 getProjectionMat() const override;
-};
-
-class OrthographicCamera : public Camera
-{
-public:
-    float left;
-    float right;
-    float bottom;
-    float top;
-    float zNear;
-    float zFar;
-    
-    OrthographicCamera(float left, float right, float bottom, float top, float zNear, float zFar);
-
-    ~OrthographicCamera() = default;
-
-    gl::mat4 getProjectionMat() const override;
 };
