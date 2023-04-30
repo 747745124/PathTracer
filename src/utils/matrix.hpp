@@ -206,6 +206,17 @@ namespace gl
             return *this;
         }
 
+       // minus equal
+        vec<N, T> &operator-=(const vec<N, T> &other)
+        {
+            for (int i = 0; i < N; i++)
+            {
+                this->data[i] -= other[i];
+            }
+            return *this;
+        }
+    
+
         // length of a vector
         float length() const
         {

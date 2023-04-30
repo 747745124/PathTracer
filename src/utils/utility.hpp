@@ -24,7 +24,7 @@ namespace gl
     static vec<N, float> lerp(vec<N, float> x, vec<N, float> y, float t)
     {
         vec<N, float> res;
-        
+
         for (int i = 0; i < N; i++)
         {
             res[i] = lerp(x[i], y[i], t);
@@ -102,7 +102,7 @@ namespace gl
         bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
         bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
         bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-        return float(bits) * 2.3283064365386963e-10; // 
+        return float(bits) * 2.3283064365386963e-10; //
     }
 
     static gl::vec2 Hammersley(uint i, uint N)
@@ -302,12 +302,14 @@ public:
         normal.normalized();
         d = dot(-normal, p1);
     }
+
     Plane(gl::vec3 normal, gl::vec3 p)
     {
         this->normal = normal;
         this->normal.normalize();
         d = dot(-normal, p);
     }
+
     Plane()
     {
         normal = gl::vec3(0, 0, 1);

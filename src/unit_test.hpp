@@ -6,3 +6,4 @@
 #include "./base/light.hpp"
 #include "./base/framebuffer.hpp"
 #include "./utils/scene_io.hpp"
+#include "./base/objectList.hpp"
