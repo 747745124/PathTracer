@@ -6,6 +6,26 @@
 // This file defines shader utilities and some math functions
 namespace gl
 {
+    static vec3 reflect(const vec3 &v, const vec3 &n)
+    {
+        return v - 2 * dot(v, n) * n;
+    }
+
+    static vec3 refract(const vec3 &v, const vec3 &n, float ni_over_nt)
+    {
+        auto uv = v.normalize();
+        auto dt = dot(uv, n);
+        auto discriminant = 1.0 - ni_over_nt * ni_over_nt * (1 - dt * dt);
+        if (discriminant > 0)
+        {
+            return ni_over_nt * (uv - n * dt) - n * sqrt(discriminant);
+        }
+        else
+        {
+            return vec3(0, 0, 0);
+        }
+    }
+
     static float sign(float x)
     {
         if (x < 0.f)
@@ -83,6 +103,12 @@ namespace gl
         x = std::clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
         return x * x * (3 - 2 * x);
     };
+
+    static vec3 clamp(vec3 v, float min, float max)
+    {
+        return vec3(std::clamp(v.x(), min, max), std::clamp(v.y(), min, max), std::clamp(v.z(), min, max));
+    }
+
 
     static float smoothstep_alt(float edge0, float edge1, float x)
     {
@@ -188,6 +214,16 @@ namespace gl
         return dist(gen);
     }
 
+    static float C_rand()
+    {
+        return rand() / (RAND_MAX + 1.0);
+    }
+
+    static float C_rand(float min, float max)
+    {
+        // Returns a random real in [min,max).
+        return min + (max - min) * C_rand();
+    }
     // random number from start_point to end_point
     static float rand_num(float start_point, float end_point)
     {
@@ -195,6 +231,14 @@ namespace gl
         std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
         std::uniform_real_distribution<> dist(start_point, end_point);
         return dist(gen);
+    }
+
+    static vec3 sphere_random_vec(float r = 1.f)
+    {
+
+        auto p = vec3(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
+        p.normalized();
+        return p;
     }
 
     // biliner interpolation

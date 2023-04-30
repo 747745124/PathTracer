@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <cmath>
 #include <iostream>
+#include <cassert>
 
 // @description: a simple implmentation of vec and mat class
 // Conform to the style of glm
@@ -94,7 +95,7 @@ namespace gl
             return vec<3, T>{data[0], data[1], data[2]};
         }
 
-        vec<3, T> rgb()
+        vec<3, T> rgb() 
         {
             assert(data.size() >= 3);
             return vec<3, T>{data[0], data[1], data[2]};
@@ -176,15 +177,14 @@ namespace gl
             }
         }
 
-        // adapt to type float* 
+        // adapt to type float*
         vec<N, T>(const T v[N])
         {
-            for(int i = 0; i < N; i++)
+            for (int i = 0; i < N; i++)
             {
                 data[i] = v[i];
             }
         }
-
 
         vec<N, T> operator/(const float divisor) const
         {
@@ -206,7 +206,7 @@ namespace gl
             return *this;
         }
 
-       // minus equal
+        // minus equal
         vec<N, T> &operator-=(const vec<N, T> &other)
         {
             for (int i = 0; i < N; i++)
@@ -215,7 +215,6 @@ namespace gl
             }
             return *this;
         }
-    
 
         // length of a vector
         float length() const
@@ -388,6 +387,19 @@ namespace gl
         {
             result[i] = rhs[i] * multiplier;
         }
+        return result;
+    }
+
+    template <int N, class T>
+    vec<N, T> operator/(const vec<N, T> &lhs, const vec<N, T> &rhs)
+    {
+        vec<N, T> result;
+        for (int i = 0; i < N; i++)
+        {
+            assert(rhs[i] != 0 && "Component-wise division by zero");
+            result[i] = lhs[i] / rhs[i];
+        }
+
         return result;
     }
 

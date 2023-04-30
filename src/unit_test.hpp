@@ -7,3 +7,4 @@
 #include "./base/framebuffer.hpp"
 #include "./utils/scene_io.hpp"
 #include "./base/objectList.hpp"
+#include <omp.h>

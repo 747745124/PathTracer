@@ -2,7 +2,7 @@
 #include "./camera.hpp"
 #include "./light.hpp"
 #include "./primitive.hpp"
-
+#include "../utils/utility.hpp"
 // a manager for hittable objects
 class ObjectList
 {
@@ -31,8 +31,8 @@ public:
         this->objects.push_back(object);
     };
 
-    //this determins the closest object that the ray hits
-    HitRecord *hit(const Ray &ray, float tmin = 0.0, float tmax = 10000.f)
+    // this determins the closest object that the ray hits
+    HitRecord *hit(const Ray &ray, float tmin = 0.0, float tmax = 10000.f) const
     {
 
         HitRecord *hit_record = nullptr;
@@ -53,3 +53,5 @@ public:
 private:
     std::vector<std::shared_ptr<Hittable>> objects;
 };
+
+gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth = 20);

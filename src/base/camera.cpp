@@ -42,3 +42,13 @@ Ray PerspectiveCamera::generateRay(float u, float v) const
     auto dir = bottom_left_pos + u * plane_horizontal + v * plane_vertical - og;
     return Ray(og, dir);
 }
+
+Ray PerspectiveCamera::generateRay(gl::vec2 uv) const
+{
+    using namespace gl;
+    auto u = uv.u();
+    auto v = uv.v();
+    auto og = this->position;
+    auto dir = bottom_left_pos + u * plane_horizontal + v * plane_vertical - og;
+    return Ray(og, dir);
+}
