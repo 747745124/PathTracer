@@ -32,10 +32,10 @@ public:
     };
 
     // this determins the closest object that the ray hits
-    HitRecord *hit(const Ray &ray, float tmin = 0.0001, float tmax = 10000.f) const
+    std::shared_ptr<HitRecord> hit(const Ray &ray, float tmin = 0.0001, float tmax = 10000.f) const
     {
 
-        HitRecord *hit_record = nullptr;
+        std::shared_ptr<HitRecord> hit_record = nullptr;
         float closest_point = tmax;
         for (auto &object : this->objects)
         {
@@ -51,9 +51,9 @@ public:
     }
 
     // this determins the list of hit object, used for handling transparent objects shadow ray
-    std::vector<HitRecord *> hit_list(const Ray &ray, float tmin = 0.0001, float tmax = 10000.f) const
+    std::vector<std::shared_ptr<HitRecord>> hit_list(const Ray &ray, float tmin = 0.0001, float tmax = 10000.f) const
     {
-        std::vector<HitRecord *> hit_list;
+        std::vector<std::shared_ptr<HitRecord>> hit_list;
         for (auto &object : this->objects)
         {
             auto hit_record = object->intersect(ray, tmin, tmax);
@@ -65,7 +65,7 @@ public:
         }
 
         // sort the hit list by t
-        std::sort(hit_list.begin(), hit_list.end(), [](const HitRecord *a, const HitRecord *b) {
+        std::sort(hit_list.begin(), hit_list.end(), [](const auto &a, const auto &b) {
             return a->t < b->t;
         });
 

@@ -14,18 +14,18 @@ int main()
     std::chrono::duration<double> duration;
     start = std::chrono::system_clock::now();
 
-    std::string name = "../Scenes/test5.ascii";
+    std::string name = "../Scenes/test3.ascii";
     auto scene = readScene(name.c_str());
     auto camera = PerspectiveCamera(scene->camera, 1);
     LightList lights(_get_lights_from_io(scene->lights));
     ObjectList prims(_get_primitives_from_io(scene->objects));
 
-    uint width = 1000, height = 1000;
-    FrameBuffer fb(width, height, 3, 20, 20);
+    uint width = 1500, height = 1500;
+    FrameBuffer fb(width, height, 3, 4, 4);
     auto offsets = fb.getOffsets();
     uint counter = 0;
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(omp_get_num_procs()+1)
     {
         for (int i = 0; i < width; i++)
         {
@@ -39,7 +39,7 @@ int main()
                     auto sample_color = vec3(0.0);
                     vec2 uv = (vec2(i, j) + offsets[k]) / vec2(width, height);
                     Ray ray = camera.generateRay(uv);
-                    color += getRayColor(ray, prims,15u, lights);
+                    color += getRayColor(ray, prims,5u, lights);
                 }
 
 // implicit barrier at this section

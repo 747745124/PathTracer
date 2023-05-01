@@ -7,25 +7,27 @@
 namespace gl
 {
     static vec3 reflect(const vec3 &v, const vec3 &n)
-    {
-        return v - 2 * dot(v, n) * n;
+    {   
+
+        return v.normalize() - 2 * dot(v.normalize(), n.normalize()) * n.normalize();
     }
 
     static vec3 refract(const vec3 &v, const vec3 &n, float ni_over_nt, bool &is_refract)
     {
 
         auto _v = v.normalize();
-        auto dt = dot(_v, n);
+        auto _n = n.normalize();
+        auto dt = dot(_v, _n);
         auto discriminant = 1.0 - ni_over_nt * ni_over_nt * (1 - dt * dt);
         if (discriminant > 0)
         {
             is_refract = true;
-            return ni_over_nt * (_v - n * dt) - n * sqrt(discriminant);
+            return ni_over_nt * (_v - n * dt) - _n * sqrt(discriminant);
         }
         else
         {
             is_refract = false;
-            return reflect(v, n);
+            return reflect(_v, _n);
         }
     }
 

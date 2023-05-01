@@ -26,7 +26,7 @@ public:
 class Hittable : public Object3D
 {
 public:
-    virtual HitRecord *intersect(const Ray &ray, float tmin, float tmax) const = 0;
+    virtual std::shared_ptr<HitRecord> intersect(const Ray &ray, float tmin, float tmax) const = 0;
     ObjType objtype;
 };
 
@@ -41,7 +41,7 @@ public:
         this->objtype = ObjType::SPHERE_OBJ;
     };
 
-    HitRecord *intersect(const Ray &ray, float tmin = 0.0, float tmax = 10000.f) const override
+    std::shared_ptr<HitRecord> intersect(const Ray &ray, float tmin = 0.0, float tmax = 10000.f) const override
     {
         auto ray_dir = ray.getDirection().normalize();
         auto ray_origin = ray.getOrigin();
@@ -68,7 +68,7 @@ public:
                 }
             }
 
-            auto hit_record = new HitRecord();
+            auto hit_record = std::make_shared<HitRecord>();
             hit_record->t = t;
             hit_record->position = ray_origin + t * ray_dir;
             hit_record->set_normal(ray, (hit_record->position - this->center).normalize());
@@ -90,7 +90,7 @@ public:
     gl::vec3 v0, v1, v2;
     std::shared_ptr<CustomMaterial> material;
 
-    HitRecord *intersect(const Ray &ray, float tmin = 0.0, float tmax = 10000.f) const override
+    std::shared_ptr<HitRecord> intersect(const Ray &ray, float tmin = 0.0, float tmax = 10000.f) const override
     {
         const float epsilon = 1e-6;
         // using Möller–Trumbore intersection algorithm
@@ -123,7 +123,7 @@ public:
         auto t = f * dot(edge2, q);
         if (t > tmin && t < tmax)
         {
-            auto hit_record = new HitRecord();
+            auto hit_record = std::make_shared<HitRecord>();
             hit_record->t = t;
             hit_record->position = ray_origin + t * ray_dir;
             hit_record->set_normal(ray, cross(edge1, edge2).normalize());

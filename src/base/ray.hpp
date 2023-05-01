@@ -4,7 +4,7 @@
 class Ray
 {
 public:
-    Ray(const gl::vec3 &origin, const gl::vec3 &direction) : origin(origin), direction(direction){};
+    Ray(const gl::vec3 &origin, const gl::vec3 &direction, float intensity = 1.0f) : origin(origin), direction(direction), intensity(intensity){};
     ~Ray() = default;
 
     void setOrigin(const gl::vec3 &origin)
@@ -27,8 +27,9 @@ public:
         return this->direction;
     };
 
+    float intensity = 1.0f;
+
 private:
     gl::vec3 origin;
     gl::vec3 direction;
 };
-
