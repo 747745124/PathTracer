@@ -14,7 +14,7 @@ int main()
     std::chrono::duration<double> duration;
     start = std::chrono::system_clock::now();
 
-    std::string name = "../Scenes/test1.ascii";
+    std::string name = "../Scenes/test3.ascii";
     auto scene = readScene(name.c_str());
     auto camera = PerspectiveCamera(scene->camera, 1);
     LightList lights(_get_lights_from_io(scene->lights));
@@ -55,7 +55,7 @@ int main()
     }
 
     // fb.gaussianBlur(3, 1.0f);
-    fb.writeToFile("../test.png",1.f);
+    fb.writeToFile("../test.png",1.3f);
 
     end = std::chrono::system_clock::now();
     duration = end - start;

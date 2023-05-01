@@ -18,7 +18,7 @@ sphere {
     ambColor 0.2 0.2 0.2
     specColor 0 0 0
     emisColor 0 0 0
-    shininess 0.2
+    shininess 0.92
     ktran 0
   }
   origin 1.02616 -0.365439 -1.13081
@@ -38,8 +38,8 @@ sphere {
     ambColor 0.2 0.2 0.2
     specColor 0 0 0
     emisColor 0 0 0
-    shininess 0.2
-    ktran 0
+    shininess 0.92
+    ktran 0.0
   }
   origin 7.4119e-008 2.78629 -0.116676
   radius 0.310878
@@ -58,7 +58,7 @@ sphere {
     ambColor 0.2 0.2 0.2
     specColor 0 0 0
     emisColor 0 0 0
-    shininess 0.2
+    shininess 0.92
     ktran 0
   }
   origin 1.39952 0.365459 2.25247
@@ -76,10 +76,10 @@ sphere {
   material {
     diffColor 0.34 0.07 0.56
     ambColor 0.2 0.2 0.2
-    specColor 0.4 0.4 0.4
+    specColor 0.6 0.6 0.6
     emisColor 0 0 0
     shininess 0.953704
-    ktran 0
+    ktran 0.0
   }
   origin -3.21911e-007 2.01869 0.108636
   radius 0.670496
@@ -95,11 +95,11 @@ sphere {
   numMaterials 1
   material {
     diffColor 0.56 0.24 0.12
-    ambColor 0.2 0.2 0.2
-    specColor 0.4 0.4 0.4
+    ambColor 0.3 0.3 0.3
+    specColor 0.6 0.6 0.6
     emisColor 0 0 0
     shininess 0.944444
-    ktran 0
+    ktran 0.0
   }
   origin 0.990468 0.489687 1.61544
   radius 0.636615
@@ -116,7 +116,7 @@ sphere {
   material {
     diffColor 0.04 0.56 0.28
     ambColor 0.2 0.2 0.2
-    specColor 0.4 0.4 0.4
+    specColor 0.6 0.6 0.6
     emisColor 0 0 0
     shininess 0.972222
     ktran 0
@@ -136,7 +136,7 @@ sphere {
   material {
     diffColor 0.6 0.6 0.6
     ambColor 0.2 0.2 0.2
-    specColor 0.5 0.5 0.5
+    specColor 0.6 0.6 0.6
     emisColor 0 0 0
     shininess 0.925926
     ktran 0

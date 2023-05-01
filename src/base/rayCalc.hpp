@@ -58,9 +58,9 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
 
             auto half_dir = (view_dir + light_dir).normalize();
             auto NoH = std::max(0.f, gl::dot(normal, half_dir));
-            auto specular = material->spec_color * pow(NoH, material->shininess * 128);
+            auto specular = material->spec_color * pow(NoH, material->shininess * 64);
 
-            float attenuation = 1.0f;
+            float attenuation = 1.3f;
             if (light->type == LightType::POINT_LIGHT)
                 attenuation = attenuate((light->position - hit_point).length());
 
@@ -80,7 +80,7 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
         if (out_refract_dir != gl::vec3(0.f))
         {
             // this is used for avoid self-intersection
-            Ray out_refract(hit_record->position + 1e-5 * normal, out_refract_dir);
+            Ray out_refract(hit_record->position, out_refract_dir);
             color += material->ktran * getRayColor(out_refract, prims, max_depth - 1, lights);
         }
     }
@@ -90,11 +90,11 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
     {
         gl::vec3 out_reflect_dir = gl::reflect(ray.getDirection(), hit_record->normal);
         // this is used for avoid self-intersection
-        Ray out_reflect(hit_record->position + 1e-5 * normal, out_reflect_dir);
-        color += material->spec_color * getRayColor(out_reflect, prims, max_depth - 1, lights);
+        Ray out_reflect(hit_record->position, out_reflect_dir);
+        color += material->spec_color.x() * getRayColor(out_reflect, prims, max_depth - 1, lights);
     }
 
-    return color;
+    return color + local_ambient + local_diff + local_spec;
 }
 
 // {
