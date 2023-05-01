@@ -50,7 +50,28 @@ public:
         return hit_record;
     }
 
+    // this determins the list of hit object, used for handling transparent objects shadow ray
+    std::vector<HitRecord *> hit_list(const Ray &ray, float tmin = 0.0001, float tmax = 10000.f) const
+    {
+        std::vector<HitRecord *> hit_list;
+        for (auto &object : this->objects)
+        {
+            auto hit_record = object->intersect(ray, tmin, tmax);
+            //if there is a hit
+            if (hit_record != nullptr)
+            {
+                hit_list.push_back(hit_record);
+            }
+        }
+
+        // sort the hit list by t
+        std::sort(hit_list.begin(), hit_list.end(), [](const HitRecord *a, const HitRecord *b) {
+            return a->t < b->t;
+        });
+
+        return hit_list;
+    }
+
 private:
     std::vector<std::shared_ptr<Hittable>> objects;
 };
-

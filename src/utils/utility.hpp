@@ -11,18 +11,21 @@ namespace gl
         return v - 2 * dot(v, n) * n;
     }
 
-    static vec3 refract(const vec3 &v, const vec3 &n, float ni_over_nt)
+    static vec3 refract(const vec3 &v, const vec3 &n, float ni_over_nt, bool &is_refract)
     {
+
         auto _v = v.normalize();
         auto dt = dot(_v, n);
         auto discriminant = 1.0 - ni_over_nt * ni_over_nt * (1 - dt * dt);
         if (discriminant > 0)
         {
+            is_refract = true;
             return ni_over_nt * (_v - n * dt) - n * sqrt(discriminant);
         }
         else
         {
-            return vec3(0, 0, 0);
+            is_refract = false;
+            return reflect(v, n);
         }
     }
 
