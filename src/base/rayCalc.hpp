@@ -34,7 +34,7 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
     // calculate ambient and diffuse color
     for (const auto &light : lights.get())
     {
-        gl::vec3 light_dir(0.0f, 0.0f, -1.0f);
+        gl::vec3 light_dir(0.0f, 0.0f, 0.0f);
 
         if (light->type == LightType::POINT_LIGHT)
         {
@@ -74,13 +74,13 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
     local_diff *= (1 - material->ktran);
 
     // if hits a transparent surface, generate a refraction ray
-    if (hit_record->material->ktran != 0.0f)
+    if (hit_record->material->ktran != 0.f)
     {
         gl::vec3 out_refract_dir = gl::refract(ray.getDirection(), hit_record->normal, 1.5);
         if (out_refract_dir != gl::vec3(0.f))
         {
             // this is used for avoid self-intersection
-            Ray out_refract(hit_record->position, out_refract_dir);
+            Ray out_refract(hit_record->position + 1e-4 * normal, out_refract_dir);
             color += material->ktran * getRayColor(out_refract, prims, max_depth - 1, lights);
         }
     }
@@ -90,7 +90,7 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
     {
         gl::vec3 out_reflect_dir = gl::reflect(ray.getDirection(), hit_record->normal);
         // this is used for avoid self-intersection
-        Ray out_reflect(hit_record->position, out_reflect_dir);
+        Ray out_reflect(hit_record->position + 1e-4 * normal, out_reflect_dir);
         color += material->spec_color.x() * getRayColor(out_reflect, prims, max_depth - 1, lights);
     }
 

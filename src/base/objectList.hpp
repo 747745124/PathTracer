@@ -32,7 +32,7 @@ public:
     };
 
     // this determins the closest object that the ray hits
-    HitRecord *hit(const Ray &ray, float tmin = 0.0, float tmax = 10000.f) const
+    HitRecord *hit(const Ray &ray, float tmin = 0.0001, float tmax = 10000.f) const
     {
 
         HitRecord *hit_record = nullptr;

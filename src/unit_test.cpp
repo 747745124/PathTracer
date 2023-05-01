@@ -55,7 +55,7 @@ int main()
     }
 
     // fb.gaussianBlur(3, 1.0f);
-    fb.writeToFile("../test.png",1.3f);
+    fb.writeToFile("../test.png",2.2f);
 
     end = std::chrono::system_clock::now();
     duration = end - start;
