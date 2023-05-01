@@ -54,4 +54,3 @@ private:
     std::vector<std::shared_ptr<Hittable>> objects;
 };
 
-gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth = 20);

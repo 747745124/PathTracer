@@ -4,10 +4,10 @@
 
 struct CustomMaterial
 {
-    gl::vec3 diff_color = gl::vec3(0.5f);
-    gl::vec3 ambient_color = gl::vec3(0.5);
-    gl::vec3 spec_color = gl::vec3(0.5f);
-    gl::vec3 emissive_color = gl::vec3(0.2f);
+    gl::vec3 diff_color;
+    gl::vec3 ambient_color;
+    gl::vec3 spec_color;
+    gl::vec3 emissive_color;
 
     float shininess = 0.2f;
     float ktran = 0.f;

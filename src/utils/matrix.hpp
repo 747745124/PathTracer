@@ -95,7 +95,7 @@ namespace gl
             return vec<3, T>{data[0], data[1], data[2]};
         }
 
-        vec<3, T> rgb() 
+        vec<3, T> rgb()
         {
             assert(data.size() >= 3);
             return vec<3, T>{data[0], data[1], data[2]};
@@ -197,7 +197,7 @@ namespace gl
         }
 
         // divide equal
-        vec<N, T> &operator/=(const float divisor)
+        vec<N, T> &operator/=(float divisor)
         {
             for (int i = 0; i < N; i++)
             {
@@ -206,12 +206,32 @@ namespace gl
             return *this;
         }
 
-        // minus equal
+        // minus equal, component wise
         vec<N, T> &operator-=(const vec<N, T> &other)
         {
             for (int i = 0; i < N; i++)
             {
                 this->data[i] -= other[i];
+            }
+            return *this;
+        }
+
+        // multiply equal, component wise
+        vec<N, T> &operator*=(const vec<N, T> &other)
+        {
+            for (int i = 0; i < N; i++)
+            {
+                this->data[i] *= other[i];
+            }
+            return *this;
+        }
+
+        // multiply equal
+        vec<N, T> &operator*=(const float multiplier)
+        {
+            for (int i = 0; i < N; i++)
+            {
+                this->data[i] *= multiplier;
             }
             return *this;
         }

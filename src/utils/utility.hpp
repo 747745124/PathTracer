@@ -13,12 +13,12 @@ namespace gl
 
     static vec3 refract(const vec3 &v, const vec3 &n, float ni_over_nt)
     {
-        auto uv = v.normalize();
-        auto dt = dot(uv, n);
+        auto _v = v.normalize();
+        auto dt = dot(_v, n);
         auto discriminant = 1.0 - ni_over_nt * ni_over_nt * (1 - dt * dt);
         if (discriminant > 0)
         {
-            return ni_over_nt * (uv - n * dt) - n * sqrt(discriminant);
+            return ni_over_nt * (_v - n * dt) - n * sqrt(discriminant);
         }
         else
         {
@@ -108,7 +108,6 @@ namespace gl
     {
         return vec3(std::clamp(v.x(), min, max), std::clamp(v.y(), min, max), std::clamp(v.z(), min, max));
     }
-
 
     static float smoothstep_alt(float edge0, float edge1, float x)
     {

@@ -17,11 +17,11 @@ int main()
     std::string name = "../Scenes/test1.ascii";
     auto scene = readScene(name.c_str());
     auto camera = PerspectiveCamera(scene->camera, 1);
-    Lights lights = _get_lights_from_io(scene->lights);
+    LightList lights(_get_lights_from_io(scene->lights));
     ObjectList prims(_get_primitives_from_io(scene->objects));
 
     uint width = 400, height = 400;
-    FrameBuffer fb(width, height, 3, 4, 4);
+    FrameBuffer fb(width, height, 3, 5, 5);
     auto offsets = fb.getOffsets();
     uint counter = 0;
 
@@ -39,7 +39,7 @@ int main()
                     auto sample_color = vec3(0.0);
                     vec2 uv = (vec2(i, j) + offsets[k]) / vec2(width, height);
                     Ray ray = camera.generateRay(uv);
-                    color += getRayColor(ray, prims, 10u);
+                    color += getRayColor(ray, prims, 10u, lights);
                 }
 
 // implicit barrier at this section
@@ -55,7 +55,7 @@ int main()
     }
 
     // fb.gaussianBlur(3, 1.0f);
-    fb.writeToFile("../test.png");
+    fb.writeToFile("../test.png",1.f);
 
     end = std::chrono::system_clock::now();
     duration = end - start;

@@ -24,7 +24,7 @@ void FrameBuffer::setPixelColor(uint u, uint v, gl::vec3 color)
     this->_pixel_color[u][v] = color;
 }
 
-void FrameBuffer::writeToFile(const std::string &file_path) const
+void FrameBuffer::writeToFile(const std::string &file_path, float gamma) const
 {
     std::vector<uint8_t> data;
     data.reserve(this->width * this->height * this->channels);
@@ -35,7 +35,9 @@ void FrameBuffer::writeToFile(const std::string &file_path) const
         {
             for (uint k = 0; k < this->channels; k++)
             {
-                data.push_back(static_cast<uint8_t>(std::clamp(sqrtf(this->_pixel_color[i][j][k]), 0.0f, 1.0f) * 255));
+                // gamma correction
+                auto color = pow(this->_pixel_color[i][j][k], 1.0f / gamma);
+                data.push_back(static_cast<uint8_t>(std::clamp(color, 0.0f, 1.0f) * 255));
             }
         }
     }
@@ -93,7 +95,8 @@ void FrameBuffer::gaussianBlur(int kernel, float sigma)
             gl::vec3 color = {0.0f, 0.0f, 0.0f};
             for (uint s = 0; s < kernel_2d.size(); s++)
             {
-                for (uint t = 0; t < kernel_2d[0].size(); t++){
+                for (uint t = 0; t < kernel_2d[0].size(); t++)
+                {
                     int index_x = i - (int)kernel / 2 + s;
                     int index_y = j - (int)kernel / 2 + t;
                     if (index_x < 0)

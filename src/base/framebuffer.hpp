@@ -40,7 +40,7 @@ public:
         return this->height;
     };
 
-    void writeToFile(const std::string &file_path) const;
+    void writeToFile(const std::string &file_path,float gamma=2.2f) const;
     void gaussianBlur(int kernel_size=3, float sigma=1.0f);
 
 private:
