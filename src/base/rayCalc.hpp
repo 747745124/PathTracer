@@ -60,7 +60,7 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
             auto NoH = std::max(0.f, gl::dot(normal, half_dir));
             auto specular = material->spec_color * pow(NoH, material->shininess * 64);
 
-            float attenuation = 1.3f;
+            float attenuation = 1.0f;
             if (light->type == LightType::POINT_LIGHT)
                 attenuation = attenuate((light->position - hit_point).length());
 
@@ -74,6 +74,7 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
     local_diff *= (1 - material->ktran);
 
     // if hits a transparent surface, generate a refraction ray
+    // problem with refraction
     if (hit_record->material->ktran != 0.f)
     {
         gl::vec3 out_refract_dir = gl::refract(ray.getDirection(), hit_record->normal, 1.5);
@@ -96,57 +97,3 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
 
     return color + local_ambient + local_diff + local_spec;
 }
-
-// {
-//     gl::vec3 light_pos(-1.84647f, 0.778452f, 2.67544f);
-//     gl::vec3 light_dir = (light_pos - hit_point).normalize();
-
-//     Ray shadow_ray(hit_point, light_dir);
-//     HitRecord *shadow_hit_record = prims.hit(shadow_ray);
-//     if (shadow_hit_record == nullptr)
-//     {
-//         auto normal = hit_record->normal;
-//         auto NoL = std::max(0.f, gl::dot(normal, light_dir));
-//         color += hit_record->material->diff_color * NoL;
-//     }
-// }
-// {
-//     gl::vec3 light_pos(-7.78433f, 2.38677f, -5.08224f);
-//     gl::vec3 light_dir = (light_pos - hit_point).normalize();
-
-//     Ray shadow_ray(hit_point, light_dir);
-//     HitRecord *shadow_hit_record = prims.hit(shadow_ray);
-//     if (shadow_hit_record == nullptr)
-//     {
-//         auto normal = hit_record->normal;
-//         auto NoL = std::max(0.f, gl::dot(normal, light_dir));
-//         color += hit_record->material->diff_color * NoL;
-//     }
-// }
-// {
-//     gl::vec3 light_dir(0.580339, -0.523277, -0.62401);
-//     Ray shadow_ray(hit_point, -light_dir);
-//     HitRecord *shadow_hit_record = prims.hit(shadow_ray);
-//     if (shadow_hit_record == nullptr)
-//     {
-//         auto normal = hit_record->normal;
-//         auto NoL = std::max(0.f, gl::dot(normal, light_dir));
-//         color += hit_record->material->diff_color * NoL;
-//     }
-// }
-
-// gl::vec3 color(0.0f, 0.0f, 0.0f);
-// if (max_depth == 0)
-//     return gl::vec3(0.0f, 0.0f, 0.0f);
-
-// HitRecord *hit_record = prims.hit(ray);
-// if (hit_record)
-// {
-//     gl::vec3 target = hit_record->position + hit_record->normal + gl::sphere_random_vec(1.f);
-//     Ray next_ray(hit_record->position, target - hit_record->position);
-//     return 0.5 * getRayColor(next_ray, prims, max_depth - 1);
-// }
-
-// gl::vec3 dir = ray.getDirection().normalize();
-// auto t = 0.5 * (dir.y() + 1.0);
-// return (1.0 - t) * gl::vec3(1.0, 1.0, 1.0) + t * gl::vec3(0.5, 0.7, 1.0);
