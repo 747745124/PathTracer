@@ -10,8 +10,8 @@
 #define GAMMA 1.0f
 
 using uchar = unsigned char;
-const char* output_file = "../scene2.png";
-const char* input_file = "../Scenes/test2.ascii";
+const char* output_file = "../scene6.png";
+const char* input_file = "../Scenes/test6.ascii";
 
 SceneIO *scene = nullptr;
 std::unique_ptr<PerspectiveCamera> camera = nullptr;

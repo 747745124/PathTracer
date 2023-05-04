@@ -7,6 +7,10 @@
 #include <iostream>
 #include <cassert>
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
 // @description: a simple implmentation of vec and mat class
 // Conform to the style of glm
 // @author: Shaokang
