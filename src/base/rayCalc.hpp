@@ -14,7 +14,7 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
     vec3 color(0.0f, 0.0f, 0.0f);
     vec3 bg(0.0f, 0.0f, 0.0f);
 
-    if (max_depth == 0 || ray.intensity < 0.01f)
+    if (max_depth == 0 || ray.intensity < 0.0001f)
         return vec3(0.0f, 0.0f, 0.0f);
 
     auto hit_record = prims.hit(ray);
@@ -42,6 +42,7 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
             auto light_pos = light->position;
             light_dir = (light_pos - hit_point).normalize();
         }
+
         else if (light->type == LightType::DIRECTIONAL_LIGHT)
         {
             light_dir = static_cast<DirectionalLight *>(light.get())->defaultFront;
@@ -53,7 +54,7 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
         Ray shadow_ray(hit_point, light_dir);
         // Shadow ray factor
         vec3 Si(1.0f);
-        // // Get the hitlist of the shadow ray
+        // Get the hitlist of the shadow ray
         auto hit_list = prims.hit_list(shadow_ray);
         if (hit_list.size() != 0)
         {
@@ -69,7 +70,7 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
                 else
                 {
                     // if the shadow ray hits a non-transparent surface, just return black
-                    Si *= 0.f;
+                    Si *= 0.0f;
                     break;
                 }
             }
@@ -80,7 +81,7 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
 
         auto half_dir = (view_dir + light_dir).normalize();
         auto NoH = std::max(0.f, gl::dot(normal, half_dir));
-        auto specular = material->spec_color * pow(NoH, material->shininess * 64);
+        auto specular = material->spec_color * pow(NoH, material->shininess * 128);
 
         float attenuation = 1.0f;
         if (light->type == LightType::POINT_LIGHT)
@@ -109,13 +110,22 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
         else
             out_refract_dir = gl::refract(ray.getDirection(), hit_record->normal, 1.5f / 1.f, is_refract);
 
-        out_refract_pos = hit_record->position + 1e-4 * normal;
+        // if the ray is refracted, generate a refraction ray
         if (is_refract)
+        {
             // this is used for avoid self-intersection
-            out_refract_pos = hit_record->position - 1e-4 * normal;
-
-        Ray out_refract(out_refract_pos, out_refract_dir, ray.intensity * material->ktran);
-        color += material->ktran * getRayColor(out_refract, prims, max_depth - 1, lights);
+            gl::vec3 out_refract_pos = hit_record->position - 1e-4 * normal;
+            Ray out_refract(out_refract_pos, out_refract_dir, ray.intensity * material->ktran);
+            color += material->ktran * getRayColor(out_refract, prims, max_depth - 1, lights);
+        }
+        // if the ray is totally reflected, generate a reflection ray
+        else
+        {
+            gl::vec3 out_reflect_dir = gl::reflect(ray.getDirection(), hit_record->normal);
+            // this is used for avoid self-intersection
+            Ray out_reflect(hit_record->position + 1e-4 * normal, out_reflect_dir, ray.intensity);
+            color += material->spec_color.x() * getRayColor(out_reflect, prims, max_depth - 1, lights);
+        }
     }
 
     // if hits a specular surface, generate a reflection ray

@@ -51,7 +51,7 @@ public:
     }
 
     // this determins the list of hit object, used for handling transparent objects shadow ray
-    std::vector<std::shared_ptr<HitRecord>> hit_list(const Ray &ray, float tmin = 0.0001, float tmax = 10000.f) const
+    std::vector<std::shared_ptr<HitRecord>> hit_list(const Ray &ray, float tmin = 0.01f, float tmax = 10000.f) const
     {
         std::vector<std::shared_ptr<HitRecord>> hit_list;
         for (auto &object : this->objects)
