@@ -29,6 +29,24 @@ By default, this assignment rendered at 1500 * 1500 pixels, with 2 * 2 sample pe
 
 
 
+#### File Structures:
+
+* `src`  - contains source files
+  * `base` - basic data structures, primitives etc.
+  * `external` - external libraries
+  * `method` - raytracing method, in this case, Whitted-style ray tracing
+  * `utils` - utility functions, including basic `vec` class, matrix computation etc.
+  * `raytracer.cpp` - main function
+    * use `GL_SIMD` to enable SIMD optimized `vec` class
+    * set `GAMMA` to enable gamma correction
+  * `unit_test.cpp`
+
+* `results`  - final rendering results of 5 scenes
+* `Scenes` - scene files
+* `unit-test` - some intermediate rendering pictures
+
+
+
 #### Sample Results
 
 <img src="/Users/naoyuki/Library/Application%20Support/typora-user-images/image-20230504212310253.png" alt="image-20230504212310253" style="zoom:33%;" />

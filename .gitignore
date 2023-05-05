@@ -7,3 +7,4 @@
 **.jpg
 cloc_ignore
 loc.sh
+.DS_Store
