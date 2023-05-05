@@ -6,13 +6,18 @@
 // This file defines shader utilities and some math functions
 namespace gl
 {
-    static vec3 reflect(const vec3 &v, const vec3 &n)
-    {   
+    static inline float attenuate(float distance)
+    {
+        return std::min(1.f, 1.f / (0.25f + 0.1f * distance + 0.01f * distance * distance));
+    }
+
+    static inline vec3 reflect(const vec3 &v, const vec3 &n)
+    {
 
         return v.normalize() - 2 * dot(v.normalize(), n.normalize()) * n.normalize();
     }
 
-    static vec3 refract(const vec3 &v, const vec3 &n, float ni_over_nt, bool &is_refract)
+    static inline vec3 refract(const vec3 &v, const vec3 &n, float ni_over_nt, bool &is_refract)
     {
 
         auto _v = v.normalize();
@@ -31,7 +36,7 @@ namespace gl
         }
     }
 
-    static float sign(float x)
+    static inline float sign(float x)
     {
         if (x < 0.f)
             return -1.f;
@@ -40,13 +45,13 @@ namespace gl
         return 0.f;
     }
 
-    static float lerp(float x, float y, float t)
+    static inline float lerp(float x, float y, float t)
     {
         return x + t * (y - x);
     }
 
     template <int N>
-    static vec<N, float> lerp(vec<N, float> x, vec<N, float> y, float t)
+    static inline vec<N, float> lerp(vec<N, float> x, vec<N, float> y, float t)
     {
         vec<N, float> res;
 
@@ -59,7 +64,7 @@ namespace gl
     }
 
     template <int N>
-    static vec<N, float> sign(vec<N, float> v)
+    static inline vec<N, float> sign(vec<N, float> v)
     {
         vec<N, float> res;
         for (int i = 0; i < N; i++)
@@ -70,7 +75,7 @@ namespace gl
     }
 
     template <int N>
-    static vec<N, float> abs(vec<N, float> v)
+    static inline vec<N, float> abs(vec<N, float> v)
     {
         vec<N, float> res;
         for (int i = 0; i < N; i++)
@@ -82,7 +87,7 @@ namespace gl
     }
 
     template <int N>
-    static vec<N, float> min(vec<N, float> lhs, vec<N, float> rhs)
+    static inline vec<N, float> min(vec<N, float> lhs, vec<N, float> rhs)
     {
         vec<N, float> res;
         for (int i = 0; i < N; i++)
@@ -93,7 +98,7 @@ namespace gl
     }
 
     template <int N>
-    static vec<N, float> max(vec<N, float> lhs, vec<N, float> rhs)
+    static inline vec<N, float> max(vec<N, float> lhs, vec<N, float> rhs)
     {
         vec<N, float> res;
         for (int i = 0; i < N; i++)
@@ -103,29 +108,29 @@ namespace gl
         return res;
     }
 
-    static float smoothstep(float edge0, float edge1, float x)
+    static inline float smoothstep(float edge0, float edge1, float x)
     {
         x = std::clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
         return x * x * (3 - 2 * x);
     };
 
-    static vec3 clamp(vec3 v, float min, float max)
+    static inline vec3 clamp(vec3 v, float min, float max)
     {
         return vec3(std::clamp(v.x(), min, max), std::clamp(v.y(), min, max), std::clamp(v.z(), min, max));
     }
 
-    static float smoothstep_alt(float edge0, float edge1, float x)
+    static inline float smoothstep_alt(float edge0, float edge1, float x)
     {
         x = std::clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
         return x * x * x * (x * (x * 6 - 15) + 10);
     };
 
-    static float fract(float x)
+    static inline float fract(float x)
     {
         return x - floor(x);
     }
 
-    static float VanDerCorput(uint bits)
+    static inline float VanDerCorput(uint bits)
     {
         bits = (bits << 16u) | (bits >> 16u);
         bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
@@ -135,7 +140,7 @@ namespace gl
         return float(bits) * 2.3283064365386963e-10; //
     }
 
-    static gl::vec2 Hammersley(uint i, uint N)
+    static inline gl::vec2 Hammersley(uint i, uint N)
     {
         return gl::vec2(float(i) / float(N), VanDerCorput(i));
     }
@@ -218,18 +223,18 @@ namespace gl
         return dist(gen);
     }
 
-    static float C_rand()
+    static inline float C_rand()
     {
         return rand() / (RAND_MAX + 1.0);
     }
 
-    static float C_rand(float min, float max)
+    static inline float C_rand(float min, float max)
     {
         // Returns a random real in [min,max).
         return min + (max - min) * C_rand();
     }
     // random number from start_point to end_point
-    static float rand_num(float start_point, float end_point)
+    static inline float rand_num(float start_point, float end_point)
     {
         std::random_device rd;  // Will be used to obtain a seed for the random number engine
         std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
@@ -237,7 +242,7 @@ namespace gl
         return dist(gen);
     }
 
-    static vec3 sphere_random_vec(float r = 1.f)
+    static inline vec3 sphere_random_vec(float r = 1.f)
     {
 
         auto p = vec3(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
@@ -246,21 +251,21 @@ namespace gl
     }
 
     // biliner interpolation
-    static float bilinear(float w1, float w2, float w3, float w4, float q1, float q2, float q3, float q4)
+    static inline float bilinear(float w1, float w2, float w3, float w4, float q1, float q2, float q3, float q4)
     {
         return (w1 * q1 + w2 * q2 + w3 * q3 + w4 * q4) / (w1 + w2 + w3 + w4);
     }
 
     // biliner interpolation
     template <typename T>
-    static T bilinear(float w1, float w2, float w3, float w4, T q1, T q2, T q3, T q4)
+    static inline T bilinear(float w1, float w2, float w3, float w4, T q1, T q2, T q3, T q4)
     {
         return (w1 * q1 + w2 * q2 + w3 * q3 + w4 * q4) / (w1 + w2 + w3 + w4);
     }
 
     // biliner interpolation
     template <typename T>
-    static T bilinear(gl::vec2 uv, T p1, T p2, T p3, T p4)
+    static inline  T bilinear(gl::vec2 uv, T p1, T p2, T p3, T p4)
     {
         T p = p4 + (p3 - p4) * uv.u();
         T q = p1 + (p2 - p1) * uv.u();
@@ -268,7 +273,7 @@ namespace gl
     }
 
     // approximated bilinear interpolation, projected micropolygon may not be rectangular
-    static float get_depth_bilinear(gl::vec2 sample_coord, gl::vec3 p1, gl::vec3 p2, gl::vec3 p3, gl::vec3 p4)
+    static inline float get_depth_bilinear(gl::vec2 sample_coord, gl::vec3 p1, gl::vec3 p2, gl::vec3 p3, gl::vec3 p4)
     {
         float w1 = (p3.x() - sample_coord.x()) * (p3.y() - sample_coord.y()) / ((p3.x() - p1.x()) * (p3.y() - p1.y()));
         float w2 = (sample_coord.x() - p4.x()) * (p3.y() - sample_coord.y()) / ((p3.x() - p1.x()) * (p3.y() - p1.y()));

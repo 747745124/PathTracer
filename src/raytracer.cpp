@@ -8,6 +8,7 @@
 #define SPP_Y 2
 #define MAX_DEPTH 10
 #define GAMMA 1.0f
+#define GL_SIMD
 
 using uchar = unsigned char;
 const char* output_file = "../scene3.png";

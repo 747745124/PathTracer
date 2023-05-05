@@ -6,5 +6,5 @@
 #include "./base/light.hpp"
 #include "./base/framebuffer.hpp"
 #include "./utils/scene_io.hpp"
-#include "./base/rayCalc.hpp"
+#include "./method/whitted.hpp"
 #include <omp.h>

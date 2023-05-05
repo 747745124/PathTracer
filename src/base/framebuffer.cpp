@@ -131,56 +131,6 @@ void FrameBuffer::gaussianBlur(int kernel, float sigma)
         }
     }
 
-    // // horizontal blur
-    // std::vector<std::vector<gl::vec3>> pixel_color_temp;
-    // pixel_color_temp.resize(this->height);
-    // for (uint i = 0; i < this->height; i++)
-    // {
-    //     pixel_color_temp[i].resize(this->width);
-    // }
-    // for (uint i = 0; i < this->height; i++)
-    // {
-    //     for (uint j = 0; j < this->width; j++)
-    //     {
-    //         gl::vec3 color = {0.0f, 0.0f, 0.0f};
-    //         for (uint k = 0; k < kernel; k++)
-    //         {
-    //             int index = j - (int)kernel / 2 + k;
-    //             if (index < 0)
-    //             {
-    //                 index = 0;
-    //             }
-    //             if (index >= (int)this->width)
-    //             {
-    //                 index = this->width - 1;
-    //             }
-    //             color += this->_pixel_color[i][index] * kernel_2d[k][0];
-    //         }
-    //         pixel_color_temp[i][j] = color;
-    //     }
-    // }
-    // // vertical blur
-    // for (uint i = 0; i < this->height; i++)
-    // {
-    //     for (uint j = 0; j < this->width; j++)
-    //     {
-    //         gl::vec3 color = {0.0f, 0.0f, 0.0f};
-    //         for (uint k = 0; k < kernel; k++)
-    //         {
-    //             int index = i - (int)kernel / 2 + k;
-    //             if (index < 0)
-    //             {
-    //                 index = 0;
-    //             }
-    //             if (index >= (int)this->height)
-    //             {
-    //                 index = this->height - 1;
-    //             }
-    //             color += pixel_color_temp[index][j] * kernel_2d[0][k];
-    //         }
-    //         this->_pixel_color[i][j] = color;
-    //     }
-    // }
 };
 
 void FrameBuffer::setOffsets(uint spp_x, uint spp_y)

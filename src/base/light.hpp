@@ -70,8 +70,8 @@ public:
     };
 
     ~SpotLight() = default;
-    float cutoff_angle = gl::to_radian(180.0f); /* Angle at which spot light intensity is zero  */
-    float dropoff_rate = 1.0f;                  /* For spot lights, 0 <= x <= 1.  See man pages */
+    float cutoff_angle = gl::to_radian(180.0f); 
+    float dropoff_rate = 1.0f;                 
 };
 
 using Lights = std::tuple<std::vector<PointLight>,std::vector<DirectionalLight>>;

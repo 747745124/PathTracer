@@ -1,12 +1,7 @@
 #pragma once
-#include "./lightList.hpp"
-#include "./objectList.hpp"
-#include <omp.h>
-float attenuate(float distance)
-{
-    return std::min(1.f, 1.f / (0.25f + 0.1f * distance + 0.01f * distance * distance));
-}
-
+#include "../base/lightList.hpp"
+#include "../base/objectList.hpp"
+// Whitted Ray Tracing
 // recursive function,where shading happens
 // I suppose the amount of reflection and refraction can be better handled with fresnel
 // but it's not implemented here. As whitted RT uses coeffecient to determine the amount of reflection and refraction

@@ -1,3 +1,7 @@
+### Assignment 2 - Whitted Style Ray-tracing
+
+
+
 #### Before SIMD:
 
 1500*1500 px, Spp 2\*2, Max depth 10

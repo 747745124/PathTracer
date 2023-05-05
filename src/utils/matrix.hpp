@@ -13,7 +13,6 @@
 #include "../external/sse2neon.h"
 #endif
 
-#define GL_SIMD
 // @description: an implmentation of vec and mat class
 // Conform to the style of glm
 // Use #define GL_SIMD to use SIMD version
