@@ -4,14 +4,14 @@
 
 #define IMAGE_WIDTH 1500
 #define IMAGE_HEIGHT 1500
-#define SPP_X 4
-#define SPP_Y 4
+#define SPP_X 2
+#define SPP_Y 2
 #define MAX_DEPTH 10
 #define GAMMA 1.0f
 
 using uchar = unsigned char;
-const char* output_file = "../scene6.png";
-const char* input_file = "../Scenes/test6.ascii";
+const char* output_file = "../scene3.png";
+const char* input_file = "../Scenes/test3.scene";
 
 SceneIO *scene = nullptr;
 std::unique_ptr<PerspectiveCamera> camera = nullptr;

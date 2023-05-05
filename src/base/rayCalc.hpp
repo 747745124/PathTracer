@@ -131,7 +131,7 @@ gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, co
         }
     }
 
-    // if hits a specular surface, generate a reflection ray
+    // // if hits a specular surface, generate a reflection ray
     if (hit_record->material->spec_color != gl::vec3(0.f))
     {
         gl::vec3 out_reflect_dir = gl::reflect(ray.getDirection(), hit_record->normal);

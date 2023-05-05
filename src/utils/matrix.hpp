@@ -7,22 +7,31 @@
 #include <iostream>
 #include <cassert>
 
-#ifdef _MSC_VER
-#include <intrin.h>
+#ifdef __x86_64__
+#include <immintrin.h>
+#else
+#include "../external/sse2neon.h"
 #endif
 
-// @description: a simple implmentation of vec and mat class
+#define GL_SIMD
+// @description: an implmentation of vec and mat class
 // Conform to the style of glm
+// Use #define GL_SIMD to use SIMD version
 // @author: Shaokang
 namespace gl
 {
     template <int N, class T>
     class vec
     {
-
         static_assert(N >= 1 && N <= 4, "N must be between 1 and 4");
 
     public:
+        union
+        {
+            __m128 vector;
+            std::array<T, N> data;
+        };
+
         float &r()
         {
             return data[0];
@@ -190,12 +199,86 @@ namespace gl
             }
         }
 
+#ifdef GL_SIMD
+        vec<N, T> operator/(const float divisor) const
+        {
+            vec<N, T> result;
+            result.vector = _mm_div_ps(this->vector, _mm_set1_ps(divisor));
+            return result;
+        }
+
+        // divide equal
+        vec<N, T> &operator/=(float divisor)
+        {
+            this->vector = _mm_div_ps(this->vector, _mm_set1_ps(divisor));
+            return *this;
+        }
+
+        // minus equal, component wise
+        vec<N, T> &operator-=(const vec<N, T> &other)
+        {
+            this->vector = _mm_sub_ps(this->vector, other.vector);
+            return *this;
+        }
+
+        // multiply equal, component wise
+        vec<N, T> &operator*=(const vec<N, T> &other)
+        {
+            this->vector = _mm_mul_ps(this->vector, other.vector);
+            return *this;
+        }
+
+        // multiply equal
+        vec<N, T> &operator*=(const float multiplier)
+        {
+            this->vector = _mm_mul_ps(this->vector, _mm_set1_ps(multiplier));
+            return *this;
+        }
+
+        // length of a vector
+        float length() const
+        {
+            return sqrtf(dot(*this, *this));
+        }
+
+        // normalize in place
+        vec<N, T> &normalized()
+        {
+            float length = this->length();
+            this->vector = _mm_div_ps(this->vector, _mm_set1_ps(length));
+
+            return *this;
+        };
+
+        vec<N, T> normalize() const
+        {
+            vec<N, T> result;
+            float length = this->length();
+            result.vector = _mm_div_ps(this->vector, _mm_set1_ps(length));
+            return result;
+        };
+
+        // negate
+        vec<N, T> operator-() const
+        {
+            vec<N, T> result;
+            result.vector = _mm_sub_ps(_mm_set1_ps(0.f), this->vector);
+            return result;
+        }
+
+        // add equal
+        vec<N, T> &operator+=(vec<N, T> other)
+        {
+            this->vector = _mm_add_ps(this->vector, other.vector);
+            return *this;
+        }
+#else
         vec<N, T> operator/(const float divisor) const
         {
             vec<N, T> result;
             for (int i = 0; i < N; i++)
             {
-                result[i] = data[i] / divisor;
+                result[i] = this->data[i] / divisor;
             }
             return result;
         }
@@ -215,7 +298,7 @@ namespace gl
         {
             for (int i = 0; i < N; i++)
             {
-                this->data[i] -= other[i];
+                this->data[i] -= other.data[i];
             }
             return *this;
         }
@@ -225,7 +308,7 @@ namespace gl
         {
             for (int i = 0; i < N; i++)
             {
-                this->data[i] *= other[i];
+                this->data[i] *= other.data[i];
             }
             return *this;
         }
@@ -243,12 +326,7 @@ namespace gl
         // length of a vector
         float length() const
         {
-            float result = 0;
-            for (int i = 0; i < N; i++)
-            {
-                result += data[i] * data[i];
-            }
-            return sqrtf(result);
+            return sqrtf(dot(*this, *this));
         }
 
         // normalize in place
@@ -259,7 +337,6 @@ namespace gl
             {
                 this->data[i] /= length;
             }
-
             return *this;
         };
 
@@ -290,40 +367,133 @@ namespace gl
         {
             for (int i = 0; i < N; i++)
             {
-                this->data[i] += other[i];
+                this->data[i] += other.data[i];
             }
-
             return *this;
         }
-
-    private:
-        std::array<T, N> data;
+#endif
     };
 
     template <int N, class T>
     bool operator==(const vec<N, T> &lhs, const vec<N, T> &rhs)
     {
-        bool result = true;
         for (int i = 0; i < N; i++)
         {
-            result = result && (lhs[i] == rhs[i]);
+            if (lhs[i] != rhs[i])
+            {
+                return false;
+            }
         }
-
-        return result;
+        return true;
     }
 
     template <int N, class T>
     bool operator!=(const vec<N, T> &lhs, const vec<N, T> &rhs)
     {
-        bool result = false;
         for (int i = 0; i < N; i++)
         {
-            result = result || (lhs[i] != rhs[i]);
+            if (lhs[i] != rhs[i])
+            {
+                return true;
+            }
         }
+        return false;
+    }
 
+#ifdef GL_SIMD
+    template <int N, class T>
+    vec<N, T> operator+(const vec<N, T> &lhs, const vec<N, T> &rhs)
+    {
+        vec<N, T> result;
+        result.vector = _mm_add_ps(lhs.vector, rhs.vector);
         return result;
     }
 
+    template <int N, class T>
+    vec<N, T> operator+(const vec<N, T> &lhs, float add)
+    {
+        vec<N, T> result;
+        result.vector = _mm_add_ps(lhs.vector, _mm_set1_ps(add));
+        return result;
+    }
+
+    template <int N, class T>
+    vec<N, T> operator+(float add, const vec<N, T> &rhs)
+    {
+        vec<N, T> result;
+        result.vector = _mm_add_ps(_mm_set1_ps(add), rhs.vector);
+        return result;
+    }
+
+    template <int N, class T>
+    vec<N, T> operator-(const vec<N, T> &lhs, const vec<N, T> &rhs)
+    {
+        vec<N, T> result;
+        result.vector = _mm_sub_ps(lhs.vector, rhs.vector);
+        return result;
+    }
+
+    template <int N, class T>
+    vec<N, T> operator-(const vec<N, T> &lhs, float sub)
+    {
+        vec<N, T> result;
+        result.vector = _mm_sub_ps(lhs.vector, _mm_set1_ps(sub));
+        return result;
+    }
+
+    template <int N, class T>
+    vec<N, T> operator*(const vec<N, T> &lhs, const float multiplier)
+    {
+        vec<N, T> result;
+        result.vector = _mm_mul_ps(lhs.vector, _mm_set1_ps(multiplier));
+        return result;
+    }
+
+    // component wise multiplication
+    template <int N, class T>
+    vec<N, T> operator*(const vec<N, T> &lhs, const vec<N, T> &rhs)
+    {
+        vec<N, T> result;
+        result.vector = _mm_mul_ps(lhs.vector, rhs.vector);
+        return result;
+    }
+
+    template <int N, class T>
+    vec<N, T> operator*(const float multiplier, const vec<N, T> &rhs)
+    {
+        vec<N, T> result;
+        result.vector = _mm_mul_ps(_mm_set1_ps(multiplier), rhs.vector);
+        return result;
+    }
+
+    template <int N, class T>
+    vec<N, T> operator/(const vec<N, T> &lhs, const vec<N, T> &rhs)
+    {
+        for (int i = 0; i < N; i++)
+            assert(rhs[i] != 0 && "Component-wise division by zero");
+        vec<N, T> result;
+        result.vector = _mm_div_ps(lhs.vector, rhs.vector);
+        return result;
+    }
+
+    template <int N, class T>
+    vec<N, T> normalize(const vec<N, T> &a)
+    {
+        float length = a.length();
+        vec<N, T> result;
+        result.vector = _mm_div_ps(a.vector, _mm_set1_ps(length));
+        return result;
+    };
+
+    template <int N, class T>
+    static float dot(const vec<N, T> &a, const vec<N, T> &b)
+    {
+        // using simd for dot product
+        auto res = _mm_dp_ps(a.vector, b.vector, 0xff);
+        return _mm_cvtss_f32(res);
+    };
+
+#else
     template <int N, class T>
     vec<N, T> operator+(const vec<N, T> &lhs, const vec<N, T> &rhs)
     {
@@ -352,7 +522,7 @@ namespace gl
         vec<N, T> result;
         for (int i = 0; i < N; i++)
         {
-            result[i] = rhs[i] + add;
+            result[i] = add + rhs[i];
         }
         return result;
     }
@@ -399,7 +569,6 @@ namespace gl
         {
             result[i] = lhs[i] * rhs[i];
         }
-
         return result;
     }
 
@@ -409,7 +578,7 @@ namespace gl
         vec<N, T> result;
         for (int i = 0; i < N; i++)
         {
-            result[i] = rhs[i] * multiplier;
+            result[i] = multiplier * rhs[i];
         }
         return result;
     }
@@ -423,19 +592,8 @@ namespace gl
             assert(rhs[i] != 0 && "Component-wise division by zero");
             result[i] = lhs[i] / rhs[i];
         }
-
         return result;
     }
-
-    template <int N, class T>
-    std::ostream &operator<<(std::ostream &os, vec<N, T> v)
-    {
-        for (int i = 0; i < N; i++)
-        {
-            os << v[i] << " ";
-        }
-        return os;
-    };
 
     template <int N, class T>
     vec<N, T> normalize(const vec<N, T> &a)
@@ -452,12 +610,23 @@ namespace gl
     template <int N, class T>
     static float dot(const vec<N, T> &a, const vec<N, T> &b)
     {
-        float result = 0;
+        float result = 0.0;
         for (int i = 0; i < N; i++)
         {
             result += a[i] * b[i];
         }
         return result;
+    };
+#endif
+
+    template <int N, class T>
+    std::ostream &operator<<(std::ostream &os, vec<N, T> v)
+    {
+        for (int i = 0; i < N; i++)
+        {
+            os << v[i] << " ";
+        }
+        return os;
     };
 
     template <int N, class T>
@@ -777,5 +946,4 @@ namespace gl
     using mat2 = mat<2, 2, float>;
     using mat3 = mat<3, 3, float>;
     using mat4 = mat<4, 4, float>;
-
 };

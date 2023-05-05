@@ -4,10 +4,19 @@
 // #define BASIC_SPHERE
 // #define BASIC_POLYSETS
 // #define OBJECT_LIST
-#define RECURSIVE_TEST
+// #define RECURSIVE_TEST
+#define SIMD_TEST
 
 int main()
 {
+
+#ifdef SIMD_TEST
+    using namespace gl;
+    vec4 a(0.0f, 0.0f, 1.0f, 1.0f);
+    vec4 b(0.0, 0.0f, 1.0f, 1.0f);
+    std::cout << a.normalize() << std::endl;
+#endif
+
 #ifdef RECURSIVE_TEST
     using namespace gl;
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -25,7 +34,7 @@ int main()
     auto offsets = fb.getOffsets();
     uint counter = 0;
 
-#pragma omp parallel for num_threads(omp_get_num_procs()+1)
+#pragma omp parallel for num_threads(omp_get_num_procs() + 1)
     {
         for (int i = 0; i < width; i++)
         {
@@ -39,7 +48,7 @@ int main()
                     auto sample_color = vec3(0.0);
                     vec2 uv = (vec2(i, j) + offsets[k]) / vec2(width, height);
                     Ray ray = camera.generateRay(uv);
-                    color += getRayColor(ray, prims,5u, lights);
+                    color += getRayColor(ray, prims, 5u, lights);
                 }
 
 // implicit barrier at this section
@@ -55,7 +64,7 @@ int main()
     }
 
     // fb.gaussianBlur(3, 1.0f);
-    fb.writeToFile("../test2.png",1.0f);
+    fb.writeToFile("../test2.png", 1.0f);
 
     end = std::chrono::system_clock::now();
     duration = end - start;
