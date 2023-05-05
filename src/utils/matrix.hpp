@@ -487,7 +487,6 @@ namespace gl
     template <int N, class T>
     static float dot(const vec<N, T> &a, const vec<N, T> &b)
     {
-        // using simd for dot product
         auto res = _mm_dp_ps(a.vector, b.vector, 0xff);
         return _mm_cvtss_f32(res);
     };
