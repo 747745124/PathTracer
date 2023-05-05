@@ -37,7 +37,7 @@ void render(void)
 	auto offsets = fb.getOffsets();
 	uint counter = 0;
 
-#pragma omp parallel for num_threads(omp_get_num_procs() + 1)
+#pragma omp parallel for num_threads(omp_get_num_procs())
 	{
 		for (int i = 0; i < IMAGE_WIDTH; i++)
 		{
