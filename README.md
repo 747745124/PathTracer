@@ -41,8 +41,10 @@ This project uses SIMD (`SSE` instructions) to optimize the `vec` class.
 
 * Setting: 1500*1500 px, Spp 2\*2, Max depth 10
 
-* Before SIMD: 15-17s, After SIMD: 13-16s
+* Before SIMD: 15-17s, After SIMD: 13-16s (macOS, M1 Max)
 
 This project uses OpenMP to parallelize ray casting process.
 
 * The number of threads is set to `num_of_process()`
+  * Setting it to  `num_of_process()+1` can be extremely slow for simple scenes.
+
