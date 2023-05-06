@@ -7,7 +7,8 @@
 #include <iostream>
 #include <cassert>
 
-#ifdef __x86_64__
+#ifdef _WIN32
+using uint = unsigned int;
 #include <immintrin.h>
 #else
 #include "../external/sse2neon.h"
@@ -861,7 +862,7 @@ namespace gl
 
             if (det == 0)
             {
-                // std::cout << "matrix is not invertible" << std::endl;
+                std::cout << "matrix is not invertible" << std::endl;
                 return mat<M, N, T>(1.0f);
                 // throw std::runtime_error("matrix is not invertible");
             }

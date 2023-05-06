@@ -3,10 +3,7 @@
 #include "../utils/utility.hpp"
 #include "./base/objectList.hpp"
 #include <cstdint>
-#ifdef _WIN32
-#include <Windows.h>
-using uint = unsigned int;
-#endif
+
 
 class FrameBuffer
 {
