@@ -11,8 +11,8 @@
 #define GL_SIMD
 
 using uchar = unsigned char;
-const char* output_file = "../scene3.png";
-const char* input_file = "../Scenes/test3.scene";
+const char* output_file = "../scene1.png";
+const char* input_file = "../Scenes/test1.ascii";
 
 SceneIO *scene = nullptr;
 std::unique_ptr<PerspectiveCamera> camera = nullptr;

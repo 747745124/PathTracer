@@ -31,6 +31,15 @@ struct CustomMaterial
         this->ktran = io->ktran;
     }
 
+    CustomMaterial(const MaterialIO& io){
+        this->ambient_color=io.ambColor;
+        this->diff_color = io.diffColor;
+        this->spec_color= io.specColor;
+        this->emissive_color = io.emissColor;
+        this->shininess = io.shininess;
+        this->ktran = io.ktran;
+    }
+
     ~CustomMaterial() = default;
 };
 

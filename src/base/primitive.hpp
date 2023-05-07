@@ -3,7 +3,10 @@
 #include "../utils/scene_io.hpp"
 #include "./material.hpp"
 #include "./ray.hpp"
+#include "./vertex.hpp"
 #include <memory>
+
+using Materials = std::vector<std::shared_ptr<CustomMaterial>>;
 
 struct HitRecord
 {
@@ -81,14 +84,12 @@ public:
 class Triangle : public Hittable
 {
 public:
-    Triangle(const gl::vec3 &v0, const gl::vec3 &v1, const gl::vec3 &v2,const CustomMaterial &mat) : v0(v0), v1(v1), v2(v2)
+    Triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2) : v0(v0), v1(v1), v2(v2)
     {
         this->objtype = ObjType::POLYSET_OBJ;
-        this->material = std::make_shared<CustomMaterial>(mat);
     };
 
-    gl::vec3 v0, v1, v2;
-    std::shared_ptr<CustomMaterial> material;
+    Vertex v0, v1, v2;
 
     std::shared_ptr<HitRecord> intersect(const Ray &ray, float tmin = 0.0, float tmax = 10000.f) const override
     {
@@ -96,8 +97,8 @@ public:
         // using Möller–Trumbore intersection algorithm
         auto ray_dir = ray.getDirection().normalize();
         auto ray_origin = ray.getOrigin();
-        auto edge1 = this->v1 - this->v0;
-        auto edge2 = this->v2 - this->v0;
+        auto edge1 = this->v1.position - this->v0.position;
+        auto edge2 = this->v2.position - this->v0.position;
         auto h = cross(ray_dir, edge2);
         auto a = dot(edge1, h);
 
@@ -106,7 +107,7 @@ public:
             return nullptr;
 
         auto f = 1 / a;
-        auto s = ray_origin - this->v0;
+        auto s = ray_origin - this->v0.position;
         auto u = f * dot(s, h);
 
         // out of the triangle
@@ -127,7 +128,7 @@ public:
             hit_record->t = t;
             hit_record->position = ray_origin + t * ray_dir;
             hit_record->set_normal(ray, cross(edge1, edge2).normalize());
-            hit_record->material = this->material;
+            hit_record->material = v0.material;
             return hit_record;
         }
         else

@@ -1,19 +1,21 @@
 #pragma once
 #include "../utils/matrix.hpp"
 #include "../utils/transformations.hpp"
+#include "./material.hpp"
+#include <memory>
 struct Vertex
 {
     gl::vec3 position;
     gl::vec3 normal;
     gl::vec2 texCoords;
-    uint material_index;
+    std::shared_ptr<CustomMaterial> material;
 
-    Vertex(gl::vec3 position = {0.0f, 0.0f, 0.0f}, gl::vec3 normal = {0.0f, 0.0f, 0.0f}, gl::vec2 texCoords = {0.0f, 0.0f}, uint material_index = 0)
+    Vertex(gl::vec3 position = {0.0f, 0.0f, 0.0f}, gl::vec3 normal = {0.0f, 0.0f, 0.0f}, gl::vec2 texCoords = {0.0f, 0.0f}, std::shared_ptr<CustomMaterial> material = nullptr)
     {
         this->position = position;
         this->normal = normal;
         this->texCoords = texCoords;
-        this->material_index = material_index;
+        this->material = material;
     };
 
     bool operator==(const Vertex &other)
