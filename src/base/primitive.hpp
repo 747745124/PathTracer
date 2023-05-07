@@ -15,6 +15,7 @@ public:
     gl::vec3 normal;
     gl::vec3 position;
     std::shared_ptr<CustomMaterial> material;
+    // gl::vec2 uv;
     // Ref: rt in one weeknd
     // This is used to determine whether the ray is inside or outside the object
     // As we want have the normal always point against the ray
@@ -127,8 +128,11 @@ public:
             auto hit_record = std::make_shared<HitRecord>();
             hit_record->t = t;
             hit_record->position = ray_origin + t * ray_dir;
-            hit_record->set_normal(ray, cross(edge1, edge2).normalize());
-            hit_record->material = v0.material;
+
+            auto hit_point = barycentric_lerp(v0,v1,v2,gl::vec2(u,v));
+
+            hit_record->set_normal(ray, hit_point.normal);
+            hit_record->material = hit_point.material;
             return hit_record;
         }
         else

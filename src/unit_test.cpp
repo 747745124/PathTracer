@@ -5,7 +5,7 @@
 // #define BASIC_POLYSETS
 // #define OBJECT_LIST
 // #define RECURSIVE_TEST
-#define SIMD_TEST
+// #define SIMD_TEST
 
 int main()
 {

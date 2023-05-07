@@ -4,13 +4,15 @@
 
 struct CustomMaterial
 {
-    gl::vec3 diff_color;
-    gl::vec3 ambient_color;
-    gl::vec3 spec_color;
-    gl::vec3 emissive_color;
+    gl::vec3 diff_color = gl::vec3(1.0f, 0.0f, 0.0f);
+    gl::vec3 ambient_color = gl::vec3(1.0f, 0.0f, 0.0f);
+    gl::vec3 spec_color = gl::vec3(0.0f, 0.0f, 0.0f);
+    gl::vec3 emissive_color = gl::vec3(0.0f, 0.0f, 0.0f);
 
     float shininess = 0.2f;
     float ktran = 0.f;
+
+    CustomMaterial() = default;
 
     CustomMaterial(gl::vec3 diff_color, gl::vec3 ambient_color, gl::vec3 spec_color, gl::vec3 emissive_color, float shininess, float ktran)
     {
@@ -22,19 +24,21 @@ struct CustomMaterial
         this->ktran = ktran;
     }
 
-    CustomMaterial(const MaterialIO* io){
-        this->ambient_color=io->ambColor;
+    CustomMaterial(const MaterialIO *io)
+    {
+        this->ambient_color = io->ambColor;
         this->diff_color = io->diffColor;
-        this->spec_color= io->specColor;
+        this->spec_color = io->specColor;
         this->emissive_color = io->emissColor;
         this->shininess = io->shininess;
         this->ktran = io->ktran;
     }
 
-    CustomMaterial(const MaterialIO& io){
-        this->ambient_color=io.ambColor;
+    CustomMaterial(const MaterialIO &io)
+    {
+        this->ambient_color = io.ambColor;
         this->diff_color = io.diffColor;
-        this->spec_color= io.specColor;
+        this->spec_color = io.specColor;
         this->emissive_color = io.emissColor;
         this->shininess = io.shininess;
         this->ktran = io.ktran;
