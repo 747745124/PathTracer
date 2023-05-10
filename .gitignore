@@ -8,3 +8,6 @@
 cloc_ignore
 loc.sh
 .DS_Store
+.cache
+.clangd
+*.png

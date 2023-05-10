@@ -1,11 +1,12 @@
 #pragma once
 #include "../base/lightList.hpp"
 #include "../base/objectList.hpp"
+#include "../utils/bvh.hpp"
 // Whitted Ray Tracing
 // recursive function,where shading happens
 // I suppose the amount of reflection and refraction can be better handled with fresnel
 // but it's not implemented here. As whitted RT uses coeffecient to determine the amount of reflection and refraction
-gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, const LightList &lights)
+inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims, uint max_depth, const LightList &lights)
 {
     using namespace gl;
 
