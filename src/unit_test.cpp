@@ -24,7 +24,7 @@ int main() {
 
   BVHNode bvh(prims);
 
-  uint width = 500, height = 500;
+  uint width = 100, height = 100;
   FrameBuffer fb(width, height, 3, 4, 4);
   auto offsets = fb.getOffsets();
   uint counter = 0;
@@ -41,7 +41,7 @@ int main() {
           auto sample_color = vec3(0.0);
           vec2 uv = (vec2(i, j) + offsets[k]) / vec2(width, height);
           Ray ray = camera.generateRay(uv);
-          color += getRayColor(ray, prims,bvh, 5u, lights);
+          color += getRayColor(ray, prims,bvh, 4u, lights);
         }
 
 // implicit barrier at this section

@@ -2,8 +2,8 @@
 #include "./utils/timeit.hpp"
 #include "./unit_test.hpp"
 
-#define IMAGE_WIDTH 200
-#define IMAGE_HEIGHT 200
+#define IMAGE_WIDTH 30
+#define IMAGE_HEIGHT 30
 #define SPP_X 1
 #define SPP_Y 1
 #define MAX_DEPTH 5
@@ -11,8 +11,8 @@
 #define GL_SIMD
 
 using uchar = unsigned char;
-const char* output_file = "../scene2.png";
-const char* input_file = "../Scenes/test2.ascii";
+const char* output_file = "../scene1.png";
+const char* input_file = "../Scenes/test1.ascii";
 
 SceneIO *scene = nullptr;
 std::unique_ptr<PerspectiveCamera> camera = nullptr;
