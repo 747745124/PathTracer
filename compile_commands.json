@@ -1,0 +1,42 @@
+[
+{
+  "directory": "/Users/naoyuki/BasicRayTracer/build",
+  "command": "/opt/homebrew/Cellar/llvm/16.0.2/bin/clang++ -I/Users/naoyuki/BasicRayTracer/./src  -fopenmp -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk -std=gnu++17 -o CMakeFiles/WhiitedRT.dir/src/unit_test.cpp.o -c /Users/naoyuki/BasicRayTracer/src/unit_test.cpp",
+  "file": "/Users/naoyuki/BasicRayTracer/src/unit_test.cpp"
+},
+{
+  "directory": "/Users/naoyuki/BasicRayTracer/build",
+  "command": "/opt/homebrew/Cellar/llvm/16.0.2/bin/clang++ -I/Users/naoyuki/BasicRayTracer/./src  -fopenmp -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk -std=gnu++17 -o CMakeFiles/WhiitedRT.dir/src/utils/scene_io.cpp.o -c /Users/naoyuki/BasicRayTracer/src/utils/scene_io.cpp",
+  "file": "/Users/naoyuki/BasicRayTracer/src/utils/scene_io.cpp"
+},
+{
+  "directory": "/Users/naoyuki/BasicRayTracer/build",
+  "command": "/opt/homebrew/Cellar/llvm/16.0.2/bin/clang++ -I/Users/naoyuki/BasicRayTracer/./src  -fopenmp -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk -std=gnu++17 -o CMakeFiles/WhiitedRT.dir/src/base/light.cpp.o -c /Users/naoyuki/BasicRayTracer/src/base/light.cpp",
+  "file": "/Users/naoyuki/BasicRayTracer/src/base/light.cpp"
+},
+{
+  "directory": "/Users/naoyuki/BasicRayTracer/build",
+  "command": "/opt/homebrew/Cellar/llvm/16.0.2/bin/clang++ -I/Users/naoyuki/BasicRayTracer/./src  -fopenmp -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk -std=gnu++17 -o CMakeFiles/WhiitedRT.dir/src/base/camera.cpp.o -c /Users/naoyuki/BasicRayTracer/src/base/camera.cpp",
+  "file": "/Users/naoyuki/BasicRayTracer/src/base/camera.cpp"
+},
+{
+  "directory": "/Users/naoyuki/BasicRayTracer/build",
+  "command": "/opt/homebrew/Cellar/llvm/16.0.2/bin/clang++ -I/Users/naoyuki/BasicRayTracer/./src  -fopenmp -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk -std=gnu++17 -o CMakeFiles/WhiitedRT.dir/src/base/object3D.cpp.o -c /Users/naoyuki/BasicRayTracer/src/base/object3D.cpp",
+  "file": "/Users/naoyuki/BasicRayTracer/src/base/object3D.cpp"
+},
+{
+  "directory": "/Users/naoyuki/BasicRayTracer/build",
+  "command": "/opt/homebrew/Cellar/llvm/16.0.2/bin/clang++ -I/Users/naoyuki/BasicRayTracer/./src  -fopenmp -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk -std=gnu++17 -o CMakeFiles/WhiitedRT.dir/src/base/primitive.cpp.o -c /Users/naoyuki/BasicRayTracer/src/base/primitive.cpp",
+  "file": "/Users/naoyuki/BasicRayTracer/src/base/primitive.cpp"
+},
+{
+  "directory": "/Users/naoyuki/BasicRayTracer/build",
+  "command": "/opt/homebrew/Cellar/llvm/16.0.2/bin/clang++ -I/Users/naoyuki/BasicRayTracer/./src  -fopenmp -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk -std=gnu++17 -o CMakeFiles/WhiitedRT.dir/src/base/framebuffer.cpp.o -c /Users/naoyuki/BasicRayTracer/src/base/framebuffer.cpp",
+  "file": "/Users/naoyuki/BasicRayTracer/src/base/framebuffer.cpp"
+},
+{
+  "directory": "/Users/naoyuki/BasicRayTracer/build",
+  "command": "/opt/homebrew/Cellar/llvm/16.0.2/bin/clang++ -I/Users/naoyuki/BasicRayTracer/./src  -fopenmp -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk -std=gnu++17 -o CMakeFiles/WhiitedRT.dir/src/base/objectList.cpp.o -c /Users/naoyuki/BasicRayTracer/src/base/objectList.cpp",
+  "file": "/Users/naoyuki/BasicRayTracer/src/base/objectList.cpp"
+}
+]

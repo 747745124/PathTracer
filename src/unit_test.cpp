@@ -14,21 +14,22 @@ int main() {
   std::chrono::time_point<std::chrono::system_clock> start, end;
   std::chrono::duration<double> duration;
   start = std::chrono::system_clock::now();
+  
 
-  std::string name = "../Scenes/test3.ascii";
+  std::string name = "../Scenes_2/test1.ascii";
   auto scene = readScene(name.c_str());
   auto camera = PerspectiveCamera(scene->camera, 1);
   LightList lights(_get_lights_from_io(scene->lights));
   ObjectList prims(_get_primitives_from_io(scene->objects));
 
   BVHNode bvh(prims);
-  
-  uint width = 10, height = 10;
+
+  uint width = 500, height = 500;
   FrameBuffer fb(width, height, 3, 4, 4);
   auto offsets = fb.getOffsets();
   uint counter = 0;
 
-#pragma omp parallel for num_threads(omp_get_num_procs() + 1)
+#pragma omp parallel for
   {
     for (int i = 0; i < width; i++) {
       std::cout << "Now scanning " << (float(counter) / width) * 100.f << " %"
@@ -40,7 +41,7 @@ int main() {
           auto sample_color = vec3(0.0);
           vec2 uv = (vec2(i, j) + offsets[k]) / vec2(width, height);
           Ray ray = camera.generateRay(uv);
-          color += getRayColor(ray, prims, 5u, lights);
+          color += getRayColor(ray, prims,bvh, 5u, lights);
         }
 
 // implicit barrier at this section
@@ -216,7 +217,7 @@ int main() {
 #endif
 
 #ifdef BASIC_SPHERE
-  std::string name = "../Scenes/test2.ascii";
+  std::string name = "../Scenes/test1.ascii";
   auto scene = readScene(name.c_str());
   auto camera = PerspectiveCamera(scene->camera, 1.33);
   // auto camera = PerspectiveCamera(gl::to_radian(45), 1.33, 1, gl::vec3(0, 1,
