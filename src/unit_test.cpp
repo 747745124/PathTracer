@@ -7,11 +7,11 @@
 // #define OBJECT_LIST
 // #define RECURSIVE_TEST
 // #define SIMD_TEST
-// #define BVH_TEST
+#define BVH_TEST
 // #define SPHERE_TEST
-// #define F_STOP 4.f
 // #define TEXTURE_TEST
-#define CHECKER_TEST
+// #define CHECKER_TEST
+#define F_STOP 40.f
 
 int main() {
 
@@ -63,7 +63,11 @@ int main() {
   LightList lights(_get_lights_from_io(scene->lights));
   ObjectList prims(_get_primitives_from_io(scene->objects));
 
+  prims.addObject(std::make_shared<Sphere>(vec3(1.02, -0.36, -1.13), 1.0f,
+                                            std::make_shared<CheckerMaterial>(10.f)));
+
   BVHNode bvh(prims);
+
 
   uint width = 400, height = 400;
   FrameBuffer fb(width, height, 3, 4, 4);
@@ -98,7 +102,7 @@ int main() {
   }
 
   // fb.gaussianBlur(3, 1.0f);
-  fb.writeToFile("../test3.png", 1.0f);
+  fb.writeToFile("../custom_test.png", 1.0f);
 
   end = std::chrono::system_clock::now();
   duration = end - start;

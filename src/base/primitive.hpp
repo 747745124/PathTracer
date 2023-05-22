@@ -46,6 +46,12 @@ public:
     this->objtype = ObjType::SPHERE_OBJ;
   };
 
+  Sphere(const gl::vec3 &center, float radius,
+         std::shared_ptr<CustomMaterial> material)
+      : center(center), radius(radius), material(material) {
+    this->objtype = ObjType::SPHERE_OBJ;
+  };
+
   AABB getAABB(float t0, float t1) override {
     return AABB(this->center - gl::vec3(this->radius),
                 this->center + gl::vec3(this->radius));
@@ -78,15 +84,16 @@ public:
       hit_record->position = ray_origin + t * ray_dir;
       hit_record->set_normal(ray,
                              (hit_record->position - this->center).normalize());
-      //calculate the uv coords of a sphere
+      // calculate the uv coords of a sphere
       auto p = (hit_record->position - this->center).normalize();
       auto phi = atan2(p.z(), p.x());
       auto theta = asin(p.y());
-      hit_record->texCoords = gl::vec2(1 - (phi + M_PI) / (2 * M_PI),
-                                       (theta + M_PI / 2) / M_PI);
-      //remap the uv coords, so that (0,0,1) is (0,0.5)
-      hit_record->texCoords.u() = fmodf(hit_record->texCoords.u() + 0.75f, 1.0f);
-      hit_record->material = this->material;
+      hit_record->texCoords =
+          gl::vec2(1 - (phi + M_PI) / (2 * M_PI), (theta + M_PI / 2) / M_PI);
+      // remap the uv coords, so that (0,0,1) is (0,0.5)
+      hit_record->texCoords.u() =
+          fmodf(hit_record->texCoords.u() + 0.75f, 1.0f);
+      hit_record->material = this->material->getMaterial(hit_record->texCoords);
       return hit_record;
     }
   };
@@ -157,7 +164,8 @@ public:
       auto hit_point = barycentric_lerp(v0, v1, v2, gl::vec2(u, v));
       hit_record->texCoords = hit_point.texCoords;
       hit_record->set_normal(ray, hit_point.normal);
-      hit_record->material = hit_point.material;
+      hit_record->material =
+          hit_point.material->getMaterial(hit_record->texCoords);
       return hit_record;
     } else
       return nullptr;
