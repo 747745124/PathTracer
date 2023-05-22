@@ -7,9 +7,24 @@
 // #define OBJECT_LIST
 // #define RECURSIVE_TEST
 // #define SIMD_TEST
-#define BVH_TEST
+// #define BVH_TEST
+#define SPHERE_TEST
 #define F_STOP 4.f
 int main() {
+#ifdef SPHERE_TEST
+  auto hit_record = std::make_shared<HitRecord>();
+  gl::vec3 center(0.f);
+  hit_record->position = gl::vec3(0.f, 0.f, -1.f);
+  auto p = (hit_record->position - center).normalize();
+
+  auto phi = atan2(p.z(), p.x());
+  auto theta = asin(p.y());
+  hit_record->texCoords =
+      gl::vec2(1 - (phi + M_PI) / (2 * M_PI), (theta + M_PI / 2) / M_PI);
+  
+  std::cout << hit_record->texCoords << std::endl;
+#endif
+
 #ifdef BVH_TEST
   using namespace gl;
   std::chrono::time_point<std::chrono::system_clock> start, end;
