@@ -10,7 +10,7 @@ public:
   BVHNode() = default;
   BVHNode(ObjectList &object_list, uint i, uint j, float t0 = 0.0f,
           float t1 = 1.0f);
-  BVHNode(ObjectList &object_list, float t0=0.0f, float t1=1.0f)
+  BVHNode(ObjectList &object_list, float t0 = 0.0f, float t1 = 1.0f)
       : BVHNode(object_list, 0, object_list.getLists().size(), t0, t1){};
 
   std::shared_ptr<HitRecord> intersect(const Ray &ray, float tmin,
@@ -30,15 +30,15 @@ inline std::shared_ptr<HitRecord> BVHNode::intersect(const Ray &ray, float tmin,
   }
 
   auto left_hit = this->left->intersect(ray, tmin, tmax);
-  auto right_hit = this->right->intersect(ray, tmin, tmax);
+  auto right_hit = left_hit == nullptr
+                       ? this->right->intersect(ray, tmin, tmax)
+                       : this->right->intersect(ray, tmin, left_hit->t);
 
   if (left_hit == nullptr && right_hit == nullptr)
     return nullptr;
   if (left_hit == nullptr)
     return right_hit;
   if (right_hit == nullptr)
-    return left_hit;
-  if (left_hit->t < right_hit->t)
     return left_hit;
 
   return right_hit;
@@ -51,7 +51,8 @@ inline BVHNode::BVHNode(ObjectList &object_list, uint i, uint j, float t0,
                         float t1) {
 
   int axis = gl::C_rand_int(0, 3);
-  auto list_copy = object_list.getLists();
+  auto in_list = object_list;
+  auto list_copy = in_list.getLists();
 
   auto compare = [&](std::shared_ptr<Hittable> p1, std::shared_ptr<Hittable> p2,
                      int axis_index) {
@@ -82,8 +83,8 @@ inline BVHNode::BVHNode(ObjectList &object_list, uint i, uint j, float t0,
               });
 
     uint mid = i + (j - i) / 2;
-    this->left = std::make_shared<BVHNode>(object_list, i, mid, t0, t1);
-    this->right = std::make_shared<BVHNode>(object_list, mid, j, t0, t1);
+    this->left = std::make_shared<BVHNode>(in_list, i, mid, t0, t1);
+    this->right = std::make_shared<BVHNode>(in_list, mid, j, t0, t1);
   }
 
   this->box =

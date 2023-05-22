@@ -9,6 +9,7 @@
 #define MAX_DEPTH 5
 #define GAMMA 1.0f
 #define GL_SIMD
+#define F_STOP 2.8f
 
 using uchar = unsigned char;
 const char* output_file = "../scene1.png";
@@ -23,7 +24,7 @@ static void loadScene(const char *name)
 {
 	/* load the scene into the SceneIO data structure using given parsing code */
 	scene = readScene(name);
-	camera.reset(new PerspectiveCamera(scene->camera, (float)IMAGE_WIDTH / (float)IMAGE_HEIGHT));
+	camera.reset(new PerspectiveCamera(scene->camera, (float)IMAGE_WIDTH / (float)IMAGE_HEIGHT, F_STOP));
 	lights = LightList(_get_lights_from_io(scene->lights));
 	prims = ObjectList(_get_primitives_from_io(scene->objects));
 	return;

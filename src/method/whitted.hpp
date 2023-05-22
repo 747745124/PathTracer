@@ -149,7 +149,7 @@ inline gl::vec3 getRayColor(const Ray &ray,  const ObjectList &prims,const BVHNo
     if (max_depth == 0 || ray.intensity < 0.0001f)
         return vec3(0.0f, 0.0f, 0.0f);
 
-    auto hit_record = bvh.intersect(ray, 0.0001f, 10000.0f);
+    auto hit_record = bvh.intersect(ray,0.001f,10000.f);
 
     // background color
     if (hit_record == nullptr)

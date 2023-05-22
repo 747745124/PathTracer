@@ -8,23 +8,23 @@
 // #define RECURSIVE_TEST
 // #define SIMD_TEST
 #define BVH_TEST
+#define F_STOP 4.f
 int main() {
 #ifdef BVH_TEST
   using namespace gl;
   std::chrono::time_point<std::chrono::system_clock> start, end;
   std::chrono::duration<double> duration;
   start = std::chrono::system_clock::now();
-  
 
-  std::string name = "../Scenes_2/test1.ascii";
+  std::string name = "../Scenes_2/test2.ascii";
   auto scene = readScene(name.c_str());
-  auto camera = PerspectiveCamera(scene->camera, 1);
+  auto camera = PerspectiveCamera(scene->camera, 1, F_STOP);
   LightList lights(_get_lights_from_io(scene->lights));
   ObjectList prims(_get_primitives_from_io(scene->objects));
 
   BVHNode bvh(prims);
 
-  uint width = 100, height = 100;
+  uint width = 400, height = 400;
   FrameBuffer fb(width, height, 3, 4, 4);
   auto offsets = fb.getOffsets();
   uint counter = 0;
@@ -40,8 +40,8 @@ int main() {
         for (int k = 0; k < fb.getSampleCount(); k++) {
           auto sample_color = vec3(0.0);
           vec2 uv = (vec2(i, j) + offsets[k]) / vec2(width, height);
-          Ray ray = camera.generateRay(uv);
-          color += getRayColor(ray, prims,bvh, 4u, lights);
+          Ray ray = camera.generateRay(uv.u(), uv.v());
+          color += getRayColor(ray, prims, bvh, 4u, lights);
         }
 
 // implicit barrier at this section

@@ -205,10 +205,22 @@ static inline float rand_num(float start_point, float end_point) {
   return dist(gen);
 }
 
-static inline vec3 sphere_random_vec(float r = 1.f) {
+static inline vec2 circle_random_vec(float r = 1.f) {
+  auto p = vec2(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
 
+  while (p.length() >= 1.f) {
+    p = vec2(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
+  }
+  return p;
+}
+
+static inline vec3 sphere_random_vec(float r = 1.f) {
   auto p = vec3(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
-  p.normalized();
+  
+  while(p.length() >= 1.f) {
+    p = vec3(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
+  }
+  
   return p;
 }
 
