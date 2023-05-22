@@ -15,7 +15,7 @@ public:
   gl::vec3 normal;
   gl::vec3 position;
   std::shared_ptr<CustomMaterial> material;
-  // gl::vec2 uv;
+  gl::vec2 texCoords = gl::vec2(0.0f);
   // Ref: rt in one weeknd
   // This is used to determine whether the ray is inside or outside the object
   // As we want have the normal always point against the ray
@@ -78,6 +78,14 @@ public:
       hit_record->position = ray_origin + t * ray_dir;
       hit_record->set_normal(ray,
                              (hit_record->position - this->center).normalize());
+      //calculate the uv coords of a sphere
+      auto p = (hit_record->position - this->center).normalize();
+      auto phi = atan2(p.z(), p.x());
+      auto theta = asin(p.y());
+      hit_record->texCoords = gl::vec2(1 - (phi + M_PI) / (2 * M_PI),
+                                       (theta + M_PI / 2) / M_PI);
+      //remap the uv coords, so that (0,0,1) is (0,0.5)
+      hit_record->texCoords.u() = fmodf(hit_record->texCoords.u() + 0.75f, 1.0f);
       hit_record->material = this->material;
       return hit_record;
     }
@@ -147,7 +155,7 @@ public:
       hit_record->position = ray_origin + t * ray_dir;
 
       auto hit_point = barycentric_lerp(v0, v1, v2, gl::vec2(u, v));
-
+      hit_record->texCoords = hit_point.texCoords;
       hit_record->set_normal(ray, hit_point.normal);
       hit_record->material = hit_point.material;
       return hit_record;
