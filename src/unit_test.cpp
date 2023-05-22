@@ -8,9 +8,35 @@
 // #define RECURSIVE_TEST
 // #define SIMD_TEST
 // #define BVH_TEST
-#define SPHERE_TEST
-#define F_STOP 4.f
+// #define SPHERE_TEST
+// #define F_STOP 4.f
+// #define TEXTURE_TEST
+#define CHECKER_TEST
+
 int main() {
+
+#ifdef CHECKER_TEST
+  CheckerTexture checker(200.f);
+  FrameBuffer fb(1000, 1000, 3);
+  for (int i = 0; i < 1000; i++) {
+    for (int j = 0; j < 1000; j++) {
+      fb.setPixelColor(j, i, checker.getTexelColor(i / 1000.f, j / 1000.f));
+    }
+  }
+  fb.writeToFile("../checker_test.png");
+#endif
+
+#ifdef TEXTURE_TEST
+  ImageTexture tex("../results/scene1.png");
+  FrameBuffer fb(1000, 1000, 3);
+  for (int i = 0; i < 1000; i++) {
+    for (int j = 0; j < 1000; j++) {
+      fb.setPixelColor(j, i, tex.getTexelColor(i / 1000.f, j / 1000.f));
+    }
+  }
+  fb.writeToFile("../texture_test.png");
+#endif
+
 #ifdef SPHERE_TEST
   auto hit_record = std::make_shared<HitRecord>();
   gl::vec3 center(0.f);
