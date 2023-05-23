@@ -29,8 +29,8 @@ public:
         std::swap(t0, t1);
 
       // find the intersection of 3 axis
-      tmin = std::max(t0, tmin);
-      tmax = std::min(t1, tmax);
+      tmin = t0 > tmin ? t0 : tmin;
+      tmax = t1 < tmax ? t1 : tmax;
 
       if (tmax <= tmin)
         return false;

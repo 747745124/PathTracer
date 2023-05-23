@@ -17,14 +17,14 @@ public:
                                        float tmax) const override;
 
   AABB getAABB(float t0, float t1) override { return this->box; };
-
   AABB box;
   std::shared_ptr<Hittable> left;
   std::shared_ptr<Hittable> right;
 };
 
-inline std::shared_ptr<HitRecord> BVHNode::intersect(const Ray &ray, float tmin,
-                                                     float tmax) const {
+inline std::shared_ptr<HitRecord> BVHNode::intersect(const Ray &ray,
+                                                     float tmin = 0.0001,
+                                                     float tmax = 1e5) const {
   if (!this->box.intersect(ray, tmin, tmax)) {
     return nullptr;
   }
@@ -89,4 +89,5 @@ inline BVHNode::BVHNode(ObjectList &object_list, uint i, uint j, float t0,
 
   this->box =
       AABB::merge(this->left->getAABB(t0, t1), this->right->getAABB(t0, t1));
+  this->objtype = ObjType::BVH_OBJ;
 };

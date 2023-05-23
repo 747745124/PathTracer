@@ -11,47 +11,11 @@
 // #define SPHERE_TEST
 // #define TEXTURE_TEST
 // #define CHECKER_TEST
-#define F_STOP 40.f
+// #define SHADER_TEST
+#define F_STOP 1000.f
 
 int main() {
-
-#ifdef CHECKER_TEST
-  CheckerTexture checker(200.f);
-  FrameBuffer fb(1000, 1000, 3);
-  for (int i = 0; i < 1000; i++) {
-    for (int j = 0; j < 1000; j++) {
-      fb.setPixelColor(j, i, checker.getTexelColor(i / 1000.f, j / 1000.f));
-    }
-  }
-  fb.writeToFile("../checker_test.png");
-#endif
-
-#ifdef TEXTURE_TEST
-  ImageTexture tex("../results/scene1.png");
-  FrameBuffer fb(1000, 1000, 3);
-  for (int i = 0; i < 1000; i++) {
-    for (int j = 0; j < 1000; j++) {
-      fb.setPixelColor(j, i, tex.getTexelColor(i / 1000.f, j / 1000.f));
-    }
-  }
-  fb.writeToFile("../texture_test.png");
-#endif
-
-#ifdef SPHERE_TEST
-  auto hit_record = std::make_shared<HitRecord>();
-  gl::vec3 center(0.f);
-  hit_record->position = gl::vec3(0.f, 0.f, -1.f);
-  auto p = (hit_record->position - center).normalize();
-
-  auto phi = atan2(p.z(), p.x());
-  auto theta = asin(p.y());
-  hit_record->texCoords =
-      gl::vec2(1 - (phi + M_PI) / (2 * M_PI), (theta + M_PI / 2) / M_PI);
-  
-  std::cout << hit_record->texCoords << std::endl;
-#endif
-
-#ifdef BVH_TEST
+#ifdef SHADER_TEST
   using namespace gl;
   std::chrono::time_point<std::chrono::system_clock> start, end;
   std::chrono::duration<double> duration;
@@ -63,11 +27,14 @@ int main() {
   LightList lights(_get_lights_from_io(scene->lights));
   ObjectList prims(_get_primitives_from_io(scene->objects));
 
-  prims.addObject(std::make_shared<Sphere>(vec3(1.02, -0.36, -1.13), 1.0f,
-                                            std::make_shared<CheckerMaterial>(10.f)));
+  prims.addObject(std::make_shared<Sphere>(
+      vec3(1.02, -0.36, -1.13), 1.0f, std::make_shared<CheckerMaterial>(10.f)));
+
+  prims.addObject(std::make_shared<Sphere>(
+      vec3(1.5, -0.36, -1.13), 1.0f,
+      std::make_shared<LambertianMaterial>("../unit_test/earth.png")));
 
   BVHNode bvh(prims);
-
 
   uint width = 400, height = 400;
   FrameBuffer fb(width, height, 3, 4, 4);
@@ -102,6 +69,95 @@ int main() {
   }
 
   // fb.gaussianBlur(3, 1.0f);
+  fb.writeToFile("../custom_test.png", 1.0f);
+
+  end = std::chrono::system_clock::now();
+  duration = end - start;
+  std::cout << duration.count() << " seconds" << std::endl;
+#endif
+
+#ifdef CHECKER_TEST
+  CheckerTexture checker(200.f);
+  FrameBuffer fb(1000, 1000, 3);
+  for (int i = 0; i < 1000; i++) {
+    for (int j = 0; j < 1000; j++) {
+      fb.setPixelColor(j, i, checker.getTexelColor(i / 1000.f, j / 1000.f));
+    }
+  }
+  fb.writeToFile("../checker_test.png");
+#endif
+
+#ifdef TEXTURE_TEST
+  ImageTexture tex("../results/scene1.png");
+  FrameBuffer fb(1000, 1000, 3);
+  for (int i = 0; i < 1000; i++) {
+    for (int j = 0; j < 1000; j++) {
+      fb.setPixelColor(j, i, tex.getTexelColor(i / 1000.f, j / 1000.f));
+    }
+  }
+  fb.writeToFile("../texture_test.png");
+#endif
+
+#ifdef SPHERE_TEST
+  auto hit_record = std::make_shared<HitRecord>();
+  gl::vec3 center(0.f);
+  hit_record->position = gl::vec3(0.f, 0.f, -1.f);
+  auto p = (hit_record->position - center).normalize();
+
+  auto phi = atan2(p.z(), p.x());
+  auto theta = asin(p.y());
+  hit_record->texCoords =
+      gl::vec2(1 - (phi + M_PI) / (2 * M_PI), (theta + M_PI / 2) / M_PI);
+
+  std::cout << hit_record->texCoords << std::endl;
+#endif
+
+#ifdef BVH_TEST
+  // this test code is used to debug the minimalist BVH function
+  using namespace gl;
+  std::chrono::time_point<std::chrono::system_clock> start, end;
+  std::chrono::duration<double> duration;
+  start = std::chrono::system_clock::now();
+
+  std::string name = "../Scenes_2/test3.ascii";
+  auto scene = readScene(name.c_str());
+  auto camera = PerspectiveCamera(scene->camera, 1, F_STOP);
+  LightList lights(_get_lights_from_io(scene->lights));
+  ObjectList prims(_get_primitives_from_io(scene->objects));
+  BVHNode bvh(prims);
+
+  uint width = 400, height = 400;
+  FrameBuffer fb(width, height, 3, 2, 2);
+  auto offsets = fb.getOffsets();
+  uint counter = 0;
+
+#pragma omp parallel for
+  {
+    for (int i = 0; i < 400; i++) {
+      std::cout << "Now scanning " << (float(counter) / width) * 100.f << " %"
+                << std::endl;
+
+      for (int j = 0; j < 400; j++) {
+        auto color = vec3(0.0);
+        for (int k = 0; k < fb.getSampleCount(); k++) {
+          auto sample_color = vec3(0.0);
+          vec2 uv = (vec2(i, j) + offsets[k]) / vec2(width, height);
+          Ray ray = camera.generateRay(uv.u(), uv.v());
+          color += getRayColor(ray, prims, bvh, 5u, lights);
+        }
+
+// implicit barrier at this section
+#pragma omp critical
+        {
+          color /= fb.getSampleCount();
+          fb.setPixelColor(j, i, color);
+        }
+      }
+
+      counter++;
+    }
+  }
+
   fb.writeToFile("../custom_test.png", 1.0f);
 
   end = std::chrono::system_clock::now();

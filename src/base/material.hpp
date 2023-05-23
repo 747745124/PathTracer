@@ -87,6 +87,28 @@ private:
   std::shared_ptr<CheckerTexture> _texture;
 };
 
+struct LambertianMaterial : public CustomMaterial {
+  LambertianMaterial() = default;
+
+  LambertianMaterial(const std::string&filepath) {
+    this->_texture = std::make_shared<ImageTexture>(filepath);
+  }
+
+  std::shared_ptr<CustomMaterial> getMaterial(float u, float v) override {
+    auto material = std::make_shared<CustomMaterial>();
+    material->diff_color = this->_texture->getTexelColor(u, v);
+    return material;
+  }
+
+  std::shared_ptr<CustomMaterial> getMaterial(gl::vec2 uv) override {
+    return getMaterial(uv.u(), uv.v());
+  }
+
+private:
+  // only one image texture here
+  std::shared_ptr<ImageTexture> _texture;
+};
+
 struct PhongMaterial {
   gl::vec3 albedo = gl::vec3(0.4f);
   float ka = 0.4f;
