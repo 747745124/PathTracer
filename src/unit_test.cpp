@@ -7,11 +7,11 @@
 // #define OBJECT_LIST
 // #define RECURSIVE_TEST
 // #define SIMD_TEST
-#define BVH_TEST
 // #define SPHERE_TEST
 // #define TEXTURE_TEST
 // #define CHECKER_TEST
 // #define SHADER_TEST
+#define BVH_TEST
 #define F_STOP 1000.f
 
 int main() {
@@ -119,7 +119,7 @@ int main() {
   std::chrono::duration<double> duration;
   start = std::chrono::system_clock::now();
 
-  std::string name = "../Scenes_2/test3.ascii";
+  std::string name = "./Scenes/test2.ascii";
   auto scene = readScene(name.c_str());
   auto camera = PerspectiveCamera(scene->camera, 1, F_STOP);
   LightList lights(_get_lights_from_io(scene->lights));

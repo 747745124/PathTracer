@@ -33,6 +33,7 @@ public:
   // prepare for motion blur (not required tho)
   // all objects static for now
   virtual AABB getAABB(float t0, float t1) = 0;
+  virtual void setIntersectionShader(){};
   ObjType objtype;
 };
 
@@ -115,7 +116,8 @@ public:
         {this->v0.position.y(), this->v1.position.y(), this->v2.position.y()});
     auto max_z = std::max(
         {this->v0.position.z(), this->v1.position.z(), this->v2.position.z()});
-    return AABB(gl::vec3(min_x-1e3, min_y-1e3, min_z-1e3), gl::vec3(max_x, max_y, max_z));
+    return AABB(gl::vec3(min_x - 1e3, min_y - 1e3, min_z - 1e3),
+                gl::vec3(max_x, max_y, max_z));
   }
 
   Triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2)

@@ -19,10 +19,10 @@ poly_set {
   numMaterials 1
   material {
     diffColor 0.8 0.5 0.2
-    ambColor 0.2 0.2 0.2
-    specColor 0 0 0
+    ambColor 0.6 0.6 0.6
+    specColor 0.3 0.3 0.3
     emisColor 0 0 0
-    shininess 0.2
+    shininess 0.8
     ktran 0
   }
   type POLYSET_TRI_MESH
@@ -3808,8 +3808,8 @@ poly_set {
   numMaterials 1
   material {
     diffColor 0.15 0.3 0.2
-    ambColor 0.07 0.07 0.07
-    specColor 0.22449 0.22449 0.22449
+    ambColor 0.57 0.57 0.57
+    specColor 0.32449 0.32449 0.32449
     emisColor 0 0 0
     shininess 0.867347
     ktran 0
