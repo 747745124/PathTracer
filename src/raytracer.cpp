@@ -7,13 +7,13 @@
 #define SPP_X 2
 #define SPP_Y 2
 #define MAX_DEPTH 5
-#define GAMMA 1.5f
+#define GAMMA 1.0f
 #define GL_SIMD
 #define F_STOP 1000.f
 
 using uchar = unsigned char;
-const char *output_file = "./scene5.png";
-const char *input_file = "./Scenes/test5.ascii";
+const char *output_file = "./scene.png";
+const char *input_file = "./Scenes_HW2/test1.ascii";
 
 SceneIO *scene = nullptr;
 std::unique_ptr<PerspectiveCamera> camera = nullptr;
@@ -27,6 +27,9 @@ static void loadScene(const char *name) {
       scene->camera, (float)IMAGE_WIDTH / (float)IMAGE_HEIGHT, F_STOP));
   lights = LightList(_get_lights_from_io(scene->lights));
   prims = ObjectList(_get_primitives_from_io(scene->objects));
+  //set the intersection mode of the ball
+//   prims[0]->setIntersectionMode(IntersectionMode::CUSTOM);
+
   bvh = BVHNode(prims);
   return;
 }

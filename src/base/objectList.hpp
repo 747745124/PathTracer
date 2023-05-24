@@ -68,6 +68,10 @@ public:
 
     return hit_list;
   }
+  
+  std::shared_ptr<Hittable> operator[](int index) const {
+    return this->objects[index];
+  };
 
 private:
   std::vector<std::shared_ptr<Hittable>> objects;

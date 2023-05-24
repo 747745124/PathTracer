@@ -9,6 +9,8 @@
 
 using Materials = std::vector<std::shared_ptr<CustomMaterial>>;
 
+enum class IntersectionMode { DEFAULT, CUSTOM };
+
 struct HitRecord {
 public:
   float t;
@@ -33,8 +35,11 @@ public:
   // prepare for motion blur (not required tho)
   // all objects static for now
   virtual AABB getAABB(float t0, float t1) = 0;
-  virtual void setIntersectionShader(){};
+  virtual void setIntersectionMode(IntersectionMode mode) {
+    this->intersection_mode = mode;
+  };
   ObjType objtype;
+  IntersectionMode intersection_mode = IntersectionMode::DEFAULT;
 };
 
 class Sphere : public Hittable {
@@ -60,6 +65,7 @@ public:
 
   std::shared_ptr<HitRecord> intersect(const Ray &ray, float tmin = 0.0,
                                        float tmax = 10000.f) const override {
+
     auto ray_dir = ray.getDirection().normalize();
     auto ray_origin = ray.getOrigin();
     auto oc = ray_origin - this->center;
@@ -68,18 +74,19 @@ public:
     auto c = dot(oc, oc) - this->radius * this->radius;
     auto discriminant = b * b - 4 * a * c;
 
-    if (discriminant < 0) {
+    if (discriminant < 0)
       return nullptr;
-    } else {
-      auto delta = sqrtf(discriminant);
-      auto t = (-b - delta) / (2 * a);
+    auto delta = sqrtf(discriminant);
+    auto t = (-b - delta) / (2 * a);
+    if (t < tmin || t > tmax) {
+      t = (-b + delta) / (2 * a);
       if (t < tmin || t > tmax) {
-        t = (-b + delta) / (2 * a);
-        if (t < tmin || t > tmax) {
-          return nullptr;
-        }
+        return nullptr;
       }
+    }
 
+    switch (this->intersection_mode) {
+    case IntersectionMode::DEFAULT: {
       auto hit_record = std::make_shared<HitRecord>();
       hit_record->t = t;
       hit_record->position = ray_origin + t * ray_dir;
@@ -96,6 +103,35 @@ public:
           fmodf(hit_record->texCoords.u() + 0.75f, 1.0f);
       hit_record->material = this->material->getMaterial(hit_record->texCoords);
       return hit_record;
+    }
+
+    // an checkerboard pattern
+    case IntersectionMode::CUSTOM: {
+      auto hit_record = std::make_shared<HitRecord>();
+      hit_record->t = t;
+      hit_record->position = ray_origin + t * ray_dir;
+      hit_record->set_normal(ray,
+                             (hit_record->position - this->center).normalize());
+      // calculate the uv coords of a sphere
+      auto p = (hit_record->position - this->center).normalize();
+      auto phi = atan2(p.z(), p.x());
+      auto theta = asin(p.y());
+      hit_record->texCoords =
+          gl::vec2(1 - (phi + M_PI) / (2 * M_PI), (theta + M_PI / 2) / M_PI);
+      // remap the uv coords, so that (0,0,1) is (0,0.5)
+      hit_record->texCoords.u() =
+          fmodf(hit_record->texCoords.u() + 0.75f, 1.0f);
+      hit_record->material = this->material->getMaterial(hit_record->texCoords);
+
+      if ((int)(hit_record->texCoords.u() * 10) % 2 ==
+          (int)(hit_record->texCoords.v() * 10) % 2)
+        hit_record = nullptr;
+
+      return hit_record;
+    }
+    default: {
+      throw std::runtime_error("Invalid intersection mode");
+    }
     }
   };
 };
@@ -158,19 +194,32 @@ public:
       return nullptr;
 
     auto t = f * dot(edge2, q);
-    if (t > tmin && t < tmax) {
-      auto hit_record = std::make_shared<HitRecord>();
-      hit_record->t = t;
-      hit_record->position = ray_origin + t * ray_dir;
 
-      auto hit_point = barycentric_lerp(v0, v1, v2, gl::vec2(u, v));
-      hit_record->texCoords = hit_point.texCoords;
-      hit_record->set_normal(ray, hit_point.normal);
-      hit_record->material =
-          hit_point.material->getMaterial(hit_record->texCoords);
-      return hit_record;
-    } else
+    switch (this->intersection_mode) {
+    case IntersectionMode::DEFAULT: {
+
+      if (t > tmin && t < tmax) {
+        auto hit_record = std::make_shared<HitRecord>();
+        hit_record->t = t;
+        hit_record->position = ray_origin + t * ray_dir;
+
+        auto hit_point = barycentric_lerp(v0, v1, v2, gl::vec2(u, v));
+        hit_record->texCoords = hit_point.texCoords;
+        hit_record->set_normal(ray, hit_point.normal);
+        hit_record->material =
+            hit_point.material->getMaterial(hit_record->texCoords);
+        return hit_record;
+      } else
+        return nullptr;
+    } break;
+    case IntersectionMode::CUSTOM: {
+      std::cout << "Custom intersection mode not implemented yet" << std::endl;
       return nullptr;
+    } break;
+    default: {
+      throw std::runtime_error("Invalid intersection mode");
+    }
+    };
   };
 };
 
