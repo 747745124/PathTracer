@@ -101,7 +101,10 @@ public:
       // remap the uv coords, so that (0,0,1) is (0,0.5)
       hit_record->texCoords.u() =
           fmodf(hit_record->texCoords.u() + 0.75f, 1.0f);
-      hit_record->material = this->material->getMaterial(hit_record->texCoords);
+      hit_record->material =
+          this->material == nullptr
+              ? std::make_shared<CustomMaterial>()
+              : this->material->getMaterial(hit_record->texCoords);
       return hit_record;
     }
 
@@ -121,7 +124,10 @@ public:
       // remap the uv coords, so that (0,0,1) is (0,0.5)
       hit_record->texCoords.u() =
           fmodf(hit_record->texCoords.u() + 0.75f, 1.0f);
-      hit_record->material = this->material->getMaterial(hit_record->texCoords);
+      hit_record->material =
+          this->material == nullptr
+              ? std::make_shared<CustomMaterial>()
+              : this->material->getMaterial(hit_record->texCoords);
 
       if ((int)(hit_record->texCoords.u() * 10) % 2 ==
           (int)(hit_record->texCoords.v() * 10) % 2)
@@ -207,7 +213,9 @@ public:
         hit_record->texCoords = hit_point.texCoords;
         hit_record->set_normal(ray, hit_point.normal);
         hit_record->material =
-            hit_point.material->getMaterial(hit_record->texCoords);
+            hit_point.material == nullptr
+                ? std::make_shared<CustomMaterial>()
+                : hit_point.material->getMaterial(hit_record->texCoords);
         return hit_record;
       } else
         return nullptr;

@@ -138,7 +138,8 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
              getRayColor(out_reflect, prims, max_depth - 1, lights);
   }
 
-  return color + local_ambient + local_diff + local_spec;
+  return color + local_ambient + local_diff + local_spec +
+         material->emissive_color;
 }
 
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
@@ -153,7 +154,6 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     return vec3(0.0f, 0.0f, 0.0f);
 
   auto hit_record = bvh.intersect(ray);
-//   auto hit_record = prims.hit(ray);
 
   // background color
   if (hit_record == nullptr)
@@ -188,24 +188,9 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     // Shadow ray factor
     vec3 Si(1.0f);
     // Get the hitlist of the shadow ray
-    auto hit_list = prims.hit_list(shadow_ray);
-    if (hit_list.size() != 0) {
-      for (const auto hit : hit_list) {
-        if (material->ktran != 0.f) {
-          // if the shadow ray hits a transparent surface, attenuate the light
-          // find the largest channel of the diffuse color, divide by it
-          auto normalized_diff = material->diff_color /
-                                 std::max(std::max(material->diff_color.x(),
-                                                   material->diff_color.y()),
-                                          material->diff_color.z());
-          Si = (material->ktran) * normalized_diff * Si;
-        } else {
-          // if the shadow ray hits a non-transparent surface, just return black
-          Si *= 0.0f;
-          break;
-        }
-      }
-    }
+    auto shadow_hit_record = bvh.intersect(shadow_ray);
+    if (shadow_hit_record != nullptr)
+      Si = vec3(0.0f, 0.0f, 0.0f);
 
     auto NoL = std::max(0.f, gl::dot(normal, light_dir));
     auto diffuse = material->diff_color * NoL;
@@ -274,5 +259,6 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
              getRayColor(out_reflect, prims, bvh, max_depth - 1, lights);
   }
 
-  return color + local_ambient + local_diff + local_spec;
+  return color + local_ambient + local_diff + local_spec +
+         material->emissive_color;
 }

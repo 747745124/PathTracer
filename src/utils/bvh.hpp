@@ -60,6 +60,9 @@ inline BVHNode::BVHNode(ObjectList &object_list, uint i, uint j, float t0,
            p2->getAABB(t0, t1).get_min()[axis_index];
   };
 
+  auto comparator =
+      std::bind(compare, std::placeholders::_1, std::placeholders::_2, axis);
+
   // single element
   if (j - i == 1) {
     this->left = list_copy[i];
@@ -77,10 +80,7 @@ inline BVHNode::BVHNode(ObjectList &object_list, uint i, uint j, float t0,
 
     // 3 elements, sort and divide
   } else {
-    std::sort(list_copy.begin() + i, list_copy.begin() + j,
-              [&](std::shared_ptr<Hittable> p1, std::shared_ptr<Hittable> p2) {
-                return compare(p1, p2, axis);
-              });
+    std::sort(list_copy.begin() + i, list_copy.begin() + j, comparator);
 
     uint mid = i + (j - i) / 2;
     this->left = std::make_shared<BVHNode>(in_list, i, mid, t0, t1);

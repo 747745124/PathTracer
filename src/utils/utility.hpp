@@ -216,12 +216,12 @@ static inline vec2 circle_random_vec(float r = 1.f) {
 
 static inline vec3 sphere_random_vec(float r = 1.f) {
   auto p = vec3(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
-  
-  while(p.length() >= 1.f) {
+
+  while (p.length() >= 1.f) {
     p = vec3(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
   }
-  
-  return p;
+
+  return p * r;
 }
 
 // biliner interpolation

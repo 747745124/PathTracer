@@ -56,24 +56,23 @@ struct CustomMaterial {
   ~CustomMaterial() = default;
 };
 
-struct CheckerMaterial : public CustomMaterial {
-  CheckerMaterial() = default;
-
-  CheckerMaterial(gl::vec3 color1, gl::vec3 color2, float scale) {
+struct CheckerReflector : public CustomMaterial {
+  CheckerReflector(gl::vec3 color1, gl::vec3 color2, float scale) {
     this->_texture = std::make_shared<CheckerTexture>(color1, color2, scale);
   }
 
-  CheckerMaterial(float scale) {
+  CheckerReflector(float scale = 20.f) {
     this->_texture = std::make_shared<CheckerTexture>(scale);
   }
 
+  // checker reflector
   std::shared_ptr<CustomMaterial> getMaterial(float u, float v) override {
     auto material = std::make_shared<CustomMaterial>();
     if (this->_texture->getTexelColor(u, v) == gl::vec3(0.0f, 0.0f, 0.0f)) {
-      material->diff_color = gl::vec3(0.2f, 0.2f, 0.2f);
+      material->diff_color = gl::vec3(0.1f, 0.1f, 0.1f);
+      material->spec_color = gl::vec3(0.5f, 0.4f, 0.5f);
     } else {
-      material->diff_color = gl::vec3(0.2f, 0.2f, 0.2f);
-      material->spec_color = gl::vec3(1.0f, 1.0f, 1.0f);
+      material->diff_color = gl::vec3(1.f, 1.f, 1.f);
     }
     return material;
   }
@@ -90,7 +89,7 @@ private:
 struct LambertianMaterial : public CustomMaterial {
   LambertianMaterial() = default;
 
-  LambertianMaterial(const std::string&filepath) {
+  LambertianMaterial(const std::string &filepath) {
     this->_texture = std::make_shared<ImageTexture>(filepath);
   }
 
@@ -109,13 +108,33 @@ private:
   std::shared_ptr<ImageTexture> _texture;
 };
 
-struct PhongMaterial {
-  gl::vec3 albedo = gl::vec3(0.4f);
-  float ka = 0.4f;
-  gl::vec3 kd = gl::vec3(0.2f);
-  gl::vec3 ks = gl::vec3(0.6f);
-  float shininess = 32.f;
+struct PhongMaterial : public CustomMaterial {
   PhongMaterial() = default;
+  PhongMaterial(std::vector<std::string> &filepaths) {
+    this->_albedo = std::make_shared<ImageTexture>(filepaths[0]);
+    this->_specular = std::make_shared<ImageTexture>(filepaths[1]);
+    this->_ambient = std::make_shared<ImageTexture>(filepaths[2]);
+  }
+
+  std::shared_ptr<CustomMaterial> getMaterial(float u, float v) override {
+    auto material = std::make_shared<CustomMaterial>();
+    material->diff_color = this->_albedo->getTexelColor(u, v);
+    material->spec_color = this->_specular->getTexelColor(u, v);
+    material->ambient_color = this->_ambient->getTexelColor(u, v).x();
+    material->shininess = 0.2f;
+    material->ktran = this->ktran;
+    material->emissive_color = this->emissive_color;
+    return material;
+  }
+
+  std::shared_ptr<CustomMaterial> getMaterial(gl::vec2 uv) override {
+    return getMaterial(uv.u(), uv.v());
+  }
+
+private:
+  std::shared_ptr<ImageTexture> _albedo;
+  std::shared_ptr<ImageTexture> _specular;
+  std::shared_ptr<ImageTexture> _ambient;
 };
 
 struct PBRMaterial {
