@@ -5,7 +5,7 @@
 #include "./primitive.hpp"
 #include "utils/aabb.hpp"
 // a manager for hittable objects
-class ObjectList {
+class ObjectList : public Hittable {
 public:
   ObjectList() = default;
   ~ObjectList() = default;
@@ -22,7 +22,7 @@ public:
     }
   };
 
-  AABB getAABB(float t0, float t1) const;
+  AABB getAABB(float t0, float t1) override;
 
   void addObject(std::shared_ptr<Hittable> object) {
     this->objects.push_back(object);
@@ -33,42 +33,47 @@ public:
   };
 
   // this determins the closest object that the ray hits
-  std::shared_ptr<HitRecord> hit(const Ray &ray, float tmin = 0.0001,
-                                 float tmax = 10000.f) const {
+  bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0001,
+                 float tmax = 10000.f) const override {
 
-    std::shared_ptr<HitRecord> hit_record = nullptr;
     float closest_point = tmax;
+    bool any_hit = false;
+    HitRecord temp_hit_record;
+
     for (auto &object : this->objects) {
-      auto temp_hit_record = object->intersect(ray, tmin, closest_point);
-      if (temp_hit_record != nullptr) {
-        closest_point = temp_hit_record->t;
+      bool is_hit =
+          object->intersect(ray, temp_hit_record,tmin, closest_point);
+      if (is_hit) {
+        closest_point = temp_hit_record.t;
         hit_record = temp_hit_record;
+        any_hit = true;
       }
     }
 
-    return hit_record;
+    return any_hit;
   }
 
   // this determins the list of hit object, used for handling transparent
   // objects shadow ray
-  std::vector<std::shared_ptr<HitRecord>>
-  hit_list(const Ray &ray, float tmin = 0.01f, float tmax = 10000.f) const {
-    std::vector<std::shared_ptr<HitRecord>> hit_list;
+  std::vector<HitRecord> hit_list(const Ray &ray, float tmin = 0.01f,
+                                  float tmax = 10000.f) const {
+    std::vector<HitRecord> hit_list;
     for (auto &object : this->objects) {
-      auto hit_record = object->intersect(ray, tmin, tmax);
+      HitRecord hit_record;
+      bool is_hit = object->intersect(ray, hit_record,tmin, tmax);
       // if there is a hit
-      if (hit_record != nullptr) {
+      if (is_hit) {
         hit_list.push_back(hit_record);
       }
     }
 
     // sort the hit list by t
     std::sort(hit_list.begin(), hit_list.end(),
-              [](const auto &a, const auto &b) { return a->t < b->t; });
+              [](const auto &a, const auto &b) { return a.t < b.t; });
 
     return hit_list;
   }
-  
+
   std::shared_ptr<Hittable> operator[](int index) const {
     return this->objects[index];
   };

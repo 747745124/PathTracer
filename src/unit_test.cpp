@@ -11,10 +11,69 @@
 // #define TEXTURE_TEST
 // #define CHECKER_TEST
 // #define SHADER_TEST
-#define BVH_TEST
-#define F_STOP 1000.f
+// #define BVH_TEST
+// #define F_STOP 1000.f
+#define DIFFUSE
 
 int main() {
+#ifdef DIFFUSE
+  using namespace gl;
+  uint width = 800, height = 600;
+  FrameBuffer fb(width, height, 3, 4, 4);
+  auto offsets = fb.getOffsets();
+  uint counter = 0;
+
+  PerspectiveCamera camera(
+      gl::to_radian(90.f), (float)(width) / (float)(height), 1.f, 40.f,
+      vec3(0, 1, 0), vec3(0.f, 0.f, -1.f), vec3(0.f, 0.f, 0.f));
+
+  ObjectList prims;
+  LightList lights;
+  auto mat_1 = std::make_shared<Lambertian>(vec3(0.1, 0.2, 0.5));
+  auto mat_2 = std::make_shared<Dielectric>(1.5f);
+  auto mat_3 = std::make_shared<Mirror>(vec3(0.8, 0.6, 0.2), 0.0f);
+  auto mat_4 = std::make_shared<Lambertian>(vec3(0.8, 0.8, 0.0));
+
+  prims.addObject(std::make_shared<Sphere>(vec3(0.0, 0.0, -1.0), 0.5f, mat_1));
+  prims.addObject(std::make_shared<Sphere>(vec3(-1.0, 0.0, -1.0), 0.5f, mat_2));
+  prims.addObject(std::make_shared<Sphere>(vec3(1.0, 0.0, -1.0), 0.5f, mat_3));
+  prims.addObject(std::make_shared<Sphere>(vec3(0, -100.5, -1), 100.f, mat_4));
+  auto bvh = std::make_shared<BVHNode>(prims);
+
+  std::chrono::time_point<std::chrono::system_clock> start, end;
+  std::chrono::duration<double> duration;
+  start = std::chrono::system_clock::now();
+
+#pragma omp parallel for
+  {
+    for (int i = 0; i < width; i++) {
+      std::cout << "Now scanning " << (float(counter) / width) * 100.f << " %"
+                << std::endl;
+
+      for (int j = 0; j < height; j++) {
+        auto color = vec3(0.0);
+        for (int k = 0; k < fb.getSampleCount(); k++) {
+          auto sample_color = vec3(0.0);
+          vec2 uv = (vec2(i, j) + offsets[k]) / vec2(width, height);
+          Ray ray = camera.generateRay(uv.u(), uv.v());
+          color += getRayColor(ray, prims, lights, bvh);
+        }
+
+        {
+          color /= fb.getSampleCount();
+          fb.setPixelColor(j, i, color);
+        }
+      }
+
+      counter++;
+    }
+  }
+
+  fb.writeToFile("../custom_test.png", 1.5f);
+  end = std::chrono::system_clock::now();
+  duration = end - start;
+  std::cout << duration.count() << " seconds" << std::endl;
+#endif
 #ifdef SHADER_TEST
   using namespace gl;
   std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -143,7 +202,7 @@ int main() {
           auto sample_color = vec3(0.0);
           vec2 uv = (vec2(i, j) + offsets[k]) / vec2(width, height);
           Ray ray = camera.generateRay(uv.u(), uv.v());
-          color += getRayColor(ray, prims,bvh, 5u, lights);
+          color += getRayColor(ray, prims, bvh, 5u, lights);
         }
 
 // implicit barrier at this section

@@ -13,35 +13,29 @@ public:
   BVHNode(ObjectList &object_list, float t0 = 0.0f, float t1 = 1.0f)
       : BVHNode(object_list, 0, object_list.getLists().size(), t0, t1){};
 
-  std::shared_ptr<HitRecord> intersect(const Ray &ray, float tmin,
-                                       float tmax) const override;
+  bool intersect(const Ray &ray, HitRecord &hit_record, float tmin,
+                 float tmax) const override;
 
   AABB getAABB(float t0, float t1) override { return this->box; };
+
+private:
+  // compute on construction
   AABB box;
   std::shared_ptr<Hittable> left;
   std::shared_ptr<Hittable> right;
 };
 
-inline std::shared_ptr<HitRecord> BVHNode::intersect(const Ray &ray,
-                                                     float tmin = 0.0001,
-                                                     float tmax = 1e5) const {
+inline bool BVHNode::intersect(const Ray &ray, HitRecord &hit_record,
+                               float tmin = 0.0001, float tmax = 1e5) const {
   if (!this->box.intersect(ray, tmin, tmax)) {
-    return nullptr;
+    return false;
   }
 
-  auto left_hit = this->left->intersect(ray, tmin, tmax);
-  auto right_hit = left_hit == nullptr
-                       ? this->right->intersect(ray, tmin, tmax)
-                       : this->right->intersect(ray, tmin, left_hit->t);
+  auto left_hit = this->left->intersect(ray, hit_record, tmin, tmax);
+  auto right_hit = this->right->intersect(ray, hit_record, tmin,
+                                          left_hit ? hit_record.t : tmax);
 
-  if (left_hit == nullptr && right_hit == nullptr)
-    return nullptr;
-  if (left_hit == nullptr)
-    return right_hit;
-  if (right_hit == nullptr)
-    return left_hit;
-
-  return right_hit;
+  return left_hit || right_hit;
 };
 
 // randomly choose an axis

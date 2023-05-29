@@ -3,6 +3,8 @@
 #include "./matrix.hpp"
 // class of axis-aligned bounding box
 class AABB {
+
+private:
   gl::vec3 min_xyz, max_xyz;
 
 public:

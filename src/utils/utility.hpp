@@ -214,14 +214,28 @@ static inline vec2 circle_random_vec(float r = 1.f) {
   return p;
 }
 
+// a cos(theta)^3 distribution, all points are within the sphere
 static inline vec3 sphere_random_vec(float r = 1.f) {
   auto p = vec3(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
+  p.normalized();
+  return p * C_rand(-r, r);
+}
 
-  while (p.length() >= 1.f) {
-    p = vec3(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
-  }
-
+// a cos(theta) distribution, all points are on the surface of the sphere
+static inline vec3 on_sphere_random_vec(float r = 1.f) {
+  auto p = vec3(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
+  p.normalized();
   return p * r;
+}
+
+// alternative distribution, hemisphere cos(theta) distribution
+static inline vec3 on_hemisphere_random_vec(const vec3 &normal, float r = 1.f) {
+  auto p = vec3(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
+  p.normalized();
+  if (dot(p, normal) < 0) {
+    p = -p;
+  }
+  return p;
 }
 
 // biliner interpolation

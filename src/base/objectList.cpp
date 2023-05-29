@@ -1,6 +1,6 @@
 #include "./objectList.hpp"
 
-AABB ObjectList::getAABB(float t0, float t1) const {
+AABB ObjectList::getAABB(float t0, float t1) {
   AABB aabb;
   bool is_first = true;
   for (const auto &object : this->objects) {
