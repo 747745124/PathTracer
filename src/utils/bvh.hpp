@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstdlib>
 
+
 class BVHNode : public Hittable {
 public:
   BVHNode() = default;
@@ -18,7 +19,6 @@ public:
 
   AABB getAABB(float t0, float t1) override { return this->box; };
 
-private:
   // compute on construction
   AABB box;
   std::shared_ptr<Hittable> left;
@@ -27,6 +27,7 @@ private:
 
 inline bool BVHNode::intersect(const Ray &ray, HitRecord &hit_record,
                                float tmin = 0.0001, float tmax = 1e5) const {
+
   if (!this->box.intersect(ray, tmin, tmax)) {
     return false;
   }
@@ -85,3 +86,54 @@ inline BVHNode::BVHNode(ObjectList &object_list, uint i, uint j, float t0,
       AABB::merge(this->left->getAABB(t0, t1), this->right->getAABB(t0, t1));
   this->objtype = ObjType::BVH_OBJ;
 };
+
+inline void print_BVH(std::shared_ptr<BVHNode> root) {
+  std::vector<std::shared_ptr<Hittable>> curr, next;
+  curr.push_back(root);
+
+  while (!curr.empty()) {
+    for (auto &node : curr) {
+      if (node->objtype == ObjType::BVH_OBJ)
+        std::cout << "1 ";
+      else
+        std::cout << "0 ";
+    }
+
+    std::cout << std::endl;
+
+    for (auto &node : curr) {
+      if (node->objtype == ObjType::BVH_OBJ) {
+        next.push_back(std::dynamic_pointer_cast<BVHNode>(node)->left);
+        next.push_back(std::dynamic_pointer_cast<BVHNode>(node)->right);
+      }
+    }
+    curr = next;
+    next.clear();
+  }
+}
+
+inline void printBT(const std::string &prefix, std::shared_ptr<Hittable> node,
+                    bool isLeft) {
+  if (node != nullptr) {
+    std::cout << prefix;
+
+    std::cout << (isLeft ? "├──" : "└──");
+
+    // print the value of the node
+    std::cout << "1" << std::endl;
+
+    if (node->objtype == ObjType::BVH_OBJ) {
+      bool is_dup = false;
+      if (std::dynamic_pointer_cast<BVHNode>(node)->left ==
+          std::dynamic_pointer_cast<BVHNode>(node)->right)
+        is_dup = true;
+      printBT(prefix + (isLeft ? "│   " : "    "),
+              std::dynamic_pointer_cast<BVHNode>(node)->left, true);
+      if (!is_dup)
+        printBT(prefix + (isLeft ? "│   " : "    "),
+                std::dynamic_pointer_cast<BVHNode>(node)->right, false);
+    }
+  }
+}
+
+void printBT(std::shared_ptr<Hittable> node) { printBT("", node, false); }

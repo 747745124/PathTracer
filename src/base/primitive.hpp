@@ -8,8 +8,9 @@
 #include <memory>
 
 using Materials = std::vector<std::shared_ptr<Material>>;
-
 enum class IntersectionMode { DEFAULT, CUSTOM };
+
+extern int hit_count;
 
 class Hittable : public Object3D {
 public:
@@ -49,7 +50,7 @@ public:
 
   bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0,
                  float tmax = 10000.f) const override {
-
+    hit_count++;
     auto ray_dir = ray.getDirection().normalize();
     auto ray_origin = ray.getOrigin();
     auto oc = ray_origin - this->center;
@@ -83,9 +84,8 @@ public:
           gl::vec2(1 - (phi + M_PI) / (2 * M_PI), (theta + M_PI / 2) / M_PI);
       // remap the uv coords, so that (0,0,1) is (0,0.5)
       hit_record.texCoords.u() = fmodf(hit_record.texCoords.u() + 0.75f, 1.0f);
-      hit_record.material = this->material == nullptr
-                                ? std::make_shared<Lambertian>(gl::vec3(1.0f))
-                                : this->material;
+      hit_record.material =
+          this->material == nullptr ? gl::DefaultMaterial : this->material;
       return true;
     }
 
@@ -103,9 +103,8 @@ public:
           gl::vec2(1 - (phi + M_PI) / (2 * M_PI), (theta + M_PI / 2) / M_PI);
       // remap the uv coords, so that (0,0,1) is (0,0.5)
       hit_record.texCoords.u() = fmodf(hit_record.texCoords.u() + 0.75f, 1.0f);
-      hit_record.material = this->material == nullptr
-                                ? std::make_shared<Lambertian>(gl::vec3(1.0f))
-                                : this->material;
+      hit_record.material =
+          this->material == nullptr ? gl::DefaultMaterial : this->material;
 
       if ((int)(hit_record.texCoords.u() * 10) % 2 ==
           (int)(hit_record.texCoords.v() * 10) % 2)
@@ -187,9 +186,8 @@ public:
         hit_record.position = ray_origin + t * ray_dir;
         hit_record.texCoords = gl::vec2(u, v);
         hit_record.set_normal(ray, cross(edge1, edge2).normalize());
-        hit_record.material = v0.material == nullptr
-                                  ? std::make_shared<Lambertian>(gl::vec3(1.0f))
-                                  : v0.material;
+        hit_record.material =
+            v0.material == nullptr ? gl::DefaultMaterial : v0.material;
         // auto hit_point = barycentric_lerp(v0, v1, v2, gl::vec2(u, v));
         // hit_record->texCoords = hit_point.texCoords;
         // hit_record->set_normal(ray, hit_point.normal);

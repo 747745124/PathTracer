@@ -21,7 +21,7 @@ PerspectiveCamera::PerspectiveCamera(float fov, float aspect, float focalDist,
   this->defaultFront = front;
   this->position = position;
 
-  auto lookat = -defaultFront.normalize();
+  auto lookat = -front.normalize();
   this->plane_h_vec = cross(up, lookat).normalize();
   // std::cout<<plane_h_vec<<std::endl;
   this->plane_v_vec = cross(lookat, plane_h_vec).normalize();

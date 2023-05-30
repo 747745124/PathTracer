@@ -196,6 +196,15 @@ static inline float C_rand(float min, float max) {
   // Returns a random real in [min,max).
   return min + (max - min) * C_rand();
 }
+
+static inline gl::vec3 C_rand_vec3() {
+  return gl::vec3(C_rand(), C_rand(), C_rand());
+}
+
+static inline gl::vec3 C_rand_vec3(float min, float max) {
+  return gl::vec3(C_rand(min, max), C_rand(min, max), C_rand(min, max));
+}
+
 // random number from start_point to end_point
 static inline float rand_num(float start_point, float end_point) {
   std::random_device

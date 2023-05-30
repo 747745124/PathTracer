@@ -9,4 +9,5 @@
 #include "./base/texture.hpp"
 #include "./method/whitted.hpp"
 #include "./method/pathtracing.hpp"
+#include "./scene_func/scenes.hpp"
 #include <omp.h>

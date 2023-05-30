@@ -1,4 +1,5 @@
 #include "./primitive.hpp"
+
 // Primitives _get_primitives_from_io(const ObjIO *io) {
 //   if (io == nullptr)
 //     return {};

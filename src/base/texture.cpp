@@ -116,3 +116,12 @@ gl::vec3 CheckerTexture::getTexelColor(float u, float v, LERP_MODE mode) {
     return _color2;
   }
 };
+
+gl::vec3 NoiseTexture::getTexelColor(float u, float v, LERP_MODE mode) {
+
+  // get the texel coordinate
+  float x = u * _scale;
+  float y = v * _scale;
+
+  return gl::fractal_perlin_2D(gl::vec2(x, y), _fractal);
+};

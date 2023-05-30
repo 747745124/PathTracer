@@ -7,7 +7,6 @@
 #define SPP_Y 1
 #define MAX_DEPTH 3
 #define GAMMA 1.0f
-#define GL_SIMD
 #define F_STOP 1000.f
 #define BVH
 

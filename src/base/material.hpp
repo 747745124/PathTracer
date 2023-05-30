@@ -6,6 +6,17 @@
 #include "./base/texture.hpp"
 
 class Material;
+class Lambertian;
+class Mirror;
+class Dielectric;
+
+namespace gl {
+static std::shared_ptr<ConstantTexture> DefaultTexture =
+    std::make_shared<ConstantTexture>(gl::vec3(1.0f));
+static std::shared_ptr<Lambertian> DefaultMaterial =
+    std::make_shared<Lambertian>(DefaultTexture);
+};
+
 
 struct HitRecord {
 public:
@@ -26,16 +37,17 @@ public:
 
 class Material {
 public:
-  virtual bool scatter(const Ray &ray_in, const HitRecord &rec,
-                       gl::vec3 &attenuation, Ray &ray_scattered) const = 0;
+  virtual bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
+                       Ray &ray_scattered) const = 0;
 };
 
 class Lambertian : public Material {
 
 public:
-  Lambertian(const gl::vec3 &a) : albedo(a) {}
+  Lambertian(std::shared_ptr<Texture2D> a) : albedo(a){};
+  Lambertian(const gl::vec3 &a) : albedo(std::make_shared<ConstantTexture>(a)){};
   // scatter the ray with lambertian reflection
-  bool scatter(const Ray &ray_in, const HitRecord &rec, gl::vec3 &attenuation,
+  bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
                Ray &ray_scattered) const override {
     gl::vec3 target = rec.position + gl::on_hemisphere_random_vec(rec.normal);
 
@@ -44,16 +56,16 @@ public:
     }
 
     ray_scattered = Ray(rec.position, target - rec.position);
-    attenuation = albedo;
+    attenuation = albedo->getTexelColor(rec.texCoords.u(), rec.texCoords.v());
     return true;
   }
-  gl::vec3 albedo;
+  std::shared_ptr<Texture2D> albedo;
 };
 
 class Mirror : public Material {
 public:
   Mirror(const gl::vec3 &a, float f = 0.f) : albedo(a) { fuzz = f < 1 ? f : 1; }
-  bool scatter(const Ray &ray_in, const HitRecord &rec, gl::vec3 &attenuation,
+  bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
                Ray &ray_scattered) const override {
     gl::vec3 reflected =
         reflect(ray_in.getDirection().normalize(), rec.normal) +
@@ -72,7 +84,7 @@ public:
   float ior;
   Dielectric(float ior) : ior(ior){};
 
-  bool scatter(const Ray &ray_in, const HitRecord &rec, gl::vec3 &attenuation,
+  bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
                Ray &ray_scattered) const override {
 
     attenuation = gl::vec3(1.0f);

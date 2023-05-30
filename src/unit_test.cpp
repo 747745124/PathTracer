@@ -14,32 +14,24 @@
 // #define BVH_TEST
 // #define F_STOP 1000.f
 #define DIFFUSE
+int hit_count = 0;
 
 int main() {
 #ifdef DIFFUSE
   using namespace gl;
-  uint width = 800, height = 600;
+  uint width = 1200, height = 500;
   FrameBuffer fb(width, height, 3, 4, 4);
   auto offsets = fb.getOffsets();
   uint counter = 0;
 
   PerspectiveCamera camera(
-      gl::to_radian(90.f), (float)(width) / (float)(height), 1.f, 40.f,
-      vec3(0, 1, 0), vec3(0.f, 0.f, -1.f), vec3(0.f, 0.f, 0.f));
+      gl::to_radian(20.f), (float)(width) / (float)(height), 10.f, 40.f,
+      vec3(0, 1, 0), vec3(-13.f, -2.f, -3.f).normalize(), vec3(13.f, 2.f, 3.f));
 
-  ObjectList prims;
+  ObjectList prims = random_scene();
   LightList lights;
-  auto mat_1 = std::make_shared<Lambertian>(vec3(0.1, 0.2, 0.5));
-  auto mat_2 = std::make_shared<Dielectric>(1.5f);
-  auto mat_3 = std::make_shared<Mirror>(vec3(0.8, 0.6, 0.2), 0.0f);
-  auto mat_4 = std::make_shared<Lambertian>(vec3(0.8, 0.8, 0.0));
 
-  prims.addObject(std::make_shared<Sphere>(vec3(0.0, 0.0, -1.0), 0.5f, mat_1));
-  prims.addObject(std::make_shared<Sphere>(vec3(-1.0, 0.0, -1.0), 0.5f, mat_2));
-  prims.addObject(std::make_shared<Sphere>(vec3(1.0, 0.0, -1.0), 0.5f, mat_3));
-  prims.addObject(std::make_shared<Sphere>(vec3(0, -100.5, -1), 100.f, mat_4));
   auto bvh = std::make_shared<BVHNode>(prims);
-
   std::chrono::time_point<std::chrono::system_clock> start, end;
   std::chrono::duration<double> duration;
   start = std::chrono::system_clock::now();
@@ -69,6 +61,7 @@ int main() {
     }
   }
 
+  std::cout << "hit count: " << hit_count << std::endl;
   fb.writeToFile("../custom_test.png", 1.5f);
   end = std::chrono::system_clock::now();
   duration = end - start;
@@ -137,10 +130,11 @@ int main() {
 
 #ifdef CHECKER_TEST
   CheckerTexture checker(200.f);
+  NoiseTexture noise(10.f, 2);
   FrameBuffer fb(1000, 1000, 3);
   for (int i = 0; i < 1000; i++) {
     for (int j = 0; j < 1000; j++) {
-      fb.setPixelColor(j, i, checker.getTexelColor(i / 1000.f, j / 1000.f));
+      fb.setPixelColor(j, i, noise.getTexelColor(i / 1000.f, j / 1000.f));
     }
   }
   fb.writeToFile("../checker_test.png");
