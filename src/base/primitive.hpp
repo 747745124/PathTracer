@@ -1,14 +1,17 @@
 #pragma once
+#include "../utils/aabb.hpp"
 #include "../utils/scene_io.hpp"
+#include "../utils/utility.hpp"
 #include "./material.hpp"
 #include "./object3D.hpp"
 #include "./ray.hpp"
 #include "./vertex.hpp"
-#include "utils/aabb.hpp"
 #include <memory>
 
 using Materials = std::vector<std::shared_ptr<Material>>;
 enum class IntersectionMode { DEFAULT, CUSTOM };
+enum class Axis { X = 0, Y = 1, Z = 2 };
+
 extern int hit_count;
 
 class Hittable : public Object3D {
@@ -118,7 +121,7 @@ public:
   };
 };
 
-class AARectangle : public Hittable {
+template <Axis axis> class AARectangle : public Hittable {
 public:
   float _d0_min, _d0_max, _d1_min, _d1_max, _k;
   std::shared_ptr<Material> material;
@@ -136,175 +139,10 @@ public:
     this->objtype = ObjType::RECTANGLE_OBJ;
   };
 
-  virtual AABB getAABB(float t0, float t1) = 0;
-  virtual bool intersect(const Ray &ray, HitRecord &hit_record,
-                         float tmin = 0.0001, float tmax = 10000.f) const = 0;
-};
-
-// an axis aligned rectangle, based on xy plane and
-// z value
-class XYRectangle : public AARectangle {
-public:
-  XYRectangle(float k, float x0, float x1, float y0, float y1)
-      : AARectangle(k, x0, x1, y0, y1) {
-    this->objtype = ObjType::RECTANGLE_OBJ;
-  };
-
-  XYRectangle(float k, float x0, float x1, float y0, float y1,
-              std::shared_ptr<Material> material)
-      : AARectangle(k, x0, x1, y0, y1, material) {
-    this->objtype = ObjType::RECTANGLE_OBJ;
-  };
-
-  AABB getAABB(float t0, float t1) override {
-    AABB aabb(gl::vec3(this->_d0_min, this->_d1_min, this->_k - 0.001),
-              gl::vec3(this->_d0_max, this->_d1_max, this->_k + 0.001));
-    return aabb;
-  };
+  AABB getAABB(float t0, float t1) override;
 
   bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0001,
-                 float tmax = 10000.f) const override {
-    auto ray_dir = ray.getDirection().normalize();
-    auto ray_origin = ray.getOrigin();
-    auto t = (_k - ray_origin.z()) / ray_dir.z();
-    if (t < tmin || t > tmax)
-      return false;
-
-    auto x = ray_origin.x() + t * ray_dir.x();
-    auto y = ray_origin.y() + t * ray_dir.y();
-    if (x < _d0_min || x > _d0_max || y < _d1_min || y > _d1_max)
-      return false;
-
-    switch (this->intersection_mode) {
-    case IntersectionMode::DEFAULT: {
-      hit_record.t = t;
-      hit_record.position = ray_origin + t * ray_dir;
-      hit_record.set_normal(ray, gl::vec3(0.0f, 0.0f, 1.0f));
-      hit_record.texCoords = gl::vec2((x - _d0_min) / (_d0_max - _d0_min),
-                                      (y - _d1_min) / (_d1_max - _d1_min));
-      hit_record.material =
-          this->material == nullptr ? gl::DefaultMaterial : this->material;
-      return true;
-    } break;
-    case IntersectionMode::CUSTOM: {
-      std::cout << "Custom intersection mode not implemented yet" << std::endl;
-      return false;
-    } break;
-    default: {
-      throw std::runtime_error("Invalid intersection mode");
-    }
-    };
-  };
-};
-
-// an axis aligned rectangle, based on yz plane and
-// x value
-class YZRectangle : public AARectangle {
-public:
-  YZRectangle(float k, float y0, float y1, float z0, float z1)
-      : AARectangle(k, y0, y1, z0, z1) {
-    this->objtype = ObjType::RECTANGLE_OBJ;
-  };
-
-  YZRectangle(float k, float y0, float y1, float z0, float z1,
-              std::shared_ptr<Material> material)
-      : AARectangle(k, y0, y1, z0, z1, material) {
-    this->objtype = ObjType::RECTANGLE_OBJ;
-  };
-
-  AABB getAABB(float t0, float t1) override {
-    AABB aabb(gl::vec3(this->_k - 0.001, this->_d0_min, this->_d1_min),
-              gl::vec3(this->_k + 0.001, this->_d0_max, this->_d1_max));
-    return aabb;
-  };
-
-  bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0001,
-                 float tmax = 10000.f) const override {
-    auto ray_dir = ray.getDirection().normalize();
-    auto ray_origin = ray.getOrigin();
-    auto t = (_k - ray_origin.x()) / ray_dir.x();
-    if (t < tmin || t > tmax)
-      return false;
-
-    auto y = ray_origin.y() + t * ray_dir.y();
-    auto z = ray_origin.z() + t * ray_dir.z();
-    if (y < _d0_min || y > _d0_max || z < _d1_min || z > _d1_max)
-      return false;
-
-    switch (this->intersection_mode) {
-    case IntersectionMode::DEFAULT: {
-      hit_record.t = t;
-      hit_record.position = ray_origin + t * ray_dir;
-      hit_record.set_normal(ray, gl::vec3(1.0f, 0.0f, 0.0f));
-      hit_record.texCoords = gl::vec2((y - _d0_min) / (_d0_max - _d0_min),
-                                      (z - _d1_min) / (_d1_max - _d1_min));
-      hit_record.material =
-          this->material == nullptr ? gl::DefaultMaterial : this->material;
-      return true;
-    } break;
-    case IntersectionMode::CUSTOM: {
-      std::cout << "Custom intersection mode not implemented yet" << std::endl;
-      return false;
-    } break;
-    default: {
-      throw std::runtime_error("Invalid intersection mode");
-    }
-    };
-  };
-};
-
-class XZRectangle : public AARectangle {
-public:
-  XZRectangle(float k, float x0, float x1, float z0, float z1)
-      : AARectangle(k, x0, x1, z0, z1) {
-    this->objtype = ObjType::RECTANGLE_OBJ;
-  };
-
-  XZRectangle(float k, float x0, float x1, float z0, float z1,
-              std::shared_ptr<Material> material)
-      : AARectangle(k, x0, x1, z0, z1, material) {
-    this->objtype = ObjType::RECTANGLE_OBJ;
-  };
-
-  AABB getAABB(float t0, float t1) override {
-    AABB aabb(gl::vec3(this->_d0_min, this->_k - 0.001, this->_d1_min),
-              gl::vec3(this->_d0_max, this->_k + 0.001, this->_d1_max));
-    return aabb;
-  };
-
-  bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0001,
-                 float tmax = 10000.f) const override {
-    auto ray_dir = ray.getDirection().normalize();
-    auto ray_origin = ray.getOrigin();
-    auto t = (_k - ray_origin.y()) / ray_dir.y();
-    if (t < tmin || t > tmax)
-      return false;
-
-    auto x = ray_origin.x() + t * ray_dir.x();
-    auto z = ray_origin.z() + t * ray_dir.z();
-    if (x < _d0_min || x > _d0_max || z < _d1_min || z > _d1_max)
-      return false;
-
-    switch (this->intersection_mode) {
-    case IntersectionMode::DEFAULT: {
-      hit_record.t = t;
-      hit_record.position = ray_origin + t * ray_dir;
-      hit_record.set_normal(ray, gl::vec3(0.0f, 1.0f, 0.0f));
-      hit_record.texCoords = gl::vec2((x - _d0_min) / (_d0_max - _d0_min),
-                                      (z - _d1_min) / (_d1_max - _d1_min));
-      hit_record.material =
-          this->material == nullptr ? gl::DefaultMaterial : this->material;
-      return true;
-    } break;
-    case IntersectionMode::CUSTOM: {
-      std::cout << "Custom intersection mode not implemented yet" << std::endl;
-      return false;
-    } break;
-    default: {
-      throw std::runtime_error("Invalid intersection mode");
-    }
-    };
-  };
+                 float tmax = 10000.f) const override;
 };
 
 class Triangle : public Hittable {

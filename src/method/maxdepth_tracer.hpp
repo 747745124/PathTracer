@@ -2,15 +2,13 @@
 #include "../base/lightList.hpp"
 #include "../base/objectList.hpp"
 #include "../utils/bvh.hpp"
+
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
-                            gl::vec3 bg_color,
+                            gl::vec3 bg_color, uint max_depth = 40,
                             std::shared_ptr<BVHNode> bvh = nullptr) {
   using namespace gl;
 
-  float p = C_rand();
-  float p_threshold = 0.01f;
-
-  if (p < p_threshold)
+  if (max_depth == 0)
     return bg_color;
 
   HitRecord hit_record;
@@ -28,9 +26,8 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   auto mat = hit_record.material;
   if (mat->scatter(ray, hit_record, attenuation, out_ray))
     return (mat->emit(hit_record.texCoords) +
-            attenuation * getRayColor(out_ray, prims, bg_color, bvh)) /
-           (1.0f - p_threshold);
+            attenuation *
+                getRayColor(out_ray, prims, bg_color, max_depth - 1, bvh));
 
-  return mat->emit(hit_record.texCoords) / (1.0f - p_threshold);
+    return mat->emit(hit_record.texCoords);
 };
-

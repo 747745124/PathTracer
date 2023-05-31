@@ -3,6 +3,13 @@
 #include "./transformations.hpp"
 #include <chrono>
 #include <random>
+#include <type_traits>
+
+template <typename E>
+constexpr auto to_underlying(E e) noexcept
+{
+    return static_cast<std::underlying_type_t<E>>(e);
+}
 // This file defines shader utilities and some math functions
 namespace gl {
 static inline float attenuate(float distance) {

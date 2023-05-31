@@ -3,6 +3,8 @@
 #include "../base/material.hpp"
 #include "../base/objectList.hpp"
 #include "../base/primitive.hpp"
+#include "../method/maxdepth_tracer.hpp"
+#include "../method/pathtracing.hpp"
 #include "../utils/bvh.hpp"
 #include "../utils/timeit.hpp"
 

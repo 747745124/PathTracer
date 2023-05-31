@@ -1,5 +1,43 @@
 #pragma once
 #include "./renderManager.hpp"
+SceneInfo cornell_box() {
+  using namespace std;
+  using namespace gl;
+
+  SceneInfo scene;
+  ObjectList objects;
+
+  auto red = make_shared<Lambertian>(vec3(0.65, 0.05, 0.05));
+  auto white = make_shared<Lambertian>(vec3(0.73f));
+  auto green = make_shared<Lambertian>(vec3(0.12, 0.45, 0.15));
+  auto light = make_shared<DiffuseEmitter>(vec3(1.0f), 15);
+
+  objects.addObject(
+      make_shared<AARectangle<Axis::Y>>(554, 213, 343, 227, 332, light));
+  objects.addObject(
+      make_shared<AARectangle<Axis::X>>(555, 0, 555, 0, 555, green));
+  objects.addObject(make_shared<AARectangle<Axis::X>>(0, 0, 555, 0, 555, red));
+  objects.addObject(
+      make_shared<AARectangle<Axis::Y>>(0, 0, 555, 0, 555, white));
+  objects.addObject(
+      make_shared<AARectangle<Axis::Y>>(555, 0, 555, 0, 555, white));
+  objects.addObject(
+      make_shared<AARectangle<Axis::Z>>(555, 0, 555, 0, 555, white));
+
+  scene._height = 600;
+  scene._width = 600;
+  scene.spp_x = 10;
+  scene.spp_y = 10;
+  scene.GAMMA = 2.f;
+  scene.camera = make_shared<PerspectiveCamera>(
+      gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
+      1000.f, vec3(0, 1, 0), vec3(0, 0, 1.f).normalize(),
+      vec3(278.f, 278.f, -800.f));
+  scene.objects = objects;
+  scene.bg_color = vec3(0.f);
+
+  return scene;
+};
 
 SceneInfo simple_light() {
   using namespace std;
@@ -15,13 +53,14 @@ SceneInfo simple_light() {
                                         make_shared<Lambertian>(noise_text)));
 
   auto difflight = make_shared<DiffuseEmitter>(gl::DefaultTexture, 4);
-  objects.addObject(make_shared<XYRectangle>(-2, 3, 5, 1, 3, difflight));
+  objects.addObject(
+      make_shared<AARectangle<Axis::Z>>(-2, 3, 5, 1, 3, difflight));
 
   scene.objects = objects;
   scene._width = 1200;
   scene._height = 500;
-  scene.spp_x = 20;
-  scene.spp_y = 20;
+  scene.spp_x = 4;
+  scene.spp_y = 4;
   scene.GAMMA = 1.5f;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(20.f), (float)(scene._width) / (float)(scene._height), 10.f,
