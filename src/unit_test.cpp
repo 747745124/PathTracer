@@ -12,61 +12,17 @@
 // #define CHECKER_TEST
 // #define SHADER_TEST
 // #define BVH_TEST
-// #define F_STOP 1000.f
 #define DIFFUSE
 int hit_count = 0;
 
 int main() {
 #ifdef DIFFUSE
   using namespace gl;
-  uint width = 1200, height = 500;
-  FrameBuffer fb(width, height, 3, 2, 2);
-  auto offsets = fb.getOffsets();
-  uint counter = 0;
 
-  PerspectiveCamera camera(
-      gl::to_radian(20.f), (float)(width) / (float)(height), 10.f, 40.f,
-      vec3(0, 1, 0), vec3(-13.f, -2.f, -3.f).normalize(), vec3(13.f, 2.f, 3.f));
+  SceneInfo scene = simple_light();
+  scene.renderWithInfo();
 
-  ObjectList prims = random_scene();
-  LightList lights;
 
-  auto bvh = std::make_shared<BVHNode>(prims);
-  std::chrono::time_point<std::chrono::system_clock> start, end;
-  std::chrono::duration<double> duration;
-  start = std::chrono::system_clock::now();
-
-#pragma omp parallel for
-  {
-    for (int i = 0; i < width; i++) {
-      std::cout << "Now scanning " << (float(counter) / width) * 100.f << " %"
-                << std::endl;
-
-      for (int j = 0; j < height; j++) {
-        auto color = vec3(0.0);
-        for (int k = 0; k < fb.getSampleCount(); k++) {
-          auto sample_color = vec3(0.0);
-          vec2 uv = (vec2(i, j) + offsets[k]) / vec2(width, height);
-          Ray ray = camera.generateRay(uv.u(), uv.v());
-          color +=
-              getRayColor(ray, prims, lights, gl::vec3(0.7, 0.8, 1.0), bvh);
-        }
-
-        {
-          color /= fb.getSampleCount();
-          fb.setPixelColor(j, i, color);
-        }
-      }
-
-      counter++;
-    }
-  }
-
-  std::cout << "hit count: " << hit_count << std::endl;
-  fb.writeToFile("../custom_test.png", 1.5f);
-  end = std::chrono::system_clock::now();
-  duration = end - start;
-  std::cout << duration.count() << " seconds" << std::endl;
 #endif
 #ifdef SHADER_TEST
   using namespace gl;

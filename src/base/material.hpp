@@ -39,7 +39,7 @@ public:
   virtual bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
                        Ray &ray_scattered) const = 0;
 
-  virtual gl::vec3 emit(const gl::vec2 uv) { return gl::vec3(0.0f); }
+  virtual gl::vec3 emit(gl::vec2 uv) { return gl::vec3(0.0f); }
 };
 
 class Lambertian : public Material {
@@ -99,8 +99,25 @@ public:
   };
 };
 
-class Emitter : public Material {
+class DiffuseEmitter : public Material {
+public:
+  DiffuseEmitter(std::shared_ptr<Texture2D> a, float intensity = 1.0f)
+      : _text(a), _intensity(intensity){};
+  DiffuseEmitter(const gl::vec3 &a, float intensity = 1.0f)
+      : _text(std::make_shared<ConstantTexture>(a)), _intensity(intensity){};
 
+  bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
+               Ray &ray_scattered) const override {
+    return false;
+  }
+
+  gl::vec3 emit(gl::vec2 uv) override {
+    return _text->getTexelColor(uv.u(), uv.v())* _intensity;
+  }
+
+private:
+  std::shared_ptr<Texture2D> _text;
+  float _intensity;
 };
 //----------------------------------------------------------------
 // Legacy material for Whitted RT

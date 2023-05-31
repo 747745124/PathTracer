@@ -107,6 +107,7 @@ struct SceneIO
 enum class ObjType
 {
     SPHERE_OBJ,
+    RECTANGLE_OBJ,
     POLYSET_OBJ,
     BVH_OBJ
 };
