@@ -15,8 +15,7 @@ static std::shared_ptr<ConstantTexture> DefaultTexture =
     std::make_shared<ConstantTexture>(gl::vec3(1.0f));
 static std::shared_ptr<Lambertian> DefaultMaterial =
     std::make_shared<Lambertian>(DefaultTexture);
-};
-
+}; // namespace gl
 
 struct HitRecord {
 public:
@@ -39,13 +38,16 @@ class Material {
 public:
   virtual bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
                        Ray &ray_scattered) const = 0;
+
+  virtual gl::vec3 emit(const gl::vec2 uv) { return gl::vec3(0.0f); }
 };
 
 class Lambertian : public Material {
 
 public:
   Lambertian(std::shared_ptr<Texture2D> a) : albedo(a){};
-  Lambertian(const gl::vec3 &a) : albedo(std::make_shared<ConstantTexture>(a)){};
+  Lambertian(const gl::vec3 &a)
+      : albedo(std::make_shared<ConstantTexture>(a)){};
   // scatter the ray with lambertian reflection
   bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
                Ray &ray_scattered) const override {
@@ -97,6 +99,9 @@ public:
   };
 };
 
+class Emitter : public Material {
+
+};
 //----------------------------------------------------------------
 // Legacy material for Whitted RT
 // will be refactored with the current material class

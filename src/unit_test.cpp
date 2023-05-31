@@ -20,7 +20,7 @@ int main() {
 #ifdef DIFFUSE
   using namespace gl;
   uint width = 1200, height = 500;
-  FrameBuffer fb(width, height, 3, 4, 4);
+  FrameBuffer fb(width, height, 3, 2, 2);
   auto offsets = fb.getOffsets();
   uint counter = 0;
 
@@ -48,7 +48,8 @@ int main() {
           auto sample_color = vec3(0.0);
           vec2 uv = (vec2(i, j) + offsets[k]) / vec2(width, height);
           Ray ray = camera.generateRay(uv.u(), uv.v());
-          color += getRayColor(ray, prims, lights, bvh);
+          color +=
+              getRayColor(ray, prims, lights, gl::vec3(0.7, 0.8, 1.0), bvh);
         }
 
         {

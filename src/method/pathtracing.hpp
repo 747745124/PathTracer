@@ -4,17 +4,17 @@
 #include "../utils/bvh.hpp"
 
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
-                            const LightList &lights,
+                            const LightList &lights, gl::vec3 bg_color,
                             std::shared_ptr<BVHNode> bvh = nullptr) {
   using namespace gl;
 
   vec3 color(0.0f, 0.0f, 0.0f);
-  vec3 bg(0.0f, 0.0f, 0.0f);
 
   float p = C_rand();
-  float p_threshold = 0.01f;
+  float p_threshold = 0.05f;
+  
   if (p < p_threshold)
-    return bg;
+    return bg_color;
 
   HitRecord hit_record;
   bool is_hit = false;
@@ -23,17 +23,16 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   else
     is_hit = bvh->intersect(ray, hit_record);
 
-  if (is_hit) {
-    Ray out_ray;
-    vec3 attenuation;
-    if (hit_record.material->scatter(ray, hit_record, attenuation, out_ray)) {
-      color += attenuation * getRayColor(out_ray, prims, lights, bvh);
-    }
-    return color;
-  }
+  if (!is_hit)
+    return bg_color;
 
-  vec3 unit_direction = ray.getDirection().normalize();
-  auto t = 0.5 * (unit_direction.y() + 1.0);
-  return (1.0 - t) * vec3(1.0, 1.0, 1.0) +
-         t * vec3(0.5, 0.7, 1.0) / (1 - p_threshold);
-}
+  Ray out_ray;
+  vec3 attenuation;
+  auto mat = hit_record.material;
+  if (mat->scatter(ray, hit_record, attenuation, out_ray))
+    return mat->emit(hit_record.texCoords) +
+           (attenuation * getRayColor(out_ray, prims, lights, bg_color, bvh) /
+            (1.0f - p_threshold));
+
+  return mat->emit(hit_record.texCoords) / (1.0f - p_threshold);
+};
