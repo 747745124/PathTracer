@@ -13,14 +13,14 @@
 // #define SHADER_TEST
 // #define BVH_TEST
 #define DIFFUSE
-int hit_count = 0;
+uint64_t hit_count = 0;
 
 int main() {
 #ifdef DIFFUSE
   using namespace gl;
 
   SceneInfo scene = cornell_box();
-  scene.renderWithInfo();
+  scene.renderWithInfo("../output.png");
 
 
 #endif

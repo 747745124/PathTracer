@@ -1,5 +1,5 @@
 #include "./primitive.hpp"
-extern int hit_count;
+extern uint64_t hit_count;
 
 template <> AABB AARectangle<Axis::X>::getAABB(float t0, float t1) {
   AABB aabb(gl::vec3(this->_k - 0.001, this->_d0_min, this->_d1_min),

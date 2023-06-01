@@ -3,7 +3,7 @@
 #include "./camera.hpp"
 #include "./light.hpp"
 #include "./primitive.hpp"
-#include "utils/aabb.hpp"
+#include "../utils/aabb.hpp"
 // a manager for hittable objects
 class ObjectList : public Hittable {
 public:

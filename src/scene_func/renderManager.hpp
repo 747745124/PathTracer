@@ -1,5 +1,7 @@
 #pragma once
 #include "../base/camera.hpp"
+#include "../base/compound.hpp"
+#include "../base/framebuffer.hpp"
 #include "../base/material.hpp"
 #include "../base/objectList.hpp"
 #include "../base/primitive.hpp"
@@ -7,8 +9,9 @@
 #include "../method/pathtracing.hpp"
 #include "../utils/bvh.hpp"
 #include "../utils/timeit.hpp"
+#include "../utils/objectTransform.hpp"
 
-extern int hit_count;
+extern uint64_t hit_count;
 
 struct SceneInfo {
   std::shared_ptr<PerspectiveCamera> camera = nullptr;
@@ -24,7 +27,7 @@ struct SceneInfo {
 
   SceneInfo() = default;
 
-  void render(const std::string &out_path = "../output.png") {
+  void render(const std::string &out_path = "./output.png") {
 
     using namespace gl;
     using namespace std;
@@ -74,7 +77,7 @@ struct SceneInfo {
     fb.writeToFile(out_path, GAMMA);
   };
 
-  void renderWithInfo(const std::string &out_path = "../output.png",
+  void renderWithInfo(const std::string &out_path = "./output.png",
                       bool time_it = true, bool show_hitcount = true) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> duration;

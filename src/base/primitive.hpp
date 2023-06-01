@@ -12,7 +12,7 @@ using Materials = std::vector<std::shared_ptr<Material>>;
 enum class IntersectionMode { DEFAULT, CUSTOM };
 enum class Axis { X = 0, Y = 1, Z = 2 };
 
-extern int hit_count;
+extern uint64_t hit_count;
 
 class Hittable : public Object3D {
 public:
@@ -255,4 +255,7 @@ private:
 };
 
 using Primitives = std::tuple<std::vector<Sphere>, std::vector<PolySet>>;
+using XYRectangle = AARectangle<Axis::Z>;
+using XZRectangle = AARectangle<Axis::Y>;
+using YZRectangle = AARectangle<Axis::X>;
 Primitives _get_primitives_from_io(const ObjIO *io);

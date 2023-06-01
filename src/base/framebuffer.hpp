@@ -1,7 +1,7 @@
 #pragma once
 #include "../utils/matrix.hpp"
 #include "../utils/utility.hpp"
-#include "./base/objectList.hpp"
+#include "./objectList.hpp"
 #include <cstdint>
 
 class FrameBuffer {

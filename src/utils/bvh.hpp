@@ -1,7 +1,7 @@
 #pragma once
 #include "../base/objectList.hpp"
 #include "../base/primitive.hpp"
-#include "utils/utility.hpp"
+#include "./utility.hpp"
 #include <algorithm>
 #include <cstdlib>
 

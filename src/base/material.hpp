@@ -1,9 +1,8 @@
 #pragma once
 #include "../utils/matrix.hpp"
 #include "../utils/scene_io.hpp"
-#include "./base/material.hpp"
-#include "./base/ray.hpp"
-#include "./base/texture.hpp"
+#include "./ray.hpp"
+#include "./texture.hpp"
 
 class Material;
 class Lambertian;
@@ -112,13 +111,15 @@ public:
   }
 
   gl::vec3 emit(gl::vec2 uv) override {
-    return _text->getTexelColor(uv.u(), uv.v())* _intensity;
+    return _text->getTexelColor(uv.u(), uv.v()) * _intensity;
   }
 
 private:
   std::shared_ptr<Texture2D> _text;
   float _intensity;
 };
+
+
 //----------------------------------------------------------------
 // Legacy material for Whitted RT
 // will be refactored with the current material class

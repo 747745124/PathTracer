@@ -24,6 +24,18 @@ SceneInfo cornell_box() {
   objects.addObject(
       make_shared<AARectangle<Axis::Z>>(555, 0, 555, 0, 555, white));
 
+  shared_ptr<Hittable> box_left =
+      make_shared<Box>(vec3(0.f), vec3(165, 330, 165), white);
+  box_left = make_shared<Rotate<Axis::Y>>(box_left, gl::to_radian(15));
+  box_left = make_shared<Translate>(box_left, vec3(265, 0, 295));
+  objects.addObject(box_left);
+
+  shared_ptr<Hittable> box_right =
+      make_shared<Box>(vec3(0.f), vec3(165.f), white);
+  box_right = make_shared<Rotate<Axis::Y>>(box_right, gl::to_radian(-18));
+  box_right = make_shared<Translate>(box_right, vec3(130, 0, 65));
+  objects.addObject(box_right);
+
   scene._height = 600;
   scene._width = 600;
   scene.spp_x = 10;

@@ -5,13 +5,12 @@
 #include <random>
 #include <type_traits>
 
-template <typename E>
-constexpr auto to_underlying(E e) noexcept
-{
-    return static_cast<std::underlying_type_t<E>>(e);
+template <typename E> constexpr auto to_underlying(E e) noexcept {
+  return static_cast<std::underlying_type_t<E>>(e);
 }
 // This file defines shader utilities and some math functions
 namespace gl {
+
 static inline float attenuate(float distance) {
   return std::min(
       1.f, 1.f / (0.25f + 0.1f * distance + 0.01f * distance * distance));
