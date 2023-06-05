@@ -19,6 +19,7 @@ public:
     }
 
     hit_record.position += offset;
+    hit_record.set_normal(new_ray, hit_record.normal);
     return true;
   };
 
@@ -36,8 +37,8 @@ public:
   Rotate(std::shared_ptr<Hittable> object, float angle)
       : object(object), angle(angle) {
     this->objtype = object->objtype;
-    sin_theta = std::sin(angle);
-    cos_theta = std::cos(angle);
+    this->sin_theta = std::sin(angle);
+    this->cos_theta = std::cos(angle);
   };
 
   AABB getAABB(float t0, float t1) override;

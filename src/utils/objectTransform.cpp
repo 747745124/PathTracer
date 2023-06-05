@@ -45,8 +45,9 @@ template <> AABB Rotate<Axis::Y>::getAABB(float t0, float t1) {
         auto y = j * box.get_max().y() + (1 - j) * box.get_min().y();
         auto z = k * box.get_max().z() + (1 - k) * box.get_min().z();
 
-        auto new_xz = rotation2D(angle) * vec2(x, z);
-        vec3 temp(new_xz[0], y, new_xz[1]);
+        auto new_x = cos_theta * x + sin_theta * z;
+        auto new_z = -sin_theta * x + cos_theta * z;
+        vec3 temp(new_x, y, new_z);
 
         for (int c = 0; c < 3; c++) {
           min[c] = std::min(min[c], temp[c]);
@@ -93,20 +94,21 @@ template <>
 bool Rotate<Axis::X>::intersect(const Ray &ray, HitRecord &hit_record,
                                 float tmin, float tmax) const {
 
+  using namespace gl;
+  using namespace std;
   auto ray_dir = ray.getDirection().normalize();
   auto ray_origin = ray.getOrigin();
 
-  ray_origin[1] =
-      cos_theta * ray.getOrigin()[1] - sin_theta * ray.getOrigin()[2];
-  ray_origin[2] =
-      sin_theta * ray.getOrigin()[1] + cos_theta * ray.getOrigin()[2];
+  auto ray_origin_new = ray_origin;
+  auto ray_dir_new = ray_dir;
 
-  ray_dir[1] =
-      cos_theta * ray.getDirection()[1] - sin_theta * ray.getDirection()[2];
-  ray_dir[2] =
-      sin_theta * ray.getDirection()[1] + cos_theta * ray.getDirection()[2];
+  ray_origin_new[1] = cos_theta * ray_origin[1] - sin_theta * ray_origin[2];
+  ray_origin_new[2] = sin_theta * ray_origin[1] + cos_theta * ray_origin[2];
 
-  Ray rotated_ray(ray_origin, ray_dir);
+  ray_dir_new[1] = cos_theta * ray_dir[1] - sin_theta * ray_dir[2];
+  ray_dir_new[2] = sin_theta * ray_dir[1] + cos_theta * ray_dir[2];
+
+  Ray rotated_ray(ray_origin_new, ray_dir_new.normalize());
   if (!object->intersect(rotated_ray, hit_record, tmin, tmax)) {
     return false;
   }
@@ -137,33 +139,32 @@ bool Rotate<Axis::Y>::intersect(const Ray &ray, HitRecord &hit_record,
   auto ray_dir = ray.getDirection().normalize();
   auto ray_origin = ray.getOrigin();
 
-  ray_origin[0] =
-      cos_theta * ray.getOrigin()[0] + sin_theta * ray.getOrigin()[2];
-  ray_origin[2] =
-      -sin_theta * ray.getOrigin()[0] + cos_theta * ray.getOrigin()[2];
+  auto ray_origin_new = ray_origin;
+  auto ray_dir_new = ray_dir;
 
-  ray_dir[0] =
-      cos_theta * ray.getDirection()[0] + sin_theta * ray.getDirection()[2];
-  ray_dir[2] =
-      -sin_theta * ray.getDirection()[0] + cos_theta * ray.getDirection()[2];
+  ray_origin_new[0] = cos_theta * ray_origin[0] - sin_theta * ray_origin[2];
+  ray_origin_new[2] = sin_theta * ray_origin[0] + cos_theta * ray_origin[2];
 
-  Ray rotated_ray(ray_origin, ray_dir);
-  if (!object->intersect(rotated_ray, hit_record, tmin, tmax)) {
+  ray_dir_new[0] = cos_theta * ray_dir[0] - sin_theta * ray_dir[2];
+  ray_dir_new[2] = sin_theta * ray_dir[0] + cos_theta * ray_dir[2];
+
+  Ray rotated_ray(ray_origin_new, ray_dir_new.normalize());
+
+  if (!object->intersect(rotated_ray, hit_record, tmin, tmax))
     return false;
-  }
 
   auto position = hit_record.position;
   auto normal = hit_record.normal;
 
   position[0] =
-      cos_theta * hit_record.position[0] - sin_theta * hit_record.position[2];
+      cos_theta * hit_record.position[0] + sin_theta * hit_record.position[2];
   position[2] =
-      sin_theta * hit_record.position[0] + cos_theta * hit_record.position[2];
+      -sin_theta * hit_record.position[0] + cos_theta * hit_record.position[2];
 
   normal[0] =
-      cos_theta * hit_record.normal[0] - sin_theta * hit_record.normal[2];
+      cos_theta * hit_record.normal[0] + sin_theta * hit_record.normal[2];
   normal[2] =
-      sin_theta * hit_record.normal[0] + cos_theta * hit_record.normal[2];
+      -sin_theta * hit_record.normal[0] + cos_theta * hit_record.normal[2];
 
   hit_record.position = position;
   hit_record.set_normal(rotated_ray, hit_record.normal);
@@ -177,17 +178,16 @@ bool Rotate<Axis::Z>::intersect(const Ray &ray, HitRecord &hit_record,
   auto ray_dir = ray.getDirection().normalize();
   auto ray_origin = ray.getOrigin();
 
-  ray_origin[0] =
-      cos_theta * ray.getOrigin()[0] - sin_theta * ray.getOrigin()[1];
-  ray_origin[1] =
-      sin_theta * ray.getOrigin()[0] + cos_theta * ray.getOrigin()[1];
+  auto ray_origin_new = ray_origin;
+  auto ray_dir_new = ray_dir;
 
-  ray_dir[0] =
-      cos_theta * ray.getDirection()[0] - sin_theta * ray.getDirection()[1];
-  ray_dir[1] =
-      sin_theta * ray.getDirection()[0] + cos_theta * ray.getDirection()[1];
+  ray_origin_new[0] = cos_theta * ray_origin[0] - sin_theta * ray_origin[1];
+  ray_origin_new[1] = sin_theta * ray_origin[0] + cos_theta * ray_origin[1];
 
-  Ray rotated_ray(ray_origin, ray_dir);
+  ray_dir_new[0] = cos_theta * ray_dir[0] - sin_theta * ray_dir[1];
+  ray_dir_new[1] = sin_theta * ray_dir[0] + cos_theta * ray_dir[1];
+
+  Ray rotated_ray(ray_origin_new, ray_dir_new);
   if (!object->intersect(rotated_ray, hit_record, tmin, tmax)) {
     return false;
   }

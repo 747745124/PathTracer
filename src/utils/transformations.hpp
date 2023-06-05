@@ -6,7 +6,7 @@
 namespace gl {
 // convert degree to radians
 
-static float to_radian(float degree) { return degree * M_PI / 180; };
+static float to_radian(float degree) { return degree * M_PI / 180.f; };
 // 2D rotation matrix given an angle in radians
 
 static mat2 rotation2D(float angle) {

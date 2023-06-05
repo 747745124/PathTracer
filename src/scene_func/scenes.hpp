@@ -26,21 +26,23 @@ SceneInfo cornell_box() {
 
   shared_ptr<Hittable> box_left =
       make_shared<Box>(vec3(0.f), vec3(165, 330, 165), white);
-  box_left = make_shared<Rotate<Axis::Y>>(box_left, gl::to_radian(15));
+  box_left = make_shared<Rotate<Axis::Y>>(box_left, gl::to_radian(15.f));
   box_left = make_shared<Translate>(box_left, vec3(265, 0, 295));
   objects.addObject(box_left);
 
   shared_ptr<Hittable> box_right =
       make_shared<Box>(vec3(0.f), vec3(165.f), white);
-  box_right = make_shared<Rotate<Axis::Y>>(box_right, gl::to_radian(-18));
+  box_right = make_shared<Rotate<Axis::Y>>(box_right, gl::to_radian(-18.f));
   box_right = make_shared<Translate>(box_right, vec3(130, 0, 65));
+
   objects.addObject(box_right);
 
-  scene._height = 600;
-  scene._width = 600;
-  scene.spp_x = 10;
-  scene.spp_y = 10;
+  scene._height = 200;
+  scene._width = 200;
+  scene.spp_x = 20;
+  scene.spp_y = 20;
   scene.GAMMA = 2.f;
+  // scene.use_bvh = false;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
       1000.f, vec3(0, 1, 0), vec3(0, 0, 1.f).normalize(),

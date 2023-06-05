@@ -8,8 +8,8 @@
 #include "../method/maxdepth_tracer.hpp"
 #include "../method/pathtracing.hpp"
 #include "../utils/bvh.hpp"
-#include "../utils/timeit.hpp"
 #include "../utils/objectTransform.hpp"
+#include "../utils/timeit.hpp"
 
 extern uint64_t hit_count;
 
