@@ -110,6 +110,7 @@ enum class ObjType
     RECTANGLE_OBJ,
     POLYSET_OBJ,
     BOX_OBJ,
+    MEDIUM_OBJ,
     BVH_OBJ
 };
 

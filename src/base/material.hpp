@@ -1,6 +1,9 @@
 #pragma once
 #include "../utils/matrix.hpp"
+#include "../utils/orthoBasis.hpp"
 #include "../utils/scene_io.hpp"
+#include "../probs/pdf.hpp"
+#include "../probs/random.hpp"
 #include "./ray.hpp"
 #include "./texture.hpp"
 
@@ -35,8 +38,15 @@ public:
 
 class Material {
 public:
-  virtual bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-                       Ray &ray_scattered) const = 0;
+  virtual bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &albedo,
+                       Ray &ray_scattered,float& pdf) const {
+    return false;
+  }
+
+  virtual float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
+                            const Ray &scattered) const {
+    return 0.0f;
+  }
 
   virtual gl::vec3 emit(gl::vec2 uv) { return gl::vec3(0.0f); }
 };
@@ -49,17 +59,28 @@ public:
       : albedo(std::make_shared<ConstantTexture>(a)){};
   // scatter the ray with lambertian reflection
   bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-               Ray &ray_scattered) const override {
-    gl::vec3 target = rec.position + gl::on_hemisphere_random_vec(rec.normal);
+               Ray &ray_scattered,float& pdf) const override {
+    
+    OrthoBasis basis(rec.normal);
 
-    if (target.near_zero()) {
-      target = rec.normal;
-    }
+#ifdef USE_UNIFORM_SAMPLING
+    gl::vec3 direction = basis.at(gl::uniformSampleHemiSphere());
+#else
+    gl::vec3 direction = basis.at(gl::cosineSampleHemiSphere());
+#endif
 
-    ray_scattered = Ray(rec.position, target - rec.position);
+    ray_scattered = Ray(rec.position,direction.normalize());
     attenuation = albedo->getTexelColor(rec.texCoords.u(), rec.texCoords.v());
+    pdf = dot(rec.normal, ray_scattered.getDirection().normalize()) / M_PI;
     return true;
   }
+
+  float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
+                    const Ray &scattered) const override {
+    float cosine = dot(rec.normal, scattered.getDirection().normalize());
+    return cosine < 0 ? 0 : cosine / M_PI;
+  }
+
   std::shared_ptr<Texture2D> albedo;
 };
 
@@ -67,7 +88,7 @@ class Mirror : public Material {
 public:
   Mirror(const gl::vec3 &a, float f = 0.f) : albedo(a) { fuzz = f < 1 ? f : 1; }
   bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-               Ray &ray_scattered) const override {
+               Ray &ray_scattered,float& pdf) const override {
     gl::vec3 reflected =
         reflect(ray_in.getDirection().normalize(), rec.normal) +
         gl::on_sphere_random_vec(fuzz);
@@ -86,7 +107,7 @@ public:
   Dielectric(float ior) : ior(ior){};
 
   bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-               Ray &ray_scattered) const override {
+               Ray &ray_scattered,float& pdf) const override {
 
     attenuation = gl::vec3(1.0f);
     float ri_ro = rec.is_inside ? (1.0 / ior) : ior;
@@ -106,7 +127,7 @@ public:
       : _text(std::make_shared<ConstantTexture>(a)), _intensity(intensity){};
 
   bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-               Ray &ray_scattered) const override {
+               Ray &ray_scattered,float& pdf) const override {
     return false;
   }
 
@@ -119,6 +140,23 @@ private:
   float _intensity;
 };
 
+class Isotropic : public Material {
+public:
+  Isotropic(std::shared_ptr<Texture2D> a) : _text(a){};
+  Isotropic(const gl::vec3 &a) : _text(std::make_shared<ConstantTexture>(a)){};
+
+  bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
+               Ray &ray_scattered,float& pdf) const override {
+    // scatter the ray with lambertian reflection
+    // any direction scatter with equal probability
+    ray_scattered = Ray(rec.position, gl::sphere_random_vec());
+    attenuation = _text->getTexelColor(rec.texCoords.u(), rec.texCoords.v());
+    return true;
+  }
+
+private:
+  std::shared_ptr<Texture2D> _text;
+};
 
 //----------------------------------------------------------------
 // Legacy material for Whitted RT

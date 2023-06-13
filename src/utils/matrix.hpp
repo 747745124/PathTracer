@@ -403,7 +403,7 @@ template <int N, class T> vec<N, T> normalize(const vec<N, T> &a) {
 
 template <int N, class T>
 static float dot(const vec<N, T> &a, const vec<N, T> &b) {
-  auto res = _mm_dp_ps(a.vector, b.vector, 0xff);
+  auto res = _mm_dp_ps(a.vector, b.vector, 0b01111111);
   return _mm_cvtss_f32(res);
 };
 

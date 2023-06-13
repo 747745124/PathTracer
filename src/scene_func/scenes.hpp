@@ -37,12 +37,11 @@ SceneInfo cornell_box() {
 
   objects.addObject(box_right);
 
-  scene._height = 200;
-  scene._width = 200;
-  scene.spp_x = 20;
-  scene.spp_y = 20;
+  scene._height = 300;
+  scene._width = 300;
+  scene.spp_x = 50;
+  scene.spp_y = 50;
   scene.GAMMA = 2.f;
-  // scene.use_bvh = false;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
       1000.f, vec3(0, 1, 0), vec3(0, 0, 1.f).normalize(),
@@ -84,6 +83,90 @@ SceneInfo simple_light() {
 
   return scene;
 }
+
+SceneInfo checkpoint_2() {
+  using namespace std;
+  using namespace gl;
+
+  SceneInfo scene;
+  ObjectList objects;
+
+  auto ground = make_shared<Lambertian>(vec3(0.48f, 0.83f, 0.53f));
+
+  ObjectList boxes1;
+  const int boxes_per_side = 20;
+  for (int i = 0; i < boxes_per_side; i++) {
+    for (int j = 0; j < boxes_per_side; j++) {
+      auto w = 100.0;
+      auto x0 = -1000.0 + i * w;
+      auto z0 = -1000.0 + j * w;
+      auto y0 = 0.0;
+      auto x1 = x0 + w;
+      auto y1 = C_rand(1.f, 101.f);
+      auto z1 = z0 + w;
+
+      boxes1.addObject(
+          make_shared<Box>(vec3(x0, y0, z0), vec3(x1, y1, z1), ground));
+    }
+  }
+
+  objects.addObject(make_shared<BVHNode>(boxes1, 0, 1));
+
+  auto light = make_shared<DiffuseEmitter>(vec3(1.f), 7);
+  objects.addObject(make_shared<XZRectangle>(554, 123, 423, 147, 412, light));
+
+  auto center1 = vec3(400, 400, 200);
+  auto center2 = center1 + vec3(30, 0, 0);
+  auto moving_sphere_material = make_shared<Lambertian>(vec3(0.7, 0.3, 0.1));
+  objects.addObject(
+      make_shared<Sphere>(center1,50, moving_sphere_material));
+
+  objects.addObject(make_shared<Sphere>(vec3(260, 150, 45), 50,
+                                        make_shared<Dielectric>(1.5)));
+  objects.addObject(make_shared<Sphere>(
+      vec3(0, 150, 145), 50, make_shared<Mirror>(vec3(0.8, 0.8, 0.9), 1.0)));
+
+  auto boundary = make_shared<Sphere>(vec3(360, 150, 145), 70,
+                                      make_shared<Dielectric>(1.5));
+  objects.addObject(boundary);
+  objects.addObject(
+      make_shared<ConstantMedium>(boundary, 0.2, vec3(0.2, 0.4, 0.9)));
+  boundary =
+      make_shared<Sphere>(vec3(0, 0, 0), 5000, make_shared<Dielectric>(1.5));
+  objects.addObject(make_shared<ConstantMedium>(boundary, .0001f, vec3(1.f)));
+
+  auto emat = make_shared<Lambertian>(
+      make_shared<ImageTexture>("../assets/textures/ao.png"));
+  objects.addObject(make_shared<Sphere>(vec3(400, 200, 400), 100, emat));
+  auto pertext = make_shared<NoiseTexture>(100);
+  objects.addObject(make_shared<Sphere>(vec3(220, 280, 300), 80,
+                                        make_shared<Lambertian>(pertext)));
+
+  ObjectList boxes2;
+  auto white = make_shared<Lambertian>(vec3(.73));
+  int ns = 1000;
+  for (int j = 0; j < ns; j++) {
+    boxes2.addObject(
+        make_shared<Sphere>(gl::C_rand_vec3(0.f, 165.f), 10, white));
+  }
+
+  objects.addObject(make_shared<Translate>(
+      make_shared<Rotate<Axis::Y>>(make_shared<BVHNode>(boxes2, 0.0, 1.0), gl::to_radian(15)),
+      vec3(-100, 270, 395)));
+
+  scene.objects = objects;
+  scene._width = 400;
+  scene._height = 400;
+  scene.spp_x = 100;
+  scene.spp_y = 100;
+  scene.GAMMA = 2.0f;
+  scene.camera = make_shared<PerspectiveCamera>(
+      gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
+      1000.f, vec3(0, 1, 0), vec3(-200.f, 0.f, 600.f).normalize(),
+      vec3(478.f, 278.f, -600.f));
+  scene.bg_color = vec3(0.f);
+  return scene;
+};
 
 SceneInfo random_scene() {
   using namespace std;

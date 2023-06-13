@@ -9,8 +9,8 @@
 class BVHNode : public Hittable {
 public:
   BVHNode() = default;
-  BVHNode(ObjectList &object_list, uint i, uint j, float t0 = 0.0f,
-          float t1 = 1.0f);
+  BVHNode(ObjectList &object_list, uint i, uint j, float t0,
+          float t1);
   BVHNode(ObjectList &object_list, float t0 = 0.0f, float t1 = 1.0f)
       : BVHNode(object_list, 0, object_list.getLists().size(), t0, t1){};
 

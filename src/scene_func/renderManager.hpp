@@ -3,6 +3,7 @@
 #include "../base/compound.hpp"
 #include "../base/framebuffer.hpp"
 #include "../base/material.hpp"
+#include "../base/medium.hpp"
 #include "../base/objectList.hpp"
 #include "../base/primitive.hpp"
 #include "../method/maxdepth_tracer.hpp"
@@ -61,7 +62,7 @@ struct SceneInfo {
             auto sample_color = vec3(0.0);
             vec2 uv = (vec2(i, j) + offsets[k]) / vec2(_width, _height);
             Ray ray = camera->generateRay(uv.u(), uv.v());
-            color += getRayColor(ray, objects, bg_color, bvh);
+            color += getRayColor(ray, objects, bg_color, 50, bvh);
           }
 
           {

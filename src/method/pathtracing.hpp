@@ -24,13 +24,14 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     return bg_color;
 
   Ray out_ray;
-  vec3 attenuation;
+  vec3 albedo;
+  float pdf = 0.f;
   auto mat = hit_record.material;
-  if (mat->scatter(ray, hit_record, attenuation, out_ray))
+  if (mat->scatter(ray, hit_record, albedo, out_ray, pdf))
     return (mat->emit(hit_record.texCoords) +
-            attenuation * getRayColor(out_ray, prims, bg_color, bvh)) /
+            albedo * getRayColor(out_ray, prims, bg_color, bvh) *
+                mat->scatter_pdf(ray, hit_record, out_ray) / pdf) /
            (1.0f - p_threshold);
 
   return mat->emit(hit_record.texCoords) / (1.0f - p_threshold);
 };
-

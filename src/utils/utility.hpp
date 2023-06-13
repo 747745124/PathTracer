@@ -232,7 +232,6 @@ static inline vec2 circle_random_vec(float r = 1.f) {
 // a cos(theta)^3 distribution, all points are within the sphere
 static inline vec3 sphere_random_vec(float r = 1.f) {
   auto p = vec3(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
-  p.normalized();
   return p * C_rand(-r, r);
 }
 
