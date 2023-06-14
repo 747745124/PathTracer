@@ -26,10 +26,9 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   float pdf = 0.f;
   auto mat = hit_record.material;
   if (mat->scatter(ray, hit_record, albedo, out_ray, pdf))
-    return (mat->emit(hit_record.texCoords) +
-            albedo * getRayColor(out_ray, prims, bg_color, max_depth - 1, bvh) *
-                mat->scatter_pdf(ray, hit_record, out_ray)) /
-           pdf;
+    return mat->emit(hit_record.texCoords) +
+           albedo * getRayColor(out_ray, prims, bg_color, max_depth - 1, bvh) *
+               mat->scatter_pdf(ray, hit_record, out_ray) / pdf;
 
   return mat->emit(hit_record.texCoords);
 };

@@ -19,7 +19,7 @@ int main() {
 #ifdef DIFFUSE
   using namespace gl;
 
-  SceneInfo scene = cornell_box();
+  SceneInfo scene = simple_light();
   scene.renderWithInfo("../output.png");
 
 

@@ -6,6 +6,7 @@
 #include "../base/medium.hpp"
 #include "../base/objectList.hpp"
 #include "../base/primitive.hpp"
+#include "../method/maxdepth_analytical.hpp"
 #include "../method/maxdepth_tracer.hpp"
 #include "../method/pathtracing.hpp"
 #include "../utils/bvh.hpp"
@@ -13,6 +14,8 @@
 #include "../utils/timeit.hpp"
 
 extern uint64_t hit_count;
+static std::vector<gl::vec3> light_vertices = {
+    {2, 4, 3}, {4, 4, 3}, {4, 4, 0}, {2, 4, 0}};
 
 struct SceneInfo {
   std::shared_ptr<PerspectiveCamera> camera = nullptr;
@@ -62,7 +65,10 @@ struct SceneInfo {
             auto sample_color = vec3(0.0);
             vec2 uv = (vec2(i, j) + offsets[k]) / vec2(_width, _height);
             Ray ray = camera->generateRay(uv.u(), uv.v());
-            color += getRayColor(ray, objects, bg_color, 50, bvh);
+
+            // color += getRayColor(ray, objects, bg_color, 50, bvh);
+            color +=
+                getRayColor(ray, objects, bg_color, light_vertices, 2, bvh);
           }
 
           {

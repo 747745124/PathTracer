@@ -39,8 +39,8 @@ SceneInfo cornell_box() {
 
   scene._height = 300;
   scene._width = 300;
-  scene.spp_x = 50;
-  scene.spp_y = 50;
+  scene.spp_x = 4;
+  scene.spp_y = 4;
   scene.GAMMA = 2.f;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
@@ -52,7 +52,38 @@ SceneInfo cornell_box() {
   return scene;
 };
 
-SceneInfo simple_light() {
+SceneInfo simple_light(){
+  using namespace std;
+  using namespace gl;
+
+  SceneInfo scene;
+  ObjectList objects;
+
+  auto noise_text = make_shared<NoiseTexture>(10, 4);
+  objects.addObject(make_shared<Sphere>(vec3(0, -1000, 0), 1000,
+                                        make_shared<Lambertian>(noise_text)));
+
+  auto difflight = make_shared<DiffuseEmitter>(gl::DefaultTexture, 4);
+  objects.addObject(
+      make_shared<AARectangle<Axis::Y>>(4, 2, 5, 0, 3, difflight));
+
+  scene.objects = objects;
+  scene._width = 700;
+  scene._height = 500;
+  scene.spp_x = 10;
+  scene.spp_y = 10;
+  scene.GAMMA = 1.5f;
+  scene.camera = make_shared<PerspectiveCamera>(
+      gl::to_radian(20.f), (float)(scene._width) / (float)(scene._height), 10.f,
+      1000.f, vec3(0, 1, 0), vec3(-26.f, -1.f, -6.f).normalize(),
+      vec3(22.f, 3.f, 6.f));
+  scene.bg_color = vec3(0.f);
+
+  return scene;
+};
+
+
+SceneInfo night_time() {
   using namespace std;
   using namespace gl;
 
