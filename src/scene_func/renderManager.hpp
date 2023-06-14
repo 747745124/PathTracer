@@ -6,7 +6,7 @@
 #include "../base/medium.hpp"
 #include "../base/objectList.hpp"
 #include "../base/primitive.hpp"
-#include "../method/maxdepth_analytical.hpp"
+#include "../method/analytical_illumin.hpp"
 #include "../method/maxdepth_tracer.hpp"
 #include "../method/pathtracing.hpp"
 #include "../utils/bvh.hpp"
@@ -14,8 +14,13 @@
 #include "../utils/timeit.hpp"
 
 extern uint64_t hit_count;
+
 static std::vector<gl::vec3> light_vertices = {
     {2, 4, 3}, {4, 4, 3}, {4, 4, 0}, {2, 4, 0}};
+static gl::vec3 light_color = {1.0f, 1.0f, 1.0f};
+static float light_intensity = 6.0f;
+static PolyLightInfo light_info = {light_vertices, light_color,
+                                   light_intensity};
 
 struct SceneInfo {
   std::shared_ptr<PerspectiveCamera> camera = nullptr;
@@ -66,9 +71,12 @@ struct SceneInfo {
             vec2 uv = (vec2(i, j) + offsets[k]) / vec2(_width, _height);
             Ray ray = camera->generateRay(uv.u(), uv.v());
 
-            // color += getRayColor(ray, objects, bg_color, 50, bvh);
-            color +=
-                getRayColor(ray, objects, bg_color, light_vertices, 2, bvh);
+#ifndef USE_ANALYTICAL_ILLUMIN
+            color += getRayColor(ray, objects, bg_color, 50, bvh);
+#else
+            color += getRayColor(ray, objects, bg_color, light_info, bvh);
+#endif
+
           }
 
           {

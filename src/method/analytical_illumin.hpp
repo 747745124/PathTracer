@@ -3,7 +3,11 @@
 #include "../base/objectList.hpp"
 #include "../utils/bvh.hpp"
 
-
+struct PolyLightInfo {
+  std::vector<gl::vec3> vertices;
+  gl::vec3 color;
+  float intensity;
+};
 
 static inline gl::vec3
 getIrradianceVector(const std::vector<gl::vec3> &vertices,
@@ -40,14 +44,9 @@ getIrradianceVector(const std::vector<gl::vec3> &vertices,
 };
 
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
-                            gl::vec3 bg_color,
-                            const std::vector<gl::vec3> &l_vertices,
-                            uint max_depth = 2,
+                            gl::vec3 bg_color, const PolyLightInfo &light_info,
                             std::shared_ptr<BVHNode> bvh = nullptr) {
   using namespace gl;
-
-  if (max_depth == 0)
-    return bg_color;
 
   HitRecord hit_record;
   bool is_hit = false;
@@ -64,16 +63,13 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   float pdf = 0.f;
   auto mat = hit_record.material;
   if (mat->scatter(ray, hit_record, albedo, out_ray, pdf)) {
-    vec3 irr_vec = getIrradianceVector(l_vertices, hit_record);
+    vec3 irr_vec = getIrradianceVector(light_info.vertices, hit_record);
     float irr_term = dot(irr_vec, hit_record.normal) > 0.f
                          ? dot(irr_vec, hit_record.normal)
                          : 0;
 
     return mat->emit(hit_record.texCoords) +
-            albedo / M_PI *
-                getRayColor(out_ray, prims, bg_color, l_vertices, max_depth - 1,
-                            bvh) *
-           irr_term;
+           albedo / M_PI * light_info.color * light_info.intensity * irr_term;
   }
 
   return mat->emit(hit_record.texCoords);

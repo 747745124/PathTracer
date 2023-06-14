@@ -70,8 +70,8 @@ SceneInfo simple_light(){
   scene.objects = objects;
   scene._width = 700;
   scene._height = 500;
-  scene.spp_x = 10;
-  scene.spp_y = 10;
+  scene.spp_x = 80;
+  scene.spp_y = 80;
   scene.GAMMA = 1.5f;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(20.f), (float)(scene._width) / (float)(scene._height), 10.f,
