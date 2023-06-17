@@ -12,6 +12,10 @@ public:
   ~Texture2D() = default;
   virtual gl::vec3 getTexelColor(float u, float v,
                                  LERP_MODE mode = LERP_MODE::BILINEAR) = 0;
+  virtual gl::vec3 getTexelColor(gl::vec2 uv,
+                                 LERP_MODE mode = LERP_MODE::BILINEAR){
+    return this->getTexelColor(uv.x(), uv.y(), mode);
+                                 }
 };
 
 class ConstantTexture : public Texture2D {

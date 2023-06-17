@@ -12,7 +12,9 @@ SceneInfo cornell_box() {
 
   SceneInfo scene;
   ObjectList objects;
+  //used for shadowray
   LightList lights;
+  
 
   auto red = make_shared<Lambertian>(vec3(0.65, 0.05, 0.05));
   auto white = make_shared<Lambertian>(vec3(0.73f));
@@ -25,8 +27,8 @@ SceneInfo cornell_box() {
   vertices[3] = {213, 554, 332};
   lights.addLight(make_shared<QuadLight>(vertices, vec3(1.0f), 15));
 
-  objects.addObject(
-      make_shared<AARectangle<Axis::Y>>(554, 213, 343, 227, 332, light));
+  objects.addObject(make_shared<FlipFace>(
+      make_shared<AARectangle<Axis::Y>>(554, 213, 343, 227, 332, light)));
   objects.addObject(
       make_shared<AARectangle<Axis::X>>(555, 0, 555, 0, 555, green));
   objects.addObject(make_shared<AARectangle<Axis::X>>(0, 0, 555, 0, 555, red));
@@ -87,6 +89,7 @@ SceneInfo two_lights() {
 
   lights.addLight(make_shared<QuadLight>(light_a, gl::RED, 3));
   lights.addLight(make_shared<SphereLight>(light_b, gl::YELLOW, 10.f));
+
 
   scene.objects = objects;
   scene._width = 700;

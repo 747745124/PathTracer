@@ -2,9 +2,11 @@
 #include "../base/lightList.hpp"
 #include "../base/objectList.hpp"
 #include "../utils/bvh.hpp"
+#include "../probs/hittablePDF.hpp"
 
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
-                            gl::vec3 bg_color, uint max_depth = 40,
+                            const ObjectList &light_objects, gl::vec3 bg_color,
+                            uint max_depth = 40,
                             std::shared_ptr<BVHNode> bvh = nullptr) {
   using namespace gl;
 
@@ -26,12 +28,17 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   float pdf = 0.f;
   auto mat = hit_record.material;
   if (mat->scatter(ray, hit_record, albedo, out_ray, pdf)) {
-    float cos_theta = dot(hit_record.normal, out_ray.getDirection());
-    cos_theta = std::max(cos_theta, 0.0f);
-    return mat->emit(hit_record.texCoords) +
-           albedo * getRayColor(out_ray, prims, bg_color, max_depth - 1, bvh) *
+    // auto light = light_objects.uniform_get();
+
+    auto light = std::make_shared<AARectangle<Axis::Y>>(554, 213, 343, 227, 332, std::make_shared<DiffuseEmitter>(gl::vec3(1.0f),15));
+    HittablePDF light_pdf(hit_record.position, light);
+    out_ray = Ray(hit_record.position, light_pdf.get());
+    pdf = light_pdf.at(out_ray.getDirection());
+
+    return mat->emit(hit_record) +
+           albedo * getRayColor(out_ray, prims,light_objects,bg_color, max_depth - 1, bvh) *
                mat->scatter_pdf(ray, hit_record, out_ray) / pdf;
   }
 
-  return mat->emit(hit_record.texCoords);
+  return mat->emit(hit_record);
 };

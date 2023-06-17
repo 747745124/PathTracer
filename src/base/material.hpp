@@ -49,7 +49,7 @@ public:
     return 0.0f;
   }
 
-  virtual gl::vec3 emit(HitRecord &hit_record, gl::vec2 uv) {
+  virtual gl::vec3 emit(HitRecord &hit_record) {
     return gl::vec3(0.0f);
   }
 };
@@ -143,10 +143,10 @@ public:
     return false;
   }
 
-  gl::vec3 emit(HitRecord &hit_record, gl::vec2 uv) override {
+  gl::vec3 emit(HitRecord &hit_record) override {
 
     if (hit_record.is_inside)
-      return _text->getTexelColor(uv.u(), uv.v()) * _intensity;
+      return _text->getTexelColor(hit_record.texCoords) * _intensity;
     return gl::vec3(0.0f);
   }
 

@@ -31,6 +31,7 @@ struct SceneInfo {
   std::shared_ptr<PerspectiveCamera> camera = nullptr;
   std::shared_ptr<BVHNode> bvh = nullptr;
   ObjectList objects;
+  ObjectList light_objects;
   gl::vec3 bg_color = gl::vec3(0.7, 0.8, 1.0);
   bool use_bvh = true;
   uint _width = 800;
@@ -39,6 +40,7 @@ struct SceneInfo {
   uint spp_y = 2;
   float GAMMA = 1.0f;
   LightList lights = {std::make_shared<QuadLight>(light_info)};
+
 
   SceneInfo() = default;
 
@@ -64,6 +66,8 @@ struct SceneInfo {
     auto offsets = fb.getOffsets();
     uint counter = 0;
 
+    light_objects = ObjectList(lights);
+
 #pragma omp parallel for
     {
       for (int i = 0; i < _width; i++) {
@@ -82,7 +86,7 @@ struct SceneInfo {
 #elif defined USE_MAXDEPTH_SHADOWRAY
             color += getRayColor(ray, objects, bg_color, lights, 40, bvh);
 #else
-            color += getRayColor(ray, objects, bg_color, 50, bvh);
+            color += getRayColor(ray, objects,light_objects, bg_color, 50, bvh);
 #endif
           }
 

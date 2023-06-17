@@ -87,12 +87,12 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
       return 0.f;
 
     // direct light sampling + indirect light sampling
-    return mat->emit(hit_record.texCoords) + light_term / LIGHT_SAMPLE_NUM +
+    return mat->emit(hit_record) + light_term / LIGHT_SAMPLE_NUM +
            albedo *
                getRayColor(out_ray, prims, bg_color, lights, max_depth - 1,
                            bvh) *
                mat->scatter_pdf(ray, hit_record, out_ray) / pdf;
   }
 
-  return mat->emit(hit_record.texCoords);
+  return mat->emit(hit_record);
 };

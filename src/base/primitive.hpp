@@ -9,11 +9,10 @@
 #include <memory>
 
 using Materials = std::vector<std::shared_ptr<Material>>;
-enum class IntersectionMode { DEFAULT, CUSTOM };
-enum class Axis { X = 0, Y = 1, Z = 2 };
-
 extern uint64_t hit_count;
 
+enum class IntersectionMode { DEFAULT, CUSTOM };
+enum class Axis { X = 0, Y = 1, Z = 2 };
 class Hittable : public Object3D {
 public:
   virtual bool intersect(const Ray &ray, HitRecord &record, float tmin,
@@ -24,6 +23,16 @@ public:
   virtual void setIntersectionMode(IntersectionMode mode) {
     this->intersection_mode = mode;
   };
+
+  virtual float pdf_value(const gl::vec3 &origin,
+                          const gl::vec3 &direction) const {
+    return 0.f;
+  }
+
+  virtual gl::vec3 get_sample(const gl::vec3 &origin) const {
+    return gl::vec3(1.f, 0.f, 0.f);
+  }
+
   ObjType objtype;
   IntersectionMode intersection_mode = IntersectionMode::DEFAULT;
 };
@@ -143,6 +152,22 @@ public:
 
   bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0001,
                  float tmax = 10000.f) const override;
+
+  float pdf_value(const gl::vec3 &origin,
+                  const gl::vec3 &dir) const override {
+    HitRecord hit_record;
+    if (!this->intersect(Ray(origin, dir), hit_record))
+      return 0.f;
+
+    auto area =
+        (this->_d0_max - this->_d0_min) * (this->_d1_max - this->_d1_min);
+    auto distance_squared = hit_record.t * hit_record.t * gl::dot(dir, dir);
+    auto cosine = std::fabs(gl::dot(dir, hit_record.normal) / dir.length());
+
+    return distance_squared / (cosine * area);
+  }
+
+ gl::vec3 get_sample(const gl::vec3 &origin) const override;
 };
 
 class Triangle : public Hittable {
@@ -215,13 +240,6 @@ public:
         hit_record.set_normal(ray, cross(edge1, edge2).normalize());
         hit_record.material =
             v0.material == nullptr ? gl::DefaultMaterial : v0.material;
-        // auto hit_point = barycentric_lerp(v0, v1, v2, gl::vec2(u, v));
-        // hit_record->texCoords = hit_point.texCoords;
-        // hit_record->set_normal(ray, hit_point.normal);
-        // hit_record->material =
-        //     hit_point.material == nullptr
-        //         ? std::make_shared<Material>()
-        //         :
         return true;
       } else
         return false;
