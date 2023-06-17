@@ -203,6 +203,7 @@ static inline float C_rand(float min, float max) {
   return min + (max - min) * C_rand();
 }
 
+
 static inline gl::vec3 C_rand_vec3() {
   return gl::vec3(C_rand(), C_rand(), C_rand());
 }

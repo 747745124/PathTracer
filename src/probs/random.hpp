@@ -22,4 +22,23 @@ inline vec3 cosineSampleHemiSphere() {
   return vec3(x, y, z);
 }
 
+//stratified sampling offset
+inline std::vector<gl::vec2> getOffsets(int spp_x, int spp_y) {
+  // sample_offset offset in the grid
+  std::vector<gl::vec2> sample_offset;
+  for (int i = 0; i < spp_x; i++) {
+    for (int j = 0; j < spp_y; j++) {
+      float i_seg = (float)i / (float)spp_x;
+      float i_seg_next = (float)(i + 1) / (float)spp_x;
+      float j_seg = (float)j / (float)spp_y;
+      float j_seg_next = (float)(j + 1) / (float)spp_y;
+      gl::vec2 offset = {gl::C_rand(i_seg, i_seg_next),
+                         gl::C_rand(j_seg, j_seg_next)};
+      sample_offset.push_back(offset);
+    }
+  }
+
+  return sample_offset;
+}
+
 };

@@ -1,9 +1,9 @@
 #pragma once
+#include "../probs/pdf.hpp"
+#include "../probs/random.hpp"
 #include "../utils/matrix.hpp"
 #include "../utils/orthoBasis.hpp"
 #include "../utils/scene_io.hpp"
-#include "../probs/pdf.hpp"
-#include "../probs/random.hpp"
 #include "./ray.hpp"
 #include "./texture.hpp"
 
@@ -17,6 +17,7 @@ static std::shared_ptr<ConstantTexture> DefaultTexture =
     std::make_shared<ConstantTexture>(gl::vec3(1.0f));
 static std::shared_ptr<Lambertian> DefaultMaterial =
     std::make_shared<Lambertian>(DefaultTexture);
+
 }; // namespace gl
 
 struct HitRecord {
@@ -39,7 +40,7 @@ public:
 class Material {
 public:
   virtual bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &albedo,
-                       Ray &ray_scattered,float& pdf) const {
+                       Ray &ray_scattered, float &pdf) const {
     return false;
   }
 
@@ -48,7 +49,9 @@ public:
     return 0.0f;
   }
 
-  virtual gl::vec3 emit(gl::vec2 uv) { return gl::vec3(0.0f); }
+  virtual gl::vec3 emit(HitRecord &hit_record, gl::vec2 uv) {
+    return gl::vec3(0.0f);
+  }
 };
 
 class Lambertian : public Material {
@@ -59,8 +62,8 @@ public:
       : albedo(std::make_shared<ConstantTexture>(a)){};
   // scatter the ray with lambertian reflection
   bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-               Ray &ray_scattered,float& pdf) const override {
-    
+               Ray &ray_scattered, float &pdf) const override {
+
     OrthoBasis basis(rec.normal);
 
 #ifdef USE_UNIFORM_SAMPLING
@@ -69,7 +72,7 @@ public:
     gl::vec3 direction = basis.at(gl::cosineSampleHemiSphere());
 #endif
 
-    ray_scattered = Ray(rec.position,direction.normalize());
+    ray_scattered = Ray(rec.position, direction.normalize());
     attenuation = albedo->getTexelColor(rec.texCoords.u(), rec.texCoords.v());
     pdf = dot(rec.normal, ray_scattered.getDirection().normalize()) / M_PI;
     return true;
@@ -78,7 +81,7 @@ public:
   float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
                     const Ray &scattered) const override {
     float cosine = dot(rec.normal, scattered.getDirection().normalize());
-    return cosine < 0 ? 0 : cosine / M_PI;
+    return std::max(cosine / M_PI, 0.0);
   }
 
   std::shared_ptr<Texture2D> albedo;
@@ -88,14 +91,23 @@ class Mirror : public Material {
 public:
   Mirror(const gl::vec3 &a, float f = 0.f) : albedo(a) { fuzz = f < 1 ? f : 1; }
   bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-               Ray &ray_scattered,float& pdf) const override {
+               Ray &ray_scattered, float &pdf) const override {
     gl::vec3 reflected =
         reflect(ray_in.getDirection().normalize(), rec.normal) +
         gl::on_sphere_random_vec(fuzz);
     ray_scattered = Ray(rec.position, reflected);
     attenuation = albedo;
+    pdf = 1.0f;
     return (dot(ray_scattered.getDirection(), rec.normal) > 0);
   }
+
+  float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
+                    const Ray &scattered) const override {
+    auto reflected =
+        gl::reflect(ray_in.getDirection().normalize(), rec.normal).normalize();
+    return dot(reflected, rec.normal) *
+           (((reflected - scattered.getDirection()).near_zero()) ? 1.0f : 0.5f);
+  };
 
   gl::vec3 albedo;
   float fuzz;
@@ -107,7 +119,7 @@ public:
   Dielectric(float ior) : ior(ior){};
 
   bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-               Ray &ray_scattered,float& pdf) const override {
+               Ray &ray_scattered, float &pdf) const override {
 
     attenuation = gl::vec3(1.0f);
     float ri_ro = rec.is_inside ? (1.0 / ior) : ior;
@@ -127,12 +139,15 @@ public:
       : _text(std::make_shared<ConstantTexture>(a)), _intensity(intensity){};
 
   bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-               Ray &ray_scattered,float& pdf) const override {
+               Ray &ray_scattered, float &pdf) const override {
     return false;
   }
 
-  gl::vec3 emit(gl::vec2 uv) override {
-    return _text->getTexelColor(uv.u(), uv.v()) * _intensity;
+  gl::vec3 emit(HitRecord &hit_record, gl::vec2 uv) override {
+
+    if (hit_record.is_inside)
+      return _text->getTexelColor(uv.u(), uv.v()) * _intensity;
+    return gl::vec3(0.0f);
   }
 
 private:
@@ -146,7 +161,7 @@ public:
   Isotropic(const gl::vec3 &a) : _text(std::make_shared<ConstantTexture>(a)){};
 
   bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-               Ray &ray_scattered,float& pdf) const override {
+               Ray &ray_scattered, float &pdf) const override {
     // scatter the ray with lambertian reflection
     // any direction scatter with equal probability
     ray_scattered = Ray(rec.position, gl::sphere_random_vec());

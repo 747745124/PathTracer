@@ -3,11 +3,7 @@
 #include "../base/objectList.hpp"
 #include "../utils/bvh.hpp"
 
-struct PolyLightInfo {
-  std::vector<gl::vec3> vertices;
-  gl::vec3 color;
-  float intensity;
-};
+
 
 static inline gl::vec3
 getIrradianceVector(const std::vector<gl::vec3> &vertices,

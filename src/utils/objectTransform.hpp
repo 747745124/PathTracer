@@ -3,6 +3,29 @@
 #include "../base/objectList.hpp"
 #include "../base/primitive.hpp"
 
+class FlipFace : public Hittable {
+  public:
+    FlipFace(std::shared_ptr<Hittable> object) : object(object) {
+      this->objtype = object->objtype;
+    };
+
+    bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0001,
+                   float tmax = 10000.f) const override {
+      if (!object->intersect(ray, hit_record, tmin, tmax)) {
+        return false;
+      }
+
+      hit_record.is_inside = !hit_record.is_inside;
+      return true;
+    };
+
+    AABB getAABB(float t0, float t1) override {
+      return object->getAABB(t0, t1);
+    };
+
+    std::shared_ptr<Hittable> object;
+};
+
 class Translate : public Hittable {
 public:
   Translate(std::shared_ptr<Hittable> object, const gl::vec3 &offset)
@@ -50,3 +73,4 @@ public:
   float sin_theta;
   float cos_theta;
 };
+

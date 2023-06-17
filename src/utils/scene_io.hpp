@@ -79,7 +79,9 @@ enum class LightType
 {
     POINT_LIGHT,
     DIRECTIONAL_LIGHT,
-    SPOT_LIGHT
+    SPOT_LIGHT,
+    QUAD_LIGHT,
+    SPHERE_LIGHT
 };
 
 struct LightIO

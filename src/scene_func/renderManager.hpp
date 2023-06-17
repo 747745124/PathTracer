@@ -7,8 +7,9 @@
 #include "../base/objectList.hpp"
 #include "../base/primitive.hpp"
 #include "../method/analytical_illumin.hpp"
-#include "../method/maxdepth_tracer.hpp"
-#include "../method/pathtracing.hpp"
+#include "../method/maxdepth_shadowray.hpp"
+#include "../method/maxdepth_naive.hpp"
+#include "../method/roulette_naive.hpp"
 #include "../utils/bvh.hpp"
 #include "../utils/objectTransform.hpp"
 #include "../utils/timeit.hpp"
@@ -22,6 +23,10 @@ static float light_intensity = 6.0f;
 static PolyLightInfo light_info = {light_vertices, light_color,
                                    light_intensity};
 
+static auto default_light = std::make_shared<QuadLight>(light_info);
+static LightList default_lights = {default_light};
+
+
 struct SceneInfo {
   std::shared_ptr<PerspectiveCamera> camera = nullptr;
   std::shared_ptr<BVHNode> bvh = nullptr;
@@ -33,6 +38,7 @@ struct SceneInfo {
   uint spp_x = 2;
   uint spp_y = 2;
   float GAMMA = 1.0f;
+  LightList lights = {std::make_shared<QuadLight>(light_info)};
 
   SceneInfo() = default;
 
@@ -71,12 +77,13 @@ struct SceneInfo {
             vec2 uv = (vec2(i, j) + offsets[k]) / vec2(_width, _height);
             Ray ray = camera->generateRay(uv.u(), uv.v());
 
-#ifndef USE_ANALYTICAL_ILLUMIN
-            color += getRayColor(ray, objects, bg_color, 50, bvh);
-#else
+#ifdef USE_ANALYTICAL_ILLUMIN
             color += getRayColor(ray, objects, bg_color, light_info, bvh);
+#elif defined USE_MAXDEPTH_SHADOWRAY
+            color += getRayColor(ray, objects, bg_color, lights, 40, bvh);
+#else
+            color += getRayColor(ray, objects, bg_color, 50, bvh);
 #endif
-
           }
 
           {
