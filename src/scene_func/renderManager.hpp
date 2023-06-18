@@ -82,9 +82,11 @@ struct SceneInfo {
             Ray ray = camera->generateRay(uv.u(), uv.v());
 
 #ifdef USE_ANALYTICAL_ILLUMIN
-            color += getRayColor(ray, objects, bg_color, light_info, bvh);
+            color += getRayColor(ray, objects, bg_color, lights, bvh);
 #elif defined USE_MAXDEPTH_SHADOWRAY
             color += getRayColor(ray, objects, bg_color, lights, 40, bvh);
+#elif defined USE_ROULETTE
+            color += getRayColor(ray, objects, light_objects,bg_color, bvh);
 #else
             color += getRayColor(ray, objects,light_objects, bg_color, 50, bvh);
 #endif

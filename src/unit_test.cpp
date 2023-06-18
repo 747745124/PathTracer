@@ -12,14 +12,16 @@
 // #define CHECKER_TEST
 // #define SHADER_TEST
 // #define BVH_TEST
+// #define PDF_TEST
 #define DIFFUSE
-uint64_t hit_count = 0;
 
+uint64_t hit_count = 0;
 int main() {
+
 #ifdef DIFFUSE
   using namespace gl;
 
-  SceneInfo scene = cornell_box();
+  SceneInfo scene = VeachMIS();
   scene.renderWithInfo("../output.png");
 
 

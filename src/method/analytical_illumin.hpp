@@ -40,7 +40,7 @@ getIrradianceVector(const std::vector<gl::vec3> &vertices,
 };
 
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
-                            gl::vec3 bg_color, const PolyLightInfo &light_info,
+                            gl::vec3 bg_color, const LightList &light_info,
                             std::shared_ptr<BVHNode> bvh = nullptr) {
   using namespace gl;
 
@@ -55,18 +55,26 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     return bg_color;
 
   Ray out_ray;
-  vec3 albedo;
+  vec3 albedo(0.f);
+  ScatterRecord srec;
   float pdf = 0.f;
   auto mat = hit_record.material;
-  if (mat->scatter(ray, hit_record, albedo, out_ray, pdf)) {
-    vec3 irr_vec = getIrradianceVector(light_info.vertices, hit_record);
-    float irr_term = dot(irr_vec, hit_record.normal) > 0.f
-                         ? dot(irr_vec, hit_record.normal)
-                         : 0;
+  if (mat->scatter(ray, hit_record,srec)) {
+    auto light = light_info.uniform_get();
+    if(light->type == LightType::SPHERE_LIGHT)
+      throw std::runtime_error("Analytical Illumination is not supported for sphere light");
 
-    return mat->emit(hit_record) +
-           albedo / M_PI * light_info.color * light_info.intensity * irr_term;
+    //convert to quad light
+    auto quad_light = std::dynamic_pointer_cast<QuadLight>(light);
+    std::vector<gl::vec3> light_vertices(quad_light->vertices.begin(), quad_light->vertices.end());
+
+    albedo = srec.attenuation;
+    vec3 irr_vec = getIrradianceVector(light_vertices, hit_record);
+    float irr_term = fabs(dot(irr_vec, hit_record.normal));
+
+    return mat->emit(ray,hit_record) +
+           albedo / M_PI * light->color * light->intensity * irr_term;
   }
 
-  return mat->emit(hit_record);
+  return mat->emit(ray,hit_record);
 };

@@ -3,7 +3,7 @@
 namespace gl {
 static gl::vec3 RED = gl::vec3(1.0f, 0.0f, 0.0f);
 static gl::vec3 GREEN = gl::vec3(0.0f, 1.0f, 0.0f);
-static gl::vec3 BLUE = gl::vec3(0.0f, 0.0f, 1.0f);
+static gl::vec3 BLUE = gl::vec3(0.0f, 0.2f, 0.7f);
 static gl::vec3 WHITE = gl::vec3(1.0f, 1.0f, 1.0f);
 static gl::vec3 BLACK = gl::vec3(0.0f, 0.0f, 0.0f);
 static gl::vec3 YELLOW = gl::vec3(1.0f, 1.0f, 0.0f);

@@ -15,8 +15,9 @@ template <> AABB Rotate<Axis::X>::getAABB(float t0, float t1) {
         auto y = j * box.get_max().y() + (1 - j) * box.get_min().y();
         auto z = k * box.get_max().z() + (1 - k) * box.get_min().z();
 
-        auto new_yz = rotation2D(angle) * vec2(y, z);
-        vec3 temp(x, new_yz[0], new_yz[1]);
+        auto new_y = cos_theta * y + sin_theta * z;
+        auto new_z = -sin_theta * y + cos_theta * z;
+        vec3 temp(x, new_y, new_z);
 
         for (int c = 0; c < 3; c++) {
           min[c] = std::min(min[c], temp[c]);
@@ -76,8 +77,9 @@ template <> AABB Rotate<Axis::Z>::getAABB(float t0, float t1) {
         auto y = j * box.get_max().y() + (1 - j) * box.get_min().y();
         auto z = k * box.get_max().z() + (1 - k) * box.get_min().z();
 
-        auto new_xy = rotation2D(angle) * vec2(x, y);
-        vec3 temp(new_xy[0], new_xy[1], z);
+        auto new_x = cos_theta * x + sin_theta * y;
+        auto new_y = -sin_theta * x + cos_theta * y;
+        vec3 temp(new_x, new_y, z);
 
         for (int c = 0; c < 3; c++) {
           min[c] = std::min(min[c], temp[c]);

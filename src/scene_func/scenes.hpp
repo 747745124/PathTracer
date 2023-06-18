@@ -1,20 +1,15 @@
 #pragma once
 #include "../utils/colors.hpp"
+#include "../utils/commonMaterials.hpp"
 #include "./renderManager.hpp"
-
-SceneInfo cornell_ckpt10(){
-
-};
-
 SceneInfo cornell_box() {
   using namespace std;
   using namespace gl;
 
   SceneInfo scene;
   ObjectList objects;
-  //used for shadowray
+  // used for shadowray
   LightList lights;
-  
 
   auto red = make_shared<Lambertian>(vec3(0.65, 0.05, 0.05));
   auto white = make_shared<Lambertian>(vec3(0.73f));
@@ -89,7 +84,6 @@ SceneInfo two_lights() {
 
   lights.addLight(make_shared<QuadLight>(light_a, gl::RED, 3));
   lights.addLight(make_shared<SphereLight>(light_b, gl::YELLOW, 10.f));
-
 
   scene.objects = objects;
   scene._width = 700;
@@ -177,14 +171,16 @@ SceneInfo simple_light() {
 
   SceneInfo scene;
   ObjectList objects;
+  LightList lights;
 
   auto noise_text = make_shared<NoiseTexture>(10, 4);
   objects.addObject(make_shared<Sphere>(vec3(0, -1000, 0), 1000,
                                         make_shared<Lambertian>(noise_text)));
 
   auto difflight = make_shared<DiffuseEmitter>(gl::DefaultTexture, 4);
-  objects.addObject(
-      make_shared<AARectangle<Axis::Y>>(4, 2, 5, 0, 3, difflight));
+  auto light_obj = make_shared<AARectangle<Axis::Y>>(4, 2, 5, 0, 3, difflight);
+  objects.addObject(light_obj);
+  lights.addLight(make_shared<QuadLight>(light_obj, gl::WHITE, 4));
 
   scene.objects = objects;
   scene._width = 700;
@@ -197,6 +193,7 @@ SceneInfo simple_light() {
       1000.f, vec3(0, 1, 0), vec3(-26.f, -1.f, -6.f).normalize(),
       vec3(22.f, 3.f, 6.f));
   scene.bg_color = vec3(0.f);
+  scene.lights = lights;
 
   return scene;
 };
@@ -207,6 +204,7 @@ SceneInfo night_time() {
 
   SceneInfo scene;
   ObjectList objects;
+  LightList lights;
 
   auto noise_text = make_shared<NoiseTexture>(10, 4);
   objects.addObject(make_shared<Sphere>(vec3(0, -1000, 0), 1000,
@@ -215,8 +213,10 @@ SceneInfo night_time() {
                                         make_shared<Lambertian>(noise_text)));
 
   auto difflight = make_shared<DiffuseEmitter>(gl::DefaultTexture, 4);
-  objects.addObject(
-      make_shared<AARectangle<Axis::Z>>(-2, 3, 5, 1, 3, difflight));
+  auto light_obj = make_shared<AARectangle<Axis::Y>>(4, 2, 5, 0, 3, difflight);
+  objects.addObject(light_obj);
+
+  lights.addLight(make_shared<QuadLight>(light_obj, gl::WHITE, 4));
 
   scene.objects = objects;
   scene._width = 1200;
@@ -506,27 +506,161 @@ SceneInfo DiffuseDiffuse() {
   auto material_left = make_shared<Lambertian>(vec3(0.8, 0.8, 0.8));
   auto material_right = make_shared<Lambertian>(vec3(0.8, 0.6, 0.2));
 
-
   world.addObject(
       make_shared<Sphere>(vec3(0.0, -100.5, -1.0), 100.0, material_ground));
-  world.addObject(make_shared<Sphere>(vec3(0.0, 0.0, -1.0), 0.5, material_center));
-  world.addObject(make_shared<Sphere>(vec3(-1.0, 0.0, -1.0), 0.5, material_left));
-  world.addObject(make_shared<Sphere>(vec3(1.0, 0.0, -1.0), 0.5, material_right));
-  world.addObject(make_shared<XYRectangle>(-1.8, -1.8, 1.8, -1, 1, material_right));
-  world.addObject(make_shared<YZRectangle>(-1.8, -1, 1, -1.8, 0.5, material_left));
-  world.addObject(make_shared<YZRectangle>(1.8, -1, 1, -1.8, 0.5, material_center));
-  world.addObject(make_shared<XZRectangle>(1, -1.8, 1.8, -1.8, 0.5, material_center));
+  world.addObject(
+      make_shared<Sphere>(vec3(0.0, 0.0, -1.0), 0.5, material_center));
+  world.addObject(
+      make_shared<Sphere>(vec3(-1.0, 0.0, -1.0), 0.5, material_left));
+  world.addObject(
+      make_shared<Sphere>(vec3(1.0, 0.0, -1.0), 0.5, material_right));
+  world.addObject(
+      make_shared<XYRectangle>(-1.8, -1.8, 1.8, -1, 1, material_right));
+  world.addObject(
+      make_shared<YZRectangle>(-1.8, -1, 1, -1.8, 0.5, material_left));
+  world.addObject(
+      make_shared<YZRectangle>(1.8, -1, 1, -1.8, 0.5, material_center));
+  world.addObject(
+      make_shared<XZRectangle>(1, -1.8, 1.8, -1.8, 0.5, material_center));
 
   scene.objects = world;
   scene._width = 540;
   scene._height = 360;
-  scene.spp_x = 60;
-  scene.spp_y = 60;
+  scene.spp_x = 10;
+  scene.spp_y = 10;
   scene.GAMMA = 1.0f;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(50.f), (float)(scene._width) / (float)(scene._height), 10.f,
-      1000.f, vec3(0, 1, 0), vec3(0,0,-1).normalize(),
-      vec3(0,0,2));
+      1000.f, vec3(0, 1, 0), vec3(0, 0, -1).normalize(), vec3(0, 0, 2));
+  scene.lights = lights;
+  scene.bg_color = vec3(0.0f);
+  return scene;
+};
+
+SceneInfo cornell_box_modified() {
+  using namespace std;
+  using namespace gl;
+
+  SceneInfo scene;
+  ObjectList objects;
+  // used for shadowray
+  LightList lights;
+
+  auto red = make_shared<Lambertian>(vec3(0.65, 0.05, 0.05));
+  auto white = make_shared<Lambertian>(vec3(0.73f));
+  auto green = make_shared<Lambertian>(vec3(0.12, 0.45, 0.15));
+  auto light = make_shared<DiffuseEmitter>(vec3(1.0f), 15);
+
+  objects.addObject(make_shared<FlipFace>(
+      make_shared<AARectangle<Axis::Y>>(554, 213, 343, 227, 332, light)));
+  objects.addObject(
+      make_shared<AARectangle<Axis::X>>(555, 0, 555, 0, 555, green));
+  objects.addObject(make_shared<AARectangle<Axis::X>>(0, 0, 555, 0, 555, red));
+  objects.addObject(
+      make_shared<AARectangle<Axis::Y>>(0, 0, 555, 0, 555, white));
+  objects.addObject(
+      make_shared<AARectangle<Axis::Y>>(555, 0, 555, 0, 555, white));
+  objects.addObject(
+      make_shared<AARectangle<Axis::Z>>(555, 0, 555, 0, 555, white));
+
+  shared_ptr<Hittable> box_left =
+      make_shared<Box>(vec3(0.f), vec3(165, 330, 165), MIRROR);
+  box_left = make_shared<Rotate<Axis::Y>>(box_left, gl::to_radian(15.f));
+  box_left = make_shared<Translate>(box_left, vec3(265, 0, 295));
+  objects.addObject(box_left);
+
+  shared_ptr<Sphere> sphere =
+      make_shared<Sphere>(vec3(190, 90, 190), 90, PHONG_RED);
+  objects.addObject(sphere);
+
+  std::array<gl::vec3, 4> vertices;
+  vertices[0] = {213, 554, 227};
+  vertices[1] = {343, 554, 227};
+  vertices[2] = {343, 554, 332};
+  vertices[3] = {213, 554, 332};
+
+  lights.addLight(make_shared<QuadLight>(vertices, vec3(1.0f), 15));
+
+  scene._height = 300;
+  scene._width = 300;
+  scene.spp_x = 40;
+  scene.spp_y = 40;
+  scene.GAMMA = 2.f;
+  scene.camera = make_shared<PerspectiveCamera>(
+      gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
+      1000.f, vec3(0, 1, 0), vec3(0, 0, 1.f).normalize(),
+      vec3(278.f, 278.f, -800.f));
+  scene.objects = objects;
+  scene.bg_color = vec3(0.f);
+  scene.lights = lights;
+  return scene;
+};
+
+SceneInfo VeachMIS() {
+  using namespace std;
+  using namespace gl;
+
+  SceneInfo scene;
+  ObjectList world;
+  LightList lights;
+
+  auto material_1 = make_shared<DiffuseEmitter>(WHITE, 16.f);
+  auto material_2 = make_shared<DiffuseEmitter>(MAGENTA, 10.f);
+  auto material_3 = make_shared<DiffuseEmitter>(GREEN,10.803f);
+  auto material_4 = make_shared<DiffuseEmitter>(BLUE, 11.111f);
+  auto material_5 = make_shared<DiffuseEmitter>(YELLOW, 10.23457f);
+  lights.addLight(
+      make_shared<SphereLight>(vec3(10, 10, 4), 0.5, WHITE, 16.f));
+  lights.addLight(
+      make_shared<SphereLight>(vec3(-3.75, 0, 0), 0.5, MAGENTA, 10.803f));
+  lights.addLight(
+      make_shared<SphereLight>(vec3(-1.25, 0, 0), 0.5, YELLOW, 10.f));
+  lights.addLight(
+      make_shared<SphereLight>(vec3(1.25, 0, 0), 0.5, GREEN, 10.111f));
+  lights.addLight(
+      make_shared<SphereLight>(vec3(3.75, 0, 0), 0.9, BLUE, 11.23457f));
+
+  world.addObject(make_shared<Sphere>(vec3(10, 10, 4), 0.5, material_1));
+  world.addObject(make_shared<Sphere>(vec3(-3.75, 0, 0), 0.4, material_2));
+  world.addObject(make_shared<Sphere>(vec3(-1.25, 0, 0), 0.4, material_5));
+  world.addObject(make_shared<Sphere>(vec3(1.25, 0, 0), 0.4, material_3));
+  world.addObject(make_shared<Sphere>(vec3(3.75, 0, 0), 0.9, material_4));
+
+  auto plane_1 =
+      make_shared<XZRectangle>(-2.4, -4, 4, -0.52, 0.26, ROUGH_MIRROR);
+  auto plane_2 =
+      make_shared<XZRectangle>(-3.0, -4, 4, 0.47, 1.37, ROUGH_MIRROR);
+  auto plane_1_tilted = make_shared<Rotate<Axis::X>>(plane_1, 31);
+  auto plane_2_tilted = make_shared<Rotate<Axis::X>>(plane_2, 31);
+  world.addObject(plane_1_tilted);
+  world.addObject(plane_2_tilted);
+
+  auto plane_3 = make_shared<XZRectangle>(-3.4, -4, 4, 1.7, 2.7, ROUGH_MIRROR);
+  world.addObject(plane_3);
+
+  auto plane_4 = make_shared<XZRectangle>(-3.85, -4, 4, 3.08,4.06, ROUGH_MIRROR);
+  world.addObject(plane_4);
+
+  auto plane_x =
+      make_shared<XZRectangle>(-4.14615, -10, 10, -10, 10, PHONG_GRAY);
+  auto plane_y = make_shared<XYRectangle>(-2, -10, 10, -10, 10, PHONG_GRAY);
+  world.addObject(plane_x);
+  world.addObject(plane_y);
+
+  // world.addObject(plane_2);
+  // world.addObject(make_shared<XYRectangle>(-10, -50, 50, -2, 2,
+  // DefaultMaterial)); world.addObject(make_shared<XYRectangle>(-10, -50, 50,
+  // -9, -3, DefaultMaterial));
+
+  scene.objects = world;
+  scene._width = 800;
+  scene._height = 600;
+  scene.spp_x = 15;
+  scene.spp_y = 15;
+  scene.GAMMA = 1.0f;
+  scene.camera = make_shared<PerspectiveCamera>(
+      gl::to_radian(28.f), (float)(scene._width) / (float)(scene._height), 10.f,
+      1000.f, vec3(0, 1, 0), vec3(0, -4, -12.5).normalize(), vec3(0, 2, 15));
   scene.lights = lights;
   scene.bg_color = vec3(0.0f);
   return scene;

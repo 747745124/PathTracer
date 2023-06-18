@@ -37,6 +37,13 @@ static inline vec3 refract(const vec3 &v, const vec3 &n, float ni_over_nt,
   }
 }
 
+static inline vec3 refract(const vec3& dir, const vec3& n, float ni_over_nt) {
+    auto cos_theta = fmin(dot(-dir, n), 1.0);
+    vec3 r_out_perp =  ni_over_nt * (dir + cos_theta*n);
+    vec3 r_out_parallel = -sqrt(fabs(1.0 - dot(r_out_perp,r_out_perp))) * n;
+    return r_out_perp + r_out_parallel;
+}
+
 static inline float sign(float x) {
   if (x < 0.f)
     return -1.f;

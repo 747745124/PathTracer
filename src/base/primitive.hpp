@@ -57,7 +57,7 @@ public:
     AABB aabb(this->center - gl::vec3(this->radius),
               this->center + gl::vec3(this->radius));
     return aabb;
-  }
+  };
 
   bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0,
                  float tmax = 10000.f) const override {
@@ -128,6 +128,28 @@ public:
     }
     }
   };
+
+  float pdf_value(const gl::vec3 &origin,
+                  const gl::vec3 &dir) const override {
+    HitRecord hit_record;
+    if (!this->intersect(Ray(origin, dir), hit_record))
+      return 0.f;
+
+    auto cos_theta_max =
+        sqrtf(1 - this->radius * this->radius /
+                      gl::dot(this->center - origin, this->center - origin));
+    auto angle = 2 * M_PI * (1 - cos_theta_max);
+
+    return 1 / angle;
+  };
+
+  gl::vec3 get_sample(const gl::vec3 &origin) const override {
+    auto direction = this->center - origin;
+    auto distance_squared = gl::dot(direction, direction);
+    OrthoBasis onb(direction.normalize());
+    return onb.at(gl::randomToSphere(this->radius, distance_squared));
+  };
+
 };
 
 template <Axis axis> class AARectangle : public Hittable {

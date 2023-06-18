@@ -17,8 +17,15 @@ static std::shared_ptr<ConstantTexture> DefaultTexture =
     std::make_shared<ConstantTexture>(gl::vec3(1.0f));
 static std::shared_ptr<Lambertian> DefaultMaterial =
     std::make_shared<Lambertian>(DefaultTexture);
-
 }; // namespace gl
+
+// determine whether the ray is specular
+struct ScatterRecord {
+  Ray specular_ray;
+  bool is_specular;
+  gl::vec3 attenuation;
+  std::shared_ptr<PDF> pdf_ptr;
+};
 
 struct HitRecord {
 public:
@@ -39,8 +46,8 @@ public:
 
 class Material {
 public:
-  virtual bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &albedo,
-                       Ray &ray_scattered, float &pdf) const {
+  virtual bool scatter(const Ray &ray_in, HitRecord &rec,
+                       ScatterRecord &srec) const {
     return false;
   }
 
@@ -49,7 +56,7 @@ public:
     return 0.0f;
   }
 
-  virtual gl::vec3 emit(HitRecord &hit_record) {
+  virtual gl::vec3 emit(const Ray &ray_in, HitRecord &rec) {
     return gl::vec3(0.0f);
   }
 };
@@ -61,20 +68,11 @@ public:
   Lambertian(const gl::vec3 &a)
       : albedo(std::make_shared<ConstantTexture>(a)){};
   // scatter the ray with lambertian reflection
-  bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-               Ray &ray_scattered, float &pdf) const override {
-
-    OrthoBasis basis(rec.normal);
-
-#ifdef USE_UNIFORM_SAMPLING
-    gl::vec3 direction = basis.at(gl::uniformSampleHemiSphere());
-#else
-    gl::vec3 direction = basis.at(gl::cosineSampleHemiSphere());
-#endif
-
-    ray_scattered = Ray(rec.position, direction.normalize());
-    attenuation = albedo->getTexelColor(rec.texCoords.u(), rec.texCoords.v());
-    pdf = dot(rec.normal, ray_scattered.getDirection().normalize()) / M_PI;
+  bool scatter(const Ray &ray_in, HitRecord &rec,
+               ScatterRecord &srec) const override {
+    srec.is_specular = false;
+    srec.attenuation = albedo->getTexelColor(rec.texCoords);
+    srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
     return true;
   }
 
@@ -90,27 +88,70 @@ public:
 class Mirror : public Material {
 public:
   Mirror(const gl::vec3 &a, float f = 0.f) : albedo(a) { fuzz = f < 1 ? f : 1; }
-  bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-               Ray &ray_scattered, float &pdf) const override {
+  // it's hard to use a delta functinon as BRDF,
+  // since the floating point precision causes trouble
+  // This design is a reference from Raytracing the rest of your life
+  bool scatter(const Ray &ray_in, HitRecord &rec,
+               ScatterRecord &srec) const override {
     gl::vec3 reflected =
         reflect(ray_in.getDirection().normalize(), rec.normal) +
         gl::on_sphere_random_vec(fuzz);
-    ray_scattered = Ray(rec.position, reflected);
-    attenuation = albedo;
-    pdf = 1.0f;
-    return (dot(ray_scattered.getDirection(), rec.normal) > 0);
+    srec.specular_ray = Ray(rec.position, reflected);
+    srec.attenuation = albedo;
+    srec.is_specular = true;
+    srec.pdf_ptr = nullptr;
+    return true;
   }
 
   float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
                     const Ray &scattered) const override {
-    auto reflected =
-        gl::reflect(ray_in.getDirection().normalize(), rec.normal).normalize();
-    return dot(reflected, rec.normal) *
-           (((reflected - scattered.getDirection()).near_zero()) ? 1.0f : 0.5f);
+    return 0.0f;
   };
 
   gl::vec3 albedo;
   float fuzz;
+};
+
+class Phong : public Material {
+public:
+  Phong(const gl::vec3 &diffuse, const gl::vec3 &specular,
+        const gl::vec3 &ambient, float shininess)
+      : diffuse(diffuse), specular(specular), ambient(ambient),
+        shininess(shininess){};
+
+  gl::vec3 diffuse;
+  gl::vec3 specular;
+  gl::vec3 ambient;
+  float shininess;
+
+  bool scatter(const Ray &ray_in, HitRecord &rec,
+               ScatterRecord &srec) const override {
+    float p = gl::C_rand();
+
+    if (p < shininess) {
+      srec.is_specular = true;
+      srec.attenuation = specular + ambient;
+      srec.pdf_ptr = nullptr;
+      srec.specular_ray = Ray(
+          rec.position, reflect(ray_in.getDirection().normalize(), rec.normal));
+      return true;
+    }
+
+    srec.is_specular = false;
+    srec.attenuation = diffuse + ambient;
+    srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
+    return true;
+  }
+
+  float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
+                    const Ray &scattered) const override {
+    float p = gl::C_rand();
+    if (p < shininess) {
+      return 0.0f;
+    }
+    float cosine = dot(rec.normal, scattered.getDirection().normalize());
+    return std::max(cosine / M_PI, 0.0);
+  }
 };
 
 class Dielectric : public Material {
@@ -118,15 +159,16 @@ public:
   float ior;
   Dielectric(float ior) : ior(ior){};
 
-  bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-               Ray &ray_scattered, float &pdf) const override {
-
-    attenuation = gl::vec3(1.0f);
-    float ri_ro = rec.is_inside ? (1.0 / ior) : ior;
+  bool scatter(const Ray &ray_in, HitRecord &rec,
+               ScatterRecord &srec) const override {
+    srec.is_specular = true;
+    srec.pdf_ptr = nullptr;
+    srec.attenuation = gl::vec3(1.0f);
+    float ri_ro = rec.is_inside ? 1.0f / ior : ior;
     bool is_refract = false;
     gl::vec3 out_ray = refract(ray_in.getDirection().normalize(), rec.normal,
                                ri_ro, is_refract);
-    ray_scattered = Ray(rec.position, out_ray);
+    srec.specular_ray = Ray(rec.position, out_ray);
     return true;
   };
 };
@@ -138,16 +180,17 @@ public:
   DiffuseEmitter(const gl::vec3 &a, float intensity = 1.0f)
       : _text(std::make_shared<ConstantTexture>(a)), _intensity(intensity){};
 
-  bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-               Ray &ray_scattered, float &pdf) const override {
+  bool scatter(const Ray &ray_in, HitRecord &rec,
+               ScatterRecord &srec) const override {
     return false;
   }
 
-  gl::vec3 emit(HitRecord &hit_record) override {
+  gl::vec3 emit(const Ray &ray_in, HitRecord &rec) override {
 
-    if (hit_record.is_inside)
-      return _text->getTexelColor(hit_record.texCoords) * _intensity;
-    return gl::vec3(0.0f);
+    // use unidirectional light or not
+    //  if (rec.is_inside)
+    return _text->getTexelColor(rec.texCoords) * _intensity;
+    // return gl::vec3(0.0f);
   }
 
 private:
@@ -160,12 +203,13 @@ public:
   Isotropic(std::shared_ptr<Texture2D> a) : _text(a){};
   Isotropic(const gl::vec3 &a) : _text(std::make_shared<ConstantTexture>(a)){};
 
-  bool scatter(const Ray &ray_in, HitRecord &rec, gl::vec3 &attenuation,
-               Ray &ray_scattered, float &pdf) const override {
+  bool scatter(const Ray &ray_in, HitRecord &rec,
+               ScatterRecord &srec) const override {
     // scatter the ray with lambertian reflection
     // any direction scatter with equal probability
-    ray_scattered = Ray(rec.position, gl::sphere_random_vec());
-    attenuation = _text->getTexelColor(rec.texCoords.u(), rec.texCoords.v());
+    // ray_scattered = Ray(rec.position, gl::sphere_random_vec());
+    // attenuation = _text->getTexelColor(rec.texCoords.u(), rec.texCoords.v());
+    // return true;
     return true;
   }
 
