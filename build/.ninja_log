@@ -1,0 +1,24 @@
+# ninja log v5
+5	2629	1687214389765957589	CMakeFiles/PathTracer.dir/src/main.cpp.o	a7998a863668432
+6	925	1687214388062746717	CMakeFiles/PathTracer.dir/src/utils/objectTransform.cpp.o	658f46a28ced7f7c
+6	782	1685602858846582771	CMakeFiles/WhiitedRT.dir/src/base/primitive.cpp.o	2d6bfd8eaa029f60
+6	606	1685602858672919245	CMakeFiles/WhiitedRT.dir/src/base/object3D.cpp.o	5cbc2892eeaa2917
+6	749	1685602858815033179	CMakeFiles/WhiitedRT.dir/src/base/camera.cpp.o	5a96fad8e3a5a362
+2830	2881	1687214390021428395	PathTracer	d6ea3a58428a1d6f
+6	206	1687214387344635563	CMakeFiles/PathTracer.dir/src/utils/scene_io.cpp.o	e5dd63f57d81ac9e
+6	841	1687214387978436952	CMakeFiles/PathTracer.dir/src/base/primitive.cpp.o	72b6a89d9513a9f7
+6	971	1687214388109389634	CMakeFiles/PathTracer.dir/src/base/objectList.cpp.o	ffec405d1665dd66
+5	779	1687214387917204930	CMakeFiles/PathTracer.dir/src/base/light.cpp.o	fd944cb10f737eb3
+5	3203	1687070402139701549	CMakeFiles/PathTracer.dir/src/unit_test.cpp.o	22c904762e95216a
+6	859	1687214387997325523	CMakeFiles/PathTracer.dir/src/base/texture.cpp.o	c678f0baa50fca07
+15	761	1685603473576922193	CMakeFiles/WhiitedRT.dir/src/base/objectList.cpp.o	2306d4e4b181f165
+6	628	1687214387765391257	CMakeFiles/PathTracer.dir/src/base/object3D.cpp.o	c6327b93dce98dd2
+6	782	1685602858847470941	CMakeFiles/WhiitedRT.dir/src/base/light.cpp.o	a5d5a2ba62d65112
+2717	2784	1685603475603454913	WhiitedRT	43a125e0ca043a64
+0	42	1687294934353172561	build.ninja	8db52ebe1cd8612f
+6	2830	1687214389967657035	CMakeFiles/PathTracer.dir/src/base/framebuffer.cpp.o	46485ed7c6d968c
+15	1448	1685603474263784139	CMakeFiles/WhiitedRT.dir/src/unit_test.cpp.o	115bd09233fc147e
+5	778	1687214387914877297	CMakeFiles/PathTracer.dir/src/base/camera.cpp.o	3661e4d55d540c26
+6	375	1685602858441768311	CMakeFiles/WhiitedRT.dir/src/utils/scene_io.cpp.o	4cb72a9e3bc11809
+15	2717	1685603475532977346	CMakeFiles/WhiitedRT.dir/src/base/framebuffer.cpp.o	6b05f14680a349b0
+7	827	1685602858891526418	CMakeFiles/WhiitedRT.dir/src/base/texture.cpp.o	a78b1cfe2aedd46d
