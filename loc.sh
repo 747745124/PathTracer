@@ -1,1 +1,0 @@
-cloc src --exclude-dir=external --exclude-list-file=cloc_ignore
