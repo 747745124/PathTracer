@@ -11,3 +11,9 @@ loc.sh
 .cache
 .clangd
 *.png
+results
+/Scenes
+/unit_test_images
+/assets
+.gitignore
+compile_commands.json

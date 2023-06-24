@@ -4,8 +4,8 @@
 #include "../probs/hittablePDF.hpp"
 #include "../probs/mixedPDF.hpp"
 #include "../utils/bvh.hpp"
-#define LIGHT_SAMPLE_X 13
-#define LIGHT_SAMPLE_Y 13
+#define LIGHT_SAMPLE_X 5
+#define LIGHT_SAMPLE_Y 5
 const int LIGHT_SAMPLE_NUM = LIGHT_SAMPLE_X * LIGHT_SAMPLE_Y;
 
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,

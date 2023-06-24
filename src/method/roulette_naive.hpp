@@ -4,6 +4,7 @@
 #include "../probs/hittablePDF.hpp"
 #include "../probs/mixedPDF.hpp"
 #include "../utils/bvh.hpp"
+extern const int LIGHT_SAMPLE_NUM;
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                             const ObjectList &light_objects, gl::vec3 bg_color,
                             std::shared_ptr<BVHNode> bvh = nullptr) {
@@ -37,7 +38,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     if (srec.is_specular)
       return srec.attenuation * getRayColor(srec.specular_ray, prims,
                                             light_objects, bg_color, bvh)/(1-p_threshold);
-                                            
+
     auto pdfs = std::vector<std::shared_ptr<PDF>>();
     for (int i = 0; i < LIGHT_SAMPLE_NUM; i++) {
       auto light = light_objects.uniform_get();

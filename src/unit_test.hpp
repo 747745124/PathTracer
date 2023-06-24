@@ -7,7 +7,6 @@
 #include "./base/framebuffer.hpp"
 #include "./utils/scene_io.hpp"
 #include "./base/texture.hpp"
-#include "./method/whitted.hpp"
 #include "./method/roulette_naive.hpp"
 #include "./scene_func/scenes.hpp"
 #include <omp.h>

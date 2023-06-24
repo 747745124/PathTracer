@@ -29,8 +29,13 @@ void FrameBuffer::writeToFile(const std::string &file_path, float gamma) const {
   for (uint i = 0; i < this->height; i++) {
     for (uint j = 0; j < this->width; j++) {
       for (uint k = 0; k < this->channels; k++) {
-        // gamma correction
-        auto color = pow(this->_pixel_color[i][j][k], 1.0f / gamma);
+        // nan handling and gamma correction
+        auto color = this->_pixel_color[i][j][k];
+        if(color != color)
+          color = 0.0f;
+        else
+          color = pow(color, 1.0f / gamma);
+
         data.push_back(
             static_cast<uint8_t>(std::clamp(color, 0.0f, 1.0f) * 255));
       }

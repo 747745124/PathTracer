@@ -13,7 +13,7 @@
 // #define SHADER_TEST
 // #define BVH_TEST
 // #define PDF_TEST
-#define DIFFUSE
+// #define DIFFUSE
 
 uint64_t hit_count = 0;
 int main() {
@@ -21,7 +21,7 @@ int main() {
 #ifdef DIFFUSE
   using namespace gl;
 
-  SceneInfo scene = VeachMIS();
+  SceneInfo scene = night();
   scene.renderWithInfo("../output.png");
 
 
