@@ -1,6 +1,0 @@
-src/external
-src/scene_io.cpp
-src/scene_io.hpp
-src/basicRayTracer.vcproj
-build
-.vscode
