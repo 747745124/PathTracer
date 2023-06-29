@@ -117,16 +117,15 @@ make .
 
   * The path tracer uses an importance sampling strategy, a mixed PDF of cosine and light sampling. The light sampling can be arbitrary numbers.
 
-  <img src="https://s2.loli.net/2023/06/24/WtDkh4RvmpLwayN.png" alt="veach_light_1600x" style="zoom:50%;" />
+  ![Veach MIS](veach_light_1600x.png)
 
 * Monte Carlo and Post-processing effects:
 
   * The path tracer supports DoF, motion blur. Image filtering and tone-mapping.
 
-<img src="https://s2.loli.net/2023/06/24/WmqFuEfI3xSHlJp.png" alt="part3_scene5_256" style="zoom:50%;" />
+![Whitted](part3_scene5_256.png)
 
 > Whitted, 16x16 spp
-
 
 
 #### TODO:
