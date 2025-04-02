@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.19)
+project(PathTracer)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 11)
+
+if(APPLE)
+set(CMAKE_C_COMPILER "/opt/homebrew/Cellar/llvm/19.1.7/bin/clang")
+set(CMAKE_CXX_COMPILER "/opt/homebrew/Cellar/llvm/19.1.7/bin/clang++")
+set(OPENMP_LIBRARIES "/opt/homebrew/Cellar/llvm/19.1.7/lib")
+set(OPENMP_INCLUDES "/opt/homebrew/Cellar/llvm/19.1.7/include")
+
+# set(OPENMP_LIBRARIES "/usr/local/opt/llvm/lib")
+link_directories(${OPENMP_LIBRARIES})
+endif()
+
+include_directories(./src)
+set(BASE ./src/base/light.cpp ./src/base/camera.cpp ./src/base/object3D.cpp ./src/base/primitive.cpp ./src/base/framebuffer.cpp ./src/base/objectList.cpp ./src/base/texture.cpp)
+set(UTILS ./src/utils/scene_io.cpp ./src/utils/objectTransform.cpp)
+set(SOURCE_FILES ./src/main.cpp)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_compile_definitions(GL_SIMD)
+add_compile_definitions(USE_MAXDEPTH_SHADOWRAY)
+# add_compile_definitions(USE_ANALYTICAL_ILLUMIN)
+# add_compile_definitions(USE_ROULETTE)
+add_executable(PathTracer ${SOURCE_FILES} ${BASE} ${UTILS})

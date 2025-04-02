@@ -1,0 +1,4 @@
+#pragma once
+#define LIGHT_SAMPLE_X 20
+#define LIGHT_SAMPLE_Y 20
+const int LIGHT_SAMPLE_NUM = LIGHT_SAMPLE_X * LIGHT_SAMPLE_Y;
