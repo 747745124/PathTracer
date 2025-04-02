@@ -194,6 +194,10 @@ def plot_image_difference(image1_path, image2_path, figure_size=(15, 10)):
     ax3.set_title('Difference')
     ax3.axis('off')
     plt.colorbar(diff_img, ax=ax3)
+
+    # Calculate MSE
+    mse = np.mean((img1 - img2) ** 2)
+    print(f"Mean Squared Error (MSE): {mse:.4f}")
     
     # Plot histogram of differences for each channel
     colors = ('red', 'green', 'blue')
@@ -307,9 +311,10 @@ def plot_2d_distributions(gaussian_image):
     plt.tight_layout()
     plt.show()
 
+
 # Example usage
 def main():
-    plot_image_difference("./output.png","./ground_truth.png")
+    plot_image_difference("./2_spl_res.png","./2_spl.png")
     # if os.path.exists('./part-1.png'):
     #     plot_image_difference('./ref_blank/hw7_1.png', './part-1.png')
     # if os.path.exists('./part-2.png'):

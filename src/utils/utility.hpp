@@ -181,22 +181,17 @@ static bool is_convex(gl::vec2 p1, gl::vec2 p2, gl::vec2 p3, gl::vec2 p4) {
   return all_neg || all_pos;
 }
 
+static std::random_device rd; // Will be used to obtain a seed for the random number engine
+static std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+static std::uniform_real_distribution<> dist(0, 1);
 // random number from 0 to 1
 static float rand_num() {
-  std::random_device
-      rd; // Will be used to obtain a seed for the random number engine
-  std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-  std::uniform_real_distribution<> dist(0, 1);
   return dist(gen);
 }
 
 // random number from 0 to end_point
 static float rand_num(float end_point) {
-  std::random_device
-      rd; // Will be used to obtain a seed for the random number engine
-  std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-  std::uniform_real_distribution<> dist(0, end_point);
-  return dist(gen);
+  return dist(gen) * end_point;
 }
 
 static inline int C_rand_int(int begin, int end) {

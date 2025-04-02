@@ -4,14 +4,14 @@ uint64_t hit_count = 0;
 
 int main() {
     //night_time();
-    //cornell_box();
-    //cornell_box_modified();
+    SceneInfo scene = cornell_box();
+    // SceneInfo scene = cornell_box_modified();
     //two_lights();
-    SceneInfo scene = simple_light();
+    // SceneInfo scene = simple_light();
     //night();
-    //checkpoint_2();
+    // checkpoint_2();
     //checkpoint_3();
-    //VeachMIS();
+    // SceneInfo scene = VeachMIS();
 
   // SceneInfo scene = night();
 

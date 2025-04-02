@@ -6,6 +6,7 @@
 #include "../probs/mixedPDF.hpp"
 #include "./config.hpp"
 
+
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                             gl::vec3 bg_color, const LightList &lights,
                             uint max_depth = 40,
@@ -30,6 +31,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   ScatterRecord srec;
   float pdf = 0.f;
   auto mat = hit_record.material;
+
   if (mat->scatter(ray, hit_record, srec)) {
 
     albedo = srec.attenuation;
@@ -40,7 +42,8 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     pdf = cos_pdf.at(out_ray.getDirection().normalize());
     
     // note that below are sample from light,i.e. DI
-    gl::vec3 light_term = gl::vec3(0.f);
+    gl::vec3 reservoir_sample = gl::vec3(0.f);
+    float W = 0.0f;  
     auto offsets = getOffsets(LIGHT_SAMPLE_X, LIGHT_SAMPLE_Y);
     for (int i = 0; i < LIGHT_SAMPLE_NUM; i++) {
         auto light_sample = lights.uniform_get();
@@ -70,11 +73,19 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
         auto BRDF = albedo * mat->scatter_pdf(ray, hit_record, out_ray) / cos_theta;
         auto hit_light = false;
         auto V = is_shadow_hit ? 0.0f : 1.0f;
-        auto direct_term = BRDF * light_sample->intensity *
-                           light_sample->color * light_sample->get_area() * G *
-                           V;
-        light_term += direct_term; 
+
+        gl::vec3 candidate_contrib = BRDF * light_sample->intensity *
+        light_sample->color * light_sample->get_area() *
+        G * V;
+
+        float w = candidate_contrib.length();
+        W += w;
+
+        if (rand_num() < w / W) {
+          reservoir_sample = candidate_contrib;
+        }
     }
+    gl::vec3 di_term = reservoir_sample * (W / LIGHT_SAMPLE_NUM);
 
     HitRecord next_hit_record;
     ScatterRecord next_scatter_record;
@@ -96,7 +107,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
       return 0.f;
 
     // direct light sampling + indirect light
-    return mat->emit(ray,hit_record) + light_term / LIGHT_SAMPLE_NUM +
+    return mat->emit(ray,hit_record) + di_term +
            albedo *
                getRayColor(out_ray, prims, bg_color, lights, max_depth - 1,
                            bvh) *
