@@ -84,11 +84,11 @@ struct SceneInfo {
 #ifdef USE_ANALYTICAL_ILLUMIN
             color += getRayColor(ray, objects, bg_color, lights, bvh);
 #elif defined USE_MAXDEPTH_SHADOWRAY
-            color += getRayColor(ray, objects, bg_color, lights, 1, bvh);
+            color += getRayColor(ray, objects, bg_color, lights, 10, bvh);
 #elif defined USE_ROULETTE
             color += getRayColor(ray, objects, light_objects,bg_color, bvh);
 #else
-            color += getRayColor(ray, objects,light_objects, bg_color, 1, bvh);
+            color += getRayColor(ray, objects,light_objects, bg_color, 10, bvh);
 #endif
           }
 

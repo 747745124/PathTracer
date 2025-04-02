@@ -309,10 +309,11 @@ def plot_2d_distributions(gaussian_image):
 
 # Example usage
 def main():
-    if os.path.exists('./part-1.png'):
-        plot_image_difference('./ref_blank/hw7_1.png', './part-1.png')
-    if os.path.exists('./part-2.png'):
-        plot_image_difference('./ref_blank/hw7_2.png', './part-2.png')
+    plot_image_difference("./output.png","./ground_truth.png")
+    # if os.path.exists('./part-1.png'):
+    #     plot_image_difference('./ref_blank/hw7_1.png', './part-1.png')
+    # if os.path.exists('./part-2.png'):
+    #     plot_image_difference('./ref_blank/hw7_2.png', './part-2.png')
     #if there exist a png named bonus.png, it will be compared with the reference bonus.png
     # if os.path.exists('./bonus.png'):
     #     plot_image_difference('./ref_blank/bonus.png', './bonus.png')

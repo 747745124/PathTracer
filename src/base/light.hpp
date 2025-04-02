@@ -27,7 +27,8 @@ public:
   virtual gl::vec3 uniform_sample() const = 0;
   virtual gl::vec3 get_sample(float u, float v) const = 0;
   virtual float get_area() const { return 1.f; }
-
+  virtual gl::vec3 get_normal_at(const gl::vec3 &p) const = 0;
+  
   ~Light() = default;
 
   float intensity = 1.0f;
@@ -158,6 +159,14 @@ public:
     return p;
   };
 
+  virtual gl::vec3 get_normal_at(const gl::vec3& p) const override {
+    using namespace gl;
+    vec3 v1 = vertices[1] - vertices[0];
+    vec3 v2 = vertices[3] - vertices[0];
+    vec3 normal = cross(v1, v2).normalize();
+    return normal;
+  }
+
   virtual float get_area() const override {
     using namespace gl;
     vec3 v1 = vertices[1] - vertices[0];
@@ -213,6 +222,12 @@ public:
     vec3 p = center + radius * vec3(x, y, z);
     return p;
   };
+
+  virtual gl::vec3 get_normal_at(const gl::vec3& p) const override{
+    using namespace gl;
+    vec3 normal = (p - center).normalize();
+    return normal;
+  }
 
   virtual float get_area() const override {
     using namespace gl;

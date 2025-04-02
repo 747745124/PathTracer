@@ -37,31 +37,38 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     float cos_theta = dot(hit_record.normal, out_ray.getDirection());
     cos_theta = std::max(cos_theta, 0.0f);
     pdf = cos_pdf.at(out_ray.getDirection().normalize());
-
+    
+    // note that below are sample from light,i.e. DI
     gl::vec3 light_term = gl::vec3(0.f);
     auto offsets = getOffsets(LIGHT_SAMPLE_X, LIGHT_SAMPLE_Y);
     for (int i = 0; i < LIGHT_SAMPLE_NUM; i++) {
         auto light_sample = lights.uniform_get();
-        auto light_dir =
-            light_sample->get_sample(offsets[i][0], offsets[i][1]) -
-            hit_record.position;
+        auto light_p = light_sample->get_sample(offsets[i][0], offsets[i][1]);
+        auto light_dir = light_p - hit_record.position;
+        auto light_normal = light_sample->get_normal_at(light_p);
 
         Ray shadow_ray(hit_record.position, light_dir.normalize());
         HitRecord shadow_hit_record;
+
         bool is_shadow_hit = false;
+        //note that the tmin and tmax are set to exclude the light
         if (bvh == nullptr)
           is_shadow_hit = prims.intersect(shadow_ray, shadow_hit_record, 0.001f,
                                           light_dir.length() - 0.001f);
         else
           is_shadow_hit = bvh->intersect(shadow_ray, shadow_hit_record, 0.001f,
                                          light_dir.length() - 0.001f);
-
-        auto NoL =
+      
+        //cos wi                                
+        auto NoI =
             std::max(dot(hit_record.normal, shadow_ray.getDirection()), 0.f);
-        auto G = std::max(NoL, 0.0f) * cos_theta / (dot(light_dir, light_dir));
+        //cos wl
+        auto NoL = std::max(dot(light_normal, -shadow_ray.getDirection()), 0.f);
+
+        auto G = NoI * NoI/ (dot(light_dir, light_dir));
         auto BRDF = albedo * mat->scatter_pdf(ray, hit_record, out_ray) / cos_theta;
-        // BRDF = albedo/M_PI;
-        auto V = is_shadow_hit ? 0.f : 1.f;
+        auto hit_light = false;
+        auto V = is_shadow_hit ? 0.0f : 1.0f;
         auto direct_term = BRDF * light_sample->intensity *
                            light_sample->color * light_sample->get_area() * G *
                            V;

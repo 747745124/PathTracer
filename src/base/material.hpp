@@ -59,6 +59,8 @@ public:
   virtual gl::vec3 emit(const Ray &ray_in, HitRecord &rec) {
     return gl::vec3(0.0f);
   }
+
+  virtual bool is_emitter() const { return false; }
 };
 
 class Lambertian : public Material {
@@ -192,6 +194,8 @@ public:
     return _text->getTexelColor(rec.texCoords) * _intensity;
     // return gl::vec3(0.0f);
   }
+  
+  bool is_emitter() const override { return true; }
 
 private:
   std::shared_ptr<Texture2D> _text;
