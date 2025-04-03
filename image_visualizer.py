@@ -147,6 +147,31 @@ def plot_rgb_histograms_comparison(image1_path, image2_path, image3_path, image4
 from skimage.exposure import histogram
 from skimage.util import compare_images
 
+def compute_mse(image1_path,image2_path):
+    """
+    Compute Mean Squared Error (MSE) between two images.
+    
+    Parameters:
+    image1_path (str): Path to the first image
+    image2_path (str): Path to the second image
+    
+    Returns:
+    float: Mean Squared Error between the two images
+    """
+    # Read images
+    img1 = io.imread(image1_path)
+    img2 = io.imread(image2_path)
+    
+    # Ensure images have same shape
+    if img1.shape != img2.shape:
+        raise ValueError("Images must have the same dimensions")
+    
+    # Calculate MSE
+    mse = np.mean((img1 - img2) ** 2)
+    
+    return mse
+    
+
 def plot_image_difference(image1_path, image2_path, figure_size=(15, 10)):
     """
     Visualize the difference between two images, showing:
@@ -314,7 +339,8 @@ def plot_2d_distributions(gaussian_image):
 
 # Example usage
 def main():
-    plot_image_difference("./2_spl_res.png","./2_spl.png")
+    print(compute_mse("./3spl.png","./gt.png"))
+    print(compute_mse("./3spl_r.png","./gt.png"))
     # if os.path.exists('./part-1.png'):
     #     plot_image_difference('./ref_blank/hw7_1.png', './part-1.png')
     # if os.path.exists('./part-2.png'):

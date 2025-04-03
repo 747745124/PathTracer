@@ -89,7 +89,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     else
       is_next_hit = bvh->intersect(out_ray, next_hit_record);
 
-    // next-event estimation,avoid double counting
+    // next-event estimation, avoid double counting
     if (is_next_hit &&
         (!next_hit_record.material->scatter(out_ray, next_hit_record,
                                             next_scatter_record)))

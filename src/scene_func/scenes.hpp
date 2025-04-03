@@ -635,3 +635,72 @@ SceneInfo checkpoint_2() {
   scene.lights = lights;
   return scene;
 };
+
+
+
+SceneInfo checkpoint_diffuse() {
+    using namespace std;
+    using namespace gl;
+  
+    SceneInfo scene;
+    ObjectList objects;
+    LightList lights;
+  
+    auto ground = make_shared<Lambertian>(vec3(0.48f, 0.83f, 0.53f));
+  
+    ObjectList boxes1;
+    const int boxes_per_side = 20;
+    for (int i = 0; i < boxes_per_side; i++) {
+      for (int j = 0; j < boxes_per_side; j++) {
+        auto w = 100.0;
+        auto x0 = -1000.0 + i * w;
+        auto z0 = -1000.0 + j * w;
+        auto y0 = 0.0;
+        auto x1 = x0 + w;
+        auto y1 = C_rand(1.f, 101.f);
+        auto z1 = z0 + w;
+  
+        boxes1.addObject(
+            make_shared<Box>(vec3(x0, y0, z0), vec3(x1, y1, z1), ground));
+      }
+    }
+  
+    objects.addObject(make_shared<BVHNode>(boxes1, 0, 1));
+  
+    auto light = make_shared<DiffuseEmitter>(vec3(1.f), 4000);
+    auto light_obj = make_shared<XZRectangle>(554, 420, 423, 347, 412, light);
+    objects.addObject(light_obj);
+    lights.addLight(make_shared<QuadLight>(light_obj, vec3(1.f), 4000));
+  
+    auto center1 = vec3(400, 400, 200);
+    auto center2 = center1 + vec3(30, 0, 0);
+    auto moving_sphere_material = make_shared<Lambertian>(vec3(0.7, 0.3, 0.1));
+    objects.addObject(make_shared<Sphere>(center1, 50, moving_sphere_material));
+
+    ObjectList boxes2;
+    auto white = make_shared<Lambertian>(vec3(.73));
+    int ns = 1000;
+    for (int j = 0; j < ns; j++) {
+      boxes2.addObject(
+          make_shared<Sphere>(gl::C_rand_vec3(0.f, 165.f), 10, white));
+    }
+  
+    objects.addObject(make_shared<Translate>(
+        make_shared<Rotate<Axis::Y>>(make_shared<BVHNode>(boxes2, 0.0, 1.0),
+                                     gl::to_radian(15)),
+        vec3(-100, 270, 395)));
+  
+    scene.objects = objects;
+    scene._width = 400;
+    scene._height = 400;
+    scene.spp_x = 4;
+    scene.spp_y = 4;
+    scene.GAMMA = 2.0f;
+    scene.camera = make_shared<PerspectiveCamera>(
+        gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
+        1000.f, vec3(0, 1, 0), vec3(-200.f, 0.f, 600.f).normalize(),
+        vec3(478.f, 278.f, -600.f));
+    scene.bg_color = vec3(0.f);
+    scene.lights = lights;
+    return scene;
+  };

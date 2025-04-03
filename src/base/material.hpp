@@ -217,6 +217,7 @@ public:
     return true;
   }
 
+
 private:
   std::shared_ptr<Texture2D> _text;
 };
