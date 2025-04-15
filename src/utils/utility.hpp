@@ -181,9 +181,11 @@ static bool is_convex(gl::vec2 p1, gl::vec2 p2, gl::vec2 p3, gl::vec2 p4) {
   return all_neg || all_pos;
 }
 
+
 static std::random_device rd; // Will be used to obtain a seed for the random number engine
 static std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
 static std::uniform_real_distribution<> dist(0, 1);
+
 // random number from 0 to 1
 static float rand_num() {
   return dist(gen);
@@ -192,6 +194,11 @@ static float rand_num() {
 // random number from 0 to end_point
 static float rand_num(float end_point) {
   return dist(gen) * end_point;
+}
+
+// random number from start_point to end_point
+static inline float rand_num(float start_point, float end_point) {
+  return start_point + (end_point - start_point) * dist(gen);
 }
 
 static inline int C_rand_int(int begin, int end) {
@@ -214,14 +221,6 @@ static inline gl::vec3 C_rand_vec3(float min, float max) {
   return gl::vec3(C_rand(min, max), C_rand(min, max), C_rand(min, max));
 }
 
-// random number from start_point to end_point
-static inline float rand_num(float start_point, float end_point) {
-  std::random_device
-      rd; // Will be used to obtain a seed for the random number engine
-  std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-  std::uniform_real_distribution<> dist(start_point, end_point);
-  return dist(gen);
-}
 
 static inline vec2 circle_random_vec(float r = 1.f) {
   auto p = vec2(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
@@ -253,6 +252,13 @@ static inline vec3 on_hemisphere_random_vec(const vec3 &normal, float r = 1.f) {
     p = -p;
   }
   return p;
+}
+
+// Helper function: Convert spherical coordinates (theta, phi) to a 3D vector in local space,
+// where the z-axis is assumed to be "up."
+inline gl::vec3 sphericalDirection(float theta, float phi) {
+  float sinTheta = sin(theta);
+  return gl::vec3(sinTheta * cos(phi), sinTheta * sin(phi), cos(theta));
 }
 
 // biliner interpolation

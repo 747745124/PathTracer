@@ -47,11 +47,11 @@ SceneInfo cornell_box() {
 
   objects.addObject(box_right);
 
-  scene._height = 300;
-  scene._width = 300;
-  scene.spp_x = 10;
-  scene.spp_y = 10;
-  scene.GAMMA = 2.f;
+  scene._height = 500;
+  scene._width = 400;
+  scene.spp_x = 4;
+  scene.spp_y = 4;
+  scene._gamma = 1.5;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
       1000.f, vec3(0, 1, 0), vec3(0, 0, 1.f).normalize(),
@@ -90,7 +90,7 @@ SceneInfo two_lights() {
   scene._height = 500;
   scene.spp_x = 2;
   scene.spp_y = 2;
-  scene.GAMMA = 1.5f;
+  scene._gamma = 1.5f;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(20.f), (float)(scene._width) / (float)(scene._height), 10.f,
       1000.f, vec3(0, 1, 0), vec3(-26.f, -1.f, -6.f).normalize(),
@@ -155,7 +155,7 @@ SceneInfo checkpoint_3() {
   scene._height = 400;
   scene.spp_x = 10;
   scene.spp_y = 10;
-  scene.GAMMA = 2.0f;
+  scene._gamma = 2.0f;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
       1000.f, vec3(0, 1, 0), vec3(-200.f, 0.f, 600.f).normalize(),
@@ -187,7 +187,7 @@ SceneInfo simple_light() {
   scene._height = 500;
   scene.spp_x = 2;
   scene.spp_y = 2;
-  scene.GAMMA = 1.5f;
+  scene._gamma = 1.5f;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(20.f), (float)(scene._width) / (float)(scene._height), 10.f,
       1000.f, vec3(0, 1, 0), vec3(-26.f, -1.f, -6.f).normalize(),
@@ -223,7 +223,7 @@ SceneInfo night_time() {
   scene._height = 500;
   scene.spp_x = 8;
   scene.spp_y = 8;
-  scene.GAMMA = 1.5f;
+  scene._gamma = 1.5f;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(20.f), (float)(scene._width) / (float)(scene._height), 10.f,
       1000.f, vec3(0, 1, 0), vec3(-26.f, -1.f, -6.f).normalize(),
@@ -290,7 +290,7 @@ SceneInfo random_scene() {
   scene._height = 500;
   scene.spp_x = 3;
   scene.spp_y = 3;
-  scene.GAMMA = 1.0f;
+  scene._gamma = 1.0f;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(20.f), (float)(scene._width) / (float)(scene._height), 10.f,
       40.f, vec3(0, 1, 0), vec3(-13.f, -2.f, -3.f).normalize(),
@@ -360,7 +360,7 @@ SceneInfo night() {
   scene._height =540;
   scene.spp_x = 5;
   scene.spp_y = 5;
-  scene.GAMMA = 1.0f;
+  scene._gamma = 1.0f;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(20.f), (float)(scene._width) / (float)(scene._height), 20.f,
       70.f, vec3(0, 1, 0), vec3(-13.f, -2.f, -3.f).normalize(),
@@ -410,7 +410,7 @@ SceneInfo diffuse_diffuse() {
   scene._height = 360;
   scene.spp_x = 10;
   scene.spp_y = 10;
-  scene.GAMMA = 1.0f;
+  scene._gamma = 1.0f;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(50.f), (float)(scene._width) / (float)(scene._height), 10.f,
       1000.f, vec3(0, 1, 0), vec3(0, 0, -1).normalize(), vec3(0, 0, 2));
@@ -465,9 +465,10 @@ SceneInfo cornell_box_modified() {
 
   scene._height = 300;
   scene._width = 300;
-  scene.spp_x = 40;
-  scene.spp_y = 40;
-  scene.GAMMA = 2.f;
+  scene.spp_x = 20;
+  scene.spp_y = 20;
+  scene._gamma = 2.f;
+  
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
       1000.f, vec3(0, 1, 0), vec3(0, 0, 1.f).normalize(),
@@ -539,7 +540,7 @@ SceneInfo VeachMIS() {
   scene._height = 600;
   scene.spp_x = 15;
   scene.spp_y = 15;
-  scene.GAMMA = 1.0f;
+  scene._gamma = 1.0f;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(28.f), (float)(scene._width) / (float)(scene._height), 10.f,
       1000.f, vec3(0, 1, 0), vec3(0, -4, -12.5).normalize(), vec3(0, 2, 15));
@@ -626,7 +627,7 @@ SceneInfo checkpoint_2() {
   scene._height = 400;
   scene.spp_x = 10;
   scene.spp_y = 10;
-  scene.GAMMA = 2.0f;
+  scene._gamma = 2.0f;
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
       1000.f, vec3(0, 1, 0), vec3(-200.f, 0.f, 600.f).normalize(),
@@ -695,7 +696,7 @@ SceneInfo checkpoint_diffuse() {
     scene._height = 400;
     scene.spp_x = 4;
     scene.spp_y = 4;
-    scene.GAMMA = 2.0f;
+    scene._gamma = 2.0f;
     scene.camera = make_shared<PerspectiveCamera>(
         gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
         1000.f, vec3(0, 1, 0), vec3(-200.f, 0.f, 600.f).normalize(),

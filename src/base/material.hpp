@@ -114,48 +114,6 @@ public:
   float fuzz;
 };
 
-class Phong : public Material {
-public:
-  Phong(const gl::vec3 &diffuse, const gl::vec3 &specular,
-        const gl::vec3 &ambient, float shininess)
-      : diffuse(diffuse), specular(specular), ambient(ambient),
-        shininess(shininess){};
-
-  gl::vec3 diffuse;
-  gl::vec3 specular;
-  gl::vec3 ambient;
-  float shininess;
-
-  bool scatter(const Ray &ray_in, HitRecord &rec,
-               ScatterRecord &srec) const override {
-    float p = gl::C_rand();
-
-    if (p < shininess) {
-      srec.is_specular = true;
-      srec.attenuation = specular + ambient;
-      srec.pdf_ptr = nullptr;
-      srec.specular_ray = Ray(
-          rec.position, reflect(ray_in.getDirection().normalize(), rec.normal));
-      return true;
-    }
-
-    srec.is_specular = false;
-    srec.attenuation = diffuse + ambient;
-    srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
-    return true;
-  }
-
-  float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
-                    const Ray &scattered) const override {
-    float p = gl::C_rand();
-    if (p < shininess) {
-      return 0.0f;
-    }
-    float cosine = dot(rec.normal, scattered.getDirection().normalize());
-    return std::max(cosine / M_PI, 0.0);
-  }
-};
-
 class Dielectric : public Material {
 public:
   float ior;
@@ -175,6 +133,82 @@ public:
   };
 };
 
+class Phong : public Material {
+  public:
+      Phong(const gl::vec3 &diffuse, const gl::vec3 &specular,
+            const gl::vec3 &ambient, float shininess)
+          : diffuse(diffuse), specular(specular), ambient(ambient),
+            shininess(shininess) {}
+  
+      gl::vec3 diffuse;   // Diffuse reflectance color
+      gl::vec3 specular;  // Specular reflectance color
+      gl::vec3 ambient;   // Ambient component
+      float shininess;    // Shininess exponent for specular highlight
+  
+      // scatter() decides how a ray scatters upon hitting the surface.
+      // It probabilistically selects between specular and diffuse scattering.
+      bool scatter(const Ray &ray_in, HitRecord &rec,
+                   ScatterRecord &srec) const override {
+
+          float p = gl::rand_num();
+          if (p < shininess) {
+              // Specular scattering branch:
+              srec.is_specular = true;
+              // Compute the perfect reflection direction.
+              gl::vec3 R = reflect(ray_in.getDirection().normalize(), rec.normal);
+              // Sample a direction from the Phong lobe using the shininess exponent.
+              gl::vec3 sampledDir = samplePhongLobe(R, shininess);
+              srec.specular_ray = Ray(rec.position, R);
+              // For specular, set attenuation as the sum of specular and ambient components.
+              srec.attenuation = specular + ambient;
+              srec.pdf_ptr = nullptr; // Delta distribution; no PDF used.
+              return true;
+          } else {
+              // Diffuse scattering branch:
+              srec.is_specular = false;
+              srec.attenuation = diffuse + ambient;
+              // Use a cosine-weighted PDF for diffuse scattering.
+              srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
+              return true;
+          }
+      }
+  
+      // For specular (delta) scattering, it returns 0 since it's handled deterministically.
+      // For diffuse scattering, it returns the cosine-weighted PDF value.
+      float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
+                        const Ray &scattered) const override {
+          // Compute specular probability as above.
+          float p = gl::rand_num();
+          if (p < shininess) {
+              // Specular branch is a delta function, so PDF is zero.
+              return 0.0f;
+          }
+          // For diffuse scattering, use cosine-weighted PDF:
+          float cosine = dot(rec.normal, scattered.getDirection().normalize());
+          return std::max(cosine / M_PI, 0.0);
+      }
+  
+  private:
+      // samplePhongLobe() samples a direction from the Phong lobe around the perfect reflection vector R.
+      // The shininess exponent controls the spread of the lobe.
+      gl::vec3 samplePhongLobe(const gl::vec3 &R, float shininess) const {
+          float u1 = gl::rand_num();
+          float u2 = gl::rand_num();
+          // Compute the polar angle theta according to the Phong lobe distribution:
+          // theta = arccos(u1^(1/(shininess+1))).
+          float theta = acos(pow(u1, 1.0f / (shininess + 1.0f)));
+          //phi is uniformly distributed between 0 and 2*pi.
+          float phi = 2.0f * M_PI * u2;
+          // Convert spherical coordinates (theta, phi) to a local direction vector.
+          auto localDir = gl::sphericalDirection(theta, phi);
+          // Transform the local direction to world coordinates using the normal and tangent vectors.
+          OrthoBasis basis(R);
+          gl::vec3 worldDir = basis.at(localDir);
+          return normalize(worldDir);
+      }
+  };
+
+  
 class DiffuseEmitter : public Material {
 public:
   DiffuseEmitter(std::shared_ptr<Texture2D> a, float intensity = 1.0f)

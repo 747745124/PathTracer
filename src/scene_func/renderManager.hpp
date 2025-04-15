@@ -7,7 +7,7 @@
 #include "../base/objectList.hpp"
 #include "../base/primitive.hpp"
 #include "../method/analytical_illumin.hpp"
-#include "../method/maxdepth_shadowray.hpp"
+#include "../method/maxdepth_nee.hpp"
 #include "../method/maxdepth_naive.hpp"
 #include "../method/roulette_naive.hpp"
 #include "../utils/bvh.hpp"
@@ -38,7 +38,7 @@ struct SceneInfo {
   uint _height = 800;
   uint spp_x = 2;
   uint spp_y = 2;
-  float GAMMA = 1.0f;
+  float _gamma = 1.0f;
   LightList lights = {std::make_shared<QuadLight>(light_info)};
 
 
@@ -58,6 +58,17 @@ struct SceneInfo {
       std::cout << "No objects in the scene!" << std::endl;
       return;
     }
+
+
+#ifdef OVERRIDE_LOCAL_RENDER_VAL
+    _width = WIDTH;
+    _height = HEIGHT;
+    spp_x = SPP_X;
+    spp_y = SPP_Y;
+    _gamma = GAMMA;
+    bg_color = BG_COLOR;
+    use_bvh = useBVH;
+#endif
 
     if (use_bvh)
       bvh = make_shared<BVHNode>(objects);
@@ -83,14 +94,14 @@ struct SceneInfo {
 
 #ifdef USE_ANALYTICAL_ILLUMIN
             color += getRayColor(ray, objects, bg_color, lights, bvh);
-#elif defined USE_MAXDEPTH_SHADOWRAY
-            color += getRayColor(ray, objects, bg_color, lights, 1, bvh);
+#elif defined USE_MAXDEPTH_NEE
+            color += getRayColor(ray, objects, bg_color, lights, MAX_RAY_DEPTH, bvh);
 #elif defined USE_ROULETTE
-            color += getRayColor(ray, objects, light_objects,bg_color, bvh);
+            color += getRayColor(ray, objects, light_objects, bg_color, bvh);
 #elif defined USE_RESERVOIR
-            color += getRayColor(ray, objects, bg_color,lights, 1, bvh);
+            color += getRayColor(ray, objects, bg_color,lights, MAX_RAY_DEPTH, bvh);
 #else
-            color += getRayColor(ray, objects,light_objects, bg_color, 10, bvh);
+            color += getRayColor(ray, objects,light_objects, bg_color, MAX_RAY_DEPTH, bvh);
 #endif
           }
 

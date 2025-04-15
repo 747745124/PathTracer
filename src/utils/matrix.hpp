@@ -28,46 +28,86 @@ public:
     std::array<T, N> data;
   };
 
-  float &r() { return data[0]; }
+  T &r() { return data[0]; }
 
-  float &g() {
+  T &g() {
     assert(data.size() >= 2);
     return data[1];
   }
 
-  float &b() {
+  T &b() {
     assert(data.size() >= 3);
     return data[2];
   }
 
-  float &a() {
+  T &a() {
     assert(data.size() == 4);
     return data[3];
   }
 
-  float &x() { return data[0]; }
+  T &x() { return data[0]; }
 
-  float &y() {
+  T &y() {
     assert(data.size() >= 2);
     return data[1];
   }
 
-  float &z() {
+  T &z() {
     assert(data.size() >= 3);
     return data[2];
   }
 
-  float &w() {
+  T &w() {
     assert(data.size() == 4);
     return data[3];
   }
 
-  float &u() { return data[0]; }
+  T &u() { return data[0]; }
 
-  float &v() {
+  T &v() {
     assert(data.size() >= 2);
     return data[1];
   }
+
+  const T &x() const 
+  { return data[0]; }
+
+  const T &y() const { 
+      assert(data.size() >= 2);
+      return data[1]; 
+  }
+
+  const T &z() const { 
+      assert(data.size() >= 3);
+      return data[2]; 
+  }
+
+  const T &w() const{
+    assert(data.size() == 4);
+    return data[3];
+  }
+
+  const T &r() const { return data[0]; }
+  const T &g() const {
+    assert(data.size() >= 2);
+    return data[1];
+  }
+  const T &b() const {
+    assert(data.size() >= 3);
+    return data[2];
+  }
+  const T &a() const {
+    assert(data.size() == 4);
+    return data[3];
+  }
+
+  const T &u() const{ return data[0]; }
+
+  const T &v() const{
+    assert(data.size() >= 2);
+    return data[1];
+  }
+
 
   // below accessor are pass by value
   vec<2, T> xy() {
@@ -90,9 +130,8 @@ public:
     return vec<3, T>{data[0], data[1], data[2]};
   }
 
-  float operator[](size_t i) const { return this->data[i]; }
-
-  float &operator[](size_t i) { return this->data[i]; }
+  T operator[](size_t i) const { return this->data[i]; }
+  T &operator[](size_t i) { return this->data[i]; }
 
   // all 0s by default
   vec() {

@@ -4,7 +4,7 @@
 #include "../utils/bvh.hpp"
 #include "../probs/hittablePDF.hpp"
 #include "../probs/mixedPDF.hpp"
-#include "./config.hpp"
+#include "../config.hpp"
 
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                             gl::vec3 bg_color, const LightList &lights,
@@ -32,6 +32,11 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   auto mat = hit_record.material;
   if (mat->scatter(ray, hit_record, srec)) {
 
+    // for specular and dielectric materials, directly trace further
+    if (srec.is_specular) 
+      return mat->emit(ray, hit_record) +
+             srec.attenuation * getRayColor(srec.specular_ray, prims, bg_color, lights, max_depth - 1, bvh);
+
     albedo = srec.attenuation;
     CosinePDF cos_pdf(hit_record.normal);
     auto out_ray = Ray(hit_record.position, cos_pdf.get().normalize());
@@ -52,6 +57,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
         HitRecord shadow_hit_record;
 
         bool is_shadow_hit = false;
+
         //note that the tmin and tmax are set to exclude the light
         if (bvh == nullptr)
           is_shadow_hit = prims.intersect(shadow_ray, shadow_hit_record, 0.001f,

@@ -4,7 +4,7 @@
 #include "../utils/bvh.hpp"
 #include "../probs/hittablePDF.hpp"
 #include "../probs/mixedPDF.hpp"
-#include "./config.hpp"
+#include "../config.hpp"
 
 
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
