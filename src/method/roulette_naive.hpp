@@ -10,7 +10,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                             std::shared_ptr<BVHNode> bvh = nullptr) {
   using namespace gl;
 
-  float p = C_rand();
+  float p = rand_num();
   float p_threshold = 0.4f;
 
   if (p < p_threshold)

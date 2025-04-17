@@ -113,7 +113,8 @@ enum class ObjType
     POLYSET_OBJ,
     BOX_OBJ,
     MEDIUM_OBJ,
-    BVH_OBJ
+    BVH_OBJ,
+    CURVE_OBJ
 };
 
 struct ObjIO

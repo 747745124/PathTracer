@@ -52,7 +52,7 @@ inline bool ConstantMedium::intersect(const Ray &ray, HitRecord &hit_record,
 
   const float boundary_distance =
       (rec_2.t - rec_1.t) * ray.getDirection().length();
-  const float hit_distance = -(1.f / density) * std::log(gl::C_rand());
+  const float hit_distance = -(1.f / density) * std::log(gl::rand_num());
 
   if (hit_distance > boundary_distance)
     return false;

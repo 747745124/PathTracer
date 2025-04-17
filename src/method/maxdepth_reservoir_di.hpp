@@ -85,6 +85,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
           reservoir_sample = candidate_contrib;
         }
     }
+    
     gl::vec3 di_term = reservoir_sample * (W / LIGHT_SAMPLE_NUM);
 
     HitRecord next_hit_record;

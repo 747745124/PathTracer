@@ -44,7 +44,7 @@ struct SceneInfo {
 
   SceneInfo() = default;
 
-  void render(const std::string &out_path = "./output.png") {
+  void render(const std::string &out_path = "./output.png", bool show_progress = true) {
 
     using namespace gl;
     using namespace std;
@@ -82,8 +82,10 @@ struct SceneInfo {
 #pragma omp parallel for
     {
       for (int i = 0; i < _width; i++) {
-        std::cout << "Now scanning " << (float(counter) / _width) * 100.f
-                  << " %" << std::endl;
+
+        if(show_progress)
+          std::cout << "Now scanning " << (float(counter) / _width) * 100.f
+                    << " %" << std::endl;
 
         for (int j = 0; j < _height; j++) {
           auto color = vec3(0.0);
@@ -119,7 +121,7 @@ struct SceneInfo {
   };
 
   void renderWithInfo(const std::string &out_path = "./output.png",
-                      bool time_it = true, bool show_hitcount = true) {
+                      bool time_it = true, bool show_hitcount = true, bool show_progress = true) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> duration;
     start = std::chrono::system_clock::now();

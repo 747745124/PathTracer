@@ -143,8 +143,8 @@ public:
   // uniformly sample a point on the light
   virtual gl::vec3 uniform_sample() const override {
     using namespace gl;
-    float u = C_rand();
-    float v = C_rand();
+    float u = rand_num();
+    float v = rand_num();
     vec3 v1 = vertices[1] - vertices[0];
     vec3 v2 = vertices[3] - vertices[0];
     vec3 p = vertices[0] + u * v1 + v * v2;
@@ -201,8 +201,8 @@ public:
 
   virtual gl::vec3 uniform_sample() const override {
     using namespace gl;
-    float u = C_rand();
-    float v = C_rand();
+    float u = rand_num();
+    float v = rand_num();
     float theta = 2 * M_PI * u;
     float phi = std::acos(2 * v - 1);
     float x = std::sin(phi) * std::cos(theta);

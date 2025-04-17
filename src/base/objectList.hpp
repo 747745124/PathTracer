@@ -53,19 +53,6 @@ public:
     }
   };
 
-  ObjectList(const Primitives &prim) {
-    auto &[spheres, polysets] = prim;
-    for (const auto &sphere : spheres) {
-      this->addObject(std::make_shared<Sphere>(sphere));
-    }
-
-    for (const auto &polyset : polysets) {
-      for (const auto &triangle : polyset.triangles) {
-        this->addObject(std::make_shared<Triangle>(triangle));
-      }
-    }
-  };
-
   AABB getAABB(float t0, float t1) override;
 
   void addObject(std::shared_ptr<Hittable> object) {
@@ -123,7 +110,7 @@ public:
   };
 
   std::shared_ptr<Hittable> uniform_get() const{
-    int index = (int)(gl::C_rand() * objects.size());
+    int index = (int)(gl::rand_num() * objects.size());
     return this->objects[index % objects.size()];
   };
 

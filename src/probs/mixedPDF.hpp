@@ -33,7 +33,7 @@ public:
   }
 
   gl::vec3 get() const override {
-    float r = gl::C_rand();
+    float r = gl::rand_num();
     int index = (int)(std::floor((r * pdfs.size()))) % pdfs.size();
     return pdfs[index]->get();
   }

@@ -15,7 +15,7 @@ int main() {
     // SceneInfo scene = VeachMIS();
 
   // SceneInfo scene = night();
+  scene.renderWithInfo("../output.png",true,true,false);
 
-  scene.renderWithInfo("../output.png");
   return 0;
 };

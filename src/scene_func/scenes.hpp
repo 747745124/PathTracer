@@ -250,8 +250,8 @@ SceneInfo random_scene() {
 
   for (int a = -11; a < 11; a++) {
     for (int b = -11; b < 11; b++) {
-      auto choose_mat = C_rand();
-      vec3 center(a + 0.9 * C_rand(), 0.2, b + 0.9 * C_rand());
+      auto choose_mat = rand_num();
+      vec3 center(a + 0.9 * rand_num(), 0.2, b + 0.9 * rand_num());
 
       if ((center - vec3(4, 0.2, 0)).length() > 0.9) {
         shared_ptr<Material> sphere_material;
@@ -317,10 +317,10 @@ SceneInfo night() {
 
   for (int a = -11; a < 11; a++) {
     for (int b = -11; b < 11; b++) {
-      auto choose_mat = C_rand();
-      vec3 center(a + 0.9 * C_rand(), 0.2, b + 0.9 * C_rand());
+      auto choose_mat = rand_num();
+      vec3 center(a + 0.9 * rand_num(), 0.2, b + 0.9 * rand_num());
 
-      auto p = gl::C_rand();
+      auto p = gl::rand_num();
       if (p < 0.33) {
         auto albedo = C_rand_vec3() * C_rand_vec3();
         auto fuzz = C_rand(0, 0.5);
