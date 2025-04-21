@@ -8,6 +8,7 @@
 template <typename E> constexpr auto to_underlying(E e) noexcept {
   return static_cast<std::underlying_type_t<E>>(e);
 }
+
 // This file defines shader utilities and some math functions
 namespace gl {
 
@@ -50,6 +51,17 @@ static inline float sign(float x) {
   if (x > 0.f)
     return 1.f;
   return 0.f;
+}
+
+inline int solveQuadratic(float A, float B, float C, float roots[2]) {
+  float disc = B*B - 4*A*C;
+  if (disc < 0) return 0;
+  float sq = sqrt(disc);
+  float q  = B<0 ? -0.5f*(B - sq) : -0.5f*(B + sq);
+  roots[0] = q/A;
+  roots[1] = C/q;
+  if (roots[0] > roots[1]) std::swap(roots[0], roots[1]);
+  return roots[0]==roots[1] ? 1 : 2;
 }
 
 static inline float lerp(float x, float y, float t) { return x + t * (y - x); }
