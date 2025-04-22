@@ -61,6 +61,10 @@ public:
 
   bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0,
                  float tmax = 10000.f) const override {
+
+    if (this->intersection_mode != IntersectionMode::DEFAULT)
+      throw std::runtime_error("CUSTOM intersection not supported for Curve");
+
     hit_count++;
     auto ray_dir = ray.getDirection().normalize();
     auto ray_origin = ray.getOrigin();
@@ -81,39 +85,24 @@ public:
       }
     }
 
-    switch (this->intersection_mode) {
-    case IntersectionMode::DEFAULT: {
-      hit_record.t = t;
-      hit_record.position = ray_origin + t * ray_dir;
-      hit_record.set_normal(ray,
-                            (hit_record.position - this->center).normalize());
-      // calculate the uv coords of a sphere
-      auto p = (hit_record.position - this->center).normalize();
-      auto phi = atan2(p.z(), p.x());
-      auto theta = asin(p.y());
-      hit_record.texCoords =
-          gl::vec2(1 - (phi + M_PI) / (2 * M_PI), (theta + M_PI / 2) / M_PI);
-      // remap the uv coords, so that (0,0,1) is (0,0.5)
-      hit_record.texCoords.u() = fmodf(hit_record.texCoords.u() + 0.75f, 1.0f);
-      hit_record.material =
-          this->material == nullptr ? gl::DefaultMaterial : this->material;
-      return true;
-    }
-
-    //interface for custom intersection 
-    case IntersectionMode::CUSTOM: {
-      throw std::runtime_error("Invalid intersection mode");
-      break;
-    }
-    default: {
-      throw std::runtime_error("Invalid intersection mode");
-    }
-
-    }
+    hit_record.t = t;
+    hit_record.position = ray_origin + t * ray_dir;
+    hit_record.set_normal(ray,
+                          (hit_record.position - this->center).normalize());
+    // calculate the uv coords of a sphere
+    auto p = (hit_record.position - this->center).normalize();
+    auto phi = atan2(p.z(), p.x());
+    auto theta = asin(p.y());
+    hit_record.texCoords =
+        gl::vec2(1 - (phi + M_PI) / (2 * M_PI), (theta + M_PI / 2) / M_PI);
+    // remap the uv coords, so that (0,0,1) is (0,0.5)
+    hit_record.texCoords.u() = fmodf(hit_record.texCoords.u() + 0.75f, 1.0f);
+    hit_record.material =
+        this->material == nullptr ? gl::DefaultMaterial : this->material;
+    return true;
   };
 
-  float pdf_value(const gl::vec3 &origin,
-                  const gl::vec3 &dir) const override {
+  float pdf_value(const gl::vec3 &origin, const gl::vec3 &dir) const override {
     HitRecord hit_record;
     if (!this->intersect(Ray(origin, dir), hit_record))
       return 0.f;
@@ -132,7 +121,6 @@ public:
     OrthoBasis onb(direction.normalize());
     return onb.at(gl::randomToSphere(this->radius, distance_squared));
   };
-
 };
 
 template <Axis axis> class AARectangle : public Hittable {
@@ -158,8 +146,7 @@ public:
   bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0001,
                  float tmax = 10000.f) const override;
 
-  float pdf_value(const gl::vec3 &origin,
-                  const gl::vec3 &dir) const override {
+  float pdf_value(const gl::vec3 &origin, const gl::vec3 &dir) const override {
     HitRecord hit_record;
     if (!this->intersect(Ray(origin, dir), hit_record))
       return 0.f;
@@ -172,13 +159,8 @@ public:
     return distance_squared / (cosine * area);
   }
 
- gl::vec3 get_sample(const gl::vec3 &origin) const override;
+  gl::vec3 get_sample(const gl::vec3 &origin) const override;
 };
-
-
-
-
-
 
 using XYRectangle = AARectangle<Axis::Z>;
 using XZRectangle = AARectangle<Axis::Y>;

@@ -43,8 +43,16 @@ void FrameBuffer::writeToFile(const std::string &file_path, float gamma) const {
   }
 
   stbi_flip_vertically_on_write(1);
-  stbi_write_png(file_path.c_str(), this->width, this->height, this->channels,
+  auto res = stbi_write_png(file_path.c_str(), this->width, this->height, this->channels,
                  data.data(), this->width * this->channels);
+
+  std::cout << "write to file: " << file_path << std::endl;
+  if (res == 0) {
+    std::cout << "write to file failed" << std::endl;
+  } else {
+    std::cout << "write to file success" << std::endl;
+  }
+  
 };
 
 void FrameBuffer::gaussianBlur(int kernel, float sigma) {

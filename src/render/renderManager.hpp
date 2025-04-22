@@ -7,9 +7,10 @@
 #include "../base/objectList.hpp"
 #include "../base/primitive.hpp"
 #include "../method/analytical_illumin.hpp"
-#include "../method/maxdepth_nee.hpp"
 #include "../method/maxdepth_naive.hpp"
+#include "../method/maxdepth_nee.hpp"
 #include "../method/roulette_naive.hpp"
+#include "../primitives/curve.hpp"
 #include "../utils/bvh.hpp"
 #include "../utils/objectTransform.hpp"
 #include "../utils/timeit.hpp"
@@ -26,7 +27,6 @@ static PolyLightInfo light_info = {light_vertices, light_color,
 static auto default_light = std::make_shared<QuadLight>(light_info);
 static LightList default_lights = {default_light};
 
-
 struct SceneInfo {
   std::shared_ptr<PerspectiveCamera> camera = nullptr;
   std::shared_ptr<BVHNode> bvh = nullptr;
@@ -41,10 +41,10 @@ struct SceneInfo {
   float _gamma = 1.0f;
   LightList lights = {std::make_shared<QuadLight>(light_info)};
 
-
   SceneInfo() = default;
 
-  void render(const std::string &out_path = "./output.png", bool show_progress = true) {
+  void render(const std::string &out_path = "./output.png",
+              bool show_progress = true) {
 
     using namespace gl;
     using namespace std;
@@ -58,7 +58,6 @@ struct SceneInfo {
       std::cout << "No objects in the scene!" << std::endl;
       return;
     }
-
 
 #ifdef OVERRIDE_LOCAL_RENDER_VAL
     _width = WIDTH;
@@ -83,7 +82,7 @@ struct SceneInfo {
     {
       for (int i = 0; i < _width; i++) {
 
-        if(show_progress)
+        if (show_progress)
           std::cout << "Now scanning " << (float(counter) / _width) * 100.f
                     << " %" << std::endl;
 
@@ -97,13 +96,16 @@ struct SceneInfo {
 #ifdef USE_ANALYTICAL_ILLUMIN
             color += getRayColor(ray, objects, bg_color, lights, bvh);
 #elif defined USE_MAXDEPTH_NEE
-            color += getRayColor(ray, objects, bg_color, lights, MAX_RAY_DEPTH, bvh);
+            color +=
+                getRayColor(ray, objects, bg_color, lights, MAX_RAY_DEPTH, bvh);
 #elif defined USE_ROULETTE
             color += getRayColor(ray, objects, light_objects, bg_color, bvh);
 #elif defined USE_RESERVOIR
-            color += getRayColor(ray, objects, bg_color,lights, MAX_RAY_DEPTH, bvh);
+            color +=
+                getRayColor(ray, objects, bg_color, lights, MAX_RAY_DEPTH, bvh);
 #else
-            color += getRayColor(ray, objects,light_objects, bg_color, MAX_RAY_DEPTH, bvh);
+            color += getRayColor(ray, objects, light_objects, bg_color,
+                                 MAX_RAY_DEPTH, bvh);
 #endif
           }
 
@@ -121,11 +123,12 @@ struct SceneInfo {
   };
 
   void renderWithInfo(const std::string &out_path = "./output.png",
-                      bool time_it = true, bool show_hitcount = true, bool show_progress = true) {
+                      bool time_it = true, bool show_hitcount = true,
+                      bool show_progress = true) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> duration;
     start = std::chrono::system_clock::now();
-    render(out_path);
+    render(out_path, show_progress);
     end = std::chrono::system_clock::now();
     duration = end - start;
 

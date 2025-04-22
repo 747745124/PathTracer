@@ -28,6 +28,11 @@ public:
         return this->direction;
     };
 
+    gl::vec3 at(float t) const
+    {
+        return this->origin + t * this->direction;
+    };
+
     float intensity = 1.0f;
 
 private:

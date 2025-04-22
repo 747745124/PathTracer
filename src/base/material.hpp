@@ -34,6 +34,10 @@ public:
   gl::vec3 position;
   std::shared_ptr<Material> material;
   gl::vec2 texCoords = gl::vec2(0.0f);
+
+  gl::vec3 hair_tangent = gl::vec3(0.0f);
+  // the tangent of the hair, used for hair shading
+
   // Ref: rt in one weeknd
   // This is used to determine whether the ray is inside or outside the object
   // As we want have the normal always point against the ray
@@ -56,7 +60,7 @@ public:
     return 0.0f;
   }
 
-  virtual gl::vec3 emit(const Ray &ray_in, HitRecord &rec) {
+  virtual gl::vec3 emit(const Ray &ray_in, HitRecord &rec) const{
     return gl::vec3(0.0f);
   }
 
@@ -274,7 +278,7 @@ public:
     return false;
   }
 
-  gl::vec3 emit(const Ray &ray_in, HitRecord &rec) override {
+  gl::vec3 emit(const Ray &ray_in, HitRecord &rec) const override {
 
     // use unidirectional light or not
     //  if (rec.is_inside)
@@ -288,6 +292,24 @@ private:
   std::shared_ptr<Texture2D> _text;
   float _intensity;
 };
+
+class DebugTangentMaterial : public Material {
+  public:
+  DebugTangentMaterial() = default;
+
+  bool scatter(const Ray&, HitRecord& rec, ScatterRecord& srec) const override {
+    // no scattering—just treat this as an emitter so we see it directly
+    return false;
+  }
+
+  gl::vec3 emit(const Ray& ray, HitRecord& rec) const override {
+    auto t = rec.hair_tangent;
+    return gl::vec3(fabs(t.x()), fabs(t.y()), fabs(t.z()));
+  }
+
+  bool is_emitter() const override { return true; }
+};
+
 
 class Isotropic : public Material {
 public:

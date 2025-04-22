@@ -173,7 +173,7 @@ SceneInfo simple_light() {
   ObjectList objects;
   LightList lights;
 
-  auto noise_text = make_shared<ConstantTexture>(gl::vec3(1.0,1.0,1.0));
+  auto noise_text = make_shared<ConstantTexture>(gl::vec3(1.0, 1.0, 1.0));
   objects.addObject(make_shared<Sphere>(vec3(0, -1000, 0), 1000,
                                         make_shared<Lambertian>(noise_text)));
 
@@ -346,18 +346,19 @@ SceneInfo night() {
   lights.addLight(
       make_shared<SphereLight>(vec3(4, 0.5, 0), 0.4, vec3(0.4, 0.2, 0.1), 7.f));
 
-  world.addObject(make_shared<Sphere>(vec3(15, 2, 10)/5.f, 0.25, material));
-  lights.addLight(
-      make_shared<SphereLight>(vec3(15, 2, 10)/5.f, 0.25, vec3(0.4, 0.2, 0.1), 7.f));
-  
-  auto material_outside = make_shared<DiffuseEmitter>(vec3(0.4, 0.2, 0.1), 1000.f);
+  world.addObject(make_shared<Sphere>(vec3(15, 2, 10) / 5.f, 0.25, material));
+  lights.addLight(make_shared<SphereLight>(vec3(15, 2, 10) / 5.f, 0.25,
+                                           vec3(0.4, 0.2, 0.1), 7.f));
+
+  auto material_outside =
+      make_shared<DiffuseEmitter>(vec3(0.4, 0.2, 0.1), 1000.f);
   world.addObject(make_shared<Sphere>(vec3(13, 2, 5), 1.0, material_outside));
-  lights.addLight(
-      make_shared<SphereLight>(vec3(13, 2, 5), 1.0, vec3(0.4, 0.2, 0.1), 1000.f));
+  lights.addLight(make_shared<SphereLight>(vec3(13, 2, 5), 1.0,
+                                           vec3(0.4, 0.2, 0.1), 1000.f));
 
   scene.objects = world;
   scene._width = 640;
-  scene._height =540;
+  scene._height = 540;
   scene.spp_x = 5;
   scene.spp_y = 5;
   scene._gamma = 1.0f;
@@ -468,7 +469,7 @@ SceneInfo cornell_box_modified() {
   scene.spp_x = 20;
   scene.spp_y = 20;
   scene._gamma = 2.f;
-  
+
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
       1000.f, vec3(0, 1, 0), vec3(0, 0, 1.f).normalize(),
@@ -637,71 +638,112 @@ SceneInfo checkpoint_2() {
   return scene;
 };
 
-
-
 SceneInfo checkpoint_diffuse() {
-    using namespace std;
-    using namespace gl;
-  
-    SceneInfo scene;
-    ObjectList objects;
-    LightList lights;
-  
-    auto ground = make_shared<Lambertian>(vec3(0.48f, 0.83f, 0.53f));
-  
-    ObjectList boxes1;
-    const int boxes_per_side = 20;
-    for (int i = 0; i < boxes_per_side; i++) {
-      for (int j = 0; j < boxes_per_side; j++) {
-        auto w = 100.0;
-        auto x0 = -1000.0 + i * w;
-        auto z0 = -1000.0 + j * w;
-        auto y0 = 0.0;
-        auto x1 = x0 + w;
-        auto y1 = C_rand(1.f, 101.f);
-        auto z1 = z0 + w;
-  
-        boxes1.addObject(
-            make_shared<Box>(vec3(x0, y0, z0), vec3(x1, y1, z1), ground));
-      }
-    }
-  
-    objects.addObject(make_shared<BVHNode>(boxes1, 0, 1));
-  
-    auto light = make_shared<DiffuseEmitter>(vec3(1.f), 4000);
-    auto light_obj = make_shared<XZRectangle>(554, 420, 423, 347, 412, light);
-    objects.addObject(light_obj);
-    lights.addLight(make_shared<QuadLight>(light_obj, vec3(1.f), 4000));
-  
-    auto center1 = vec3(400, 400, 200);
-    auto center2 = center1 + vec3(30, 0, 0);
-    auto moving_sphere_material = make_shared<Lambertian>(vec3(0.7, 0.3, 0.1));
-    objects.addObject(make_shared<Sphere>(center1, 50, moving_sphere_material));
+  using namespace std;
+  using namespace gl;
 
-    ObjectList boxes2;
-    auto white = make_shared<Lambertian>(vec3(.73));
-    int ns = 1000;
-    for (int j = 0; j < ns; j++) {
-      boxes2.addObject(
-          make_shared<Sphere>(gl::C_rand_vec3(0.f, 165.f), 10, white));
+  SceneInfo scene;
+  ObjectList objects;
+  LightList lights;
+
+  auto ground = make_shared<Lambertian>(vec3(0.48f, 0.83f, 0.53f));
+
+  ObjectList boxes1;
+  const int boxes_per_side = 20;
+  for (int i = 0; i < boxes_per_side; i++) {
+    for (int j = 0; j < boxes_per_side; j++) {
+      auto w = 100.0;
+      auto x0 = -1000.0 + i * w;
+      auto z0 = -1000.0 + j * w;
+      auto y0 = 0.0;
+      auto x1 = x0 + w;
+      auto y1 = C_rand(1.f, 101.f);
+      auto z1 = z0 + w;
+
+      boxes1.addObject(
+          make_shared<Box>(vec3(x0, y0, z0), vec3(x1, y1, z1), ground));
     }
-  
-    objects.addObject(make_shared<Translate>(
-        make_shared<Rotate<Axis::Y>>(make_shared<BVHNode>(boxes2, 0.0, 1.0),
-                                     gl::to_radian(15)),
-        vec3(-100, 270, 395)));
-  
-    scene.objects = objects;
-    scene._width = 400;
-    scene._height = 400;
-    scene.spp_x = 4;
-    scene.spp_y = 4;
-    scene._gamma = 2.0f;
-    scene.camera = make_shared<PerspectiveCamera>(
-        gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
-        1000.f, vec3(0, 1, 0), vec3(-200.f, 0.f, 600.f).normalize(),
-        vec3(478.f, 278.f, -600.f));
-    scene.bg_color = vec3(0.f);
-    scene.lights = lights;
-    return scene;
-  };
+  }
+
+  objects.addObject(make_shared<BVHNode>(boxes1, 0, 1));
+
+  auto light = make_shared<DiffuseEmitter>(vec3(1.f), 4000);
+  auto light_obj = make_shared<XZRectangle>(554, 420, 423, 347, 412, light);
+  objects.addObject(light_obj);
+  lights.addLight(make_shared<QuadLight>(light_obj, vec3(1.f), 4000));
+
+  auto center1 = vec3(400, 400, 200);
+  auto center2 = center1 + vec3(30, 0, 0);
+  auto moving_sphere_material = make_shared<Lambertian>(vec3(0.7, 0.3, 0.1));
+  objects.addObject(make_shared<Sphere>(center1, 50, moving_sphere_material));
+
+  ObjectList boxes2;
+  auto white = make_shared<Lambertian>(vec3(.73));
+  int ns = 1000;
+  for (int j = 0; j < ns; j++) {
+    boxes2.addObject(
+        make_shared<Sphere>(gl::C_rand_vec3(0.f, 165.f), 10, white));
+  }
+
+  objects.addObject(make_shared<Translate>(
+      make_shared<Rotate<Axis::Y>>(make_shared<BVHNode>(boxes2, 0.0, 1.0),
+                                   gl::to_radian(15)),
+      vec3(-100, 270, 395)));
+
+  scene.objects = objects;
+  scene._width = 400;
+  scene._height = 400;
+  scene.spp_x = 4;
+  scene.spp_y = 4;
+  scene._gamma = 2.0f;
+  scene.camera = make_shared<PerspectiveCamera>(
+      gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
+      1000.f, vec3(0, 1, 0), vec3(-200.f, 0.f, 600.f).normalize(),
+      vec3(478.f, 278.f, -600.f));
+  scene.bg_color = vec3(0.f);
+  scene.lights = lights;
+  return scene;
+};
+
+SceneInfo debug_curve() {
+  using namespace std;
+  using namespace gl;
+
+  SceneInfo scene;
+  ObjectList objects;
+  LightList lights;
+
+  // 2) Define a simple "C"‑shaped cubic Bézier curve:
+  std::array<vec3, 4> cps = {vec3(-1.0f, 0.0f, 0.0f), vec3(-0.5f, 1.0f, 0.0f),
+                             vec3(0.5f, 1.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f)};
+
+  // 3) Create the debug‐tangent material
+  auto debugMat = std::make_shared<DebugTangentMaterial>();
+
+  // 4) Make the Curve object (cylinder cross‑section)
+  auto hairCurve =
+      std::make_shared<Curve>(cps,
+                              /*root radius=*/0.05f,
+                              /*tip  radius=*/0.02f, CurveType::Cylinder);
+  hairCurve->material = debugMat;
+  objects.addObject(hairCurve);
+
+  auto noise_text = make_shared<ConstantTexture>(gl::vec3(1.0, 1.0, 1.0));
+  objects.addObject(make_shared<Sphere>(vec3(0, -1000, 0), 1000,
+                                        make_shared<Lambertian>(noise_text)));
+
+  auto difflight = make_shared<DiffuseEmitter>(gl::DefaultTexture, 4);
+  auto light_obj = make_shared<AARectangle<Axis::Y>>(4, 2, 5, 0, 3, difflight);
+  objects.addObject(light_obj);
+  lights.addLight(make_shared<QuadLight>(light_obj, gl::WHITE, 4));
+
+  scene.camera = make_shared<PerspectiveCamera>(
+      gl::to_radian(20.f), (float)(scene._width) / (float)(scene._height), 10.f,
+      1000.f, vec3(0, 1, 0), vec3(-26.f, -1.f, -6.f).normalize(),
+      vec3(22.f, 3.f, 6.f));
+
+  scene.objects = objects;
+  scene.lights = lights;
+
+  return scene;
+};

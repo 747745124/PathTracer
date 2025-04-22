@@ -236,7 +236,3 @@ public:
 
   ~SphereLight() = default;
 };
-
-// using Lights =
-//     std::tuple<std::vector<PointLight>, std::vector<DirectionalLight>>;
-// Lights _get_lights_from_io(const LightIO *io);
