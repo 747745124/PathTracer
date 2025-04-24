@@ -24,7 +24,6 @@ int main() {
   SceneInfo scene = night();
   scene.renderWithInfo("../output.png");
 
-
 #endif
 #ifdef SHADER_TEST
   using namespace gl;
@@ -362,5 +361,13 @@ int main() {
     }
   }
   fb.writeToFile("../test.png");
+#endif
+
+#define MATH_TEST
+#ifdef MATH_TEST
+
+  std::cout << gl::fastExp(1.0f) << std::endl;
+  std::cout << gl::fastExp(2.0f) << std::endl;
+  std::cout << gl::fastExp(3.0f) << std::endl;
 #endif
 }

@@ -13,6 +13,28 @@ class Mirror;
 class Dielectric;
 
 namespace gl {
+
+static float fresnelDielectric(float cosTheta_i, float eta) {
+  cosTheta_i = std::clamp(cosTheta_i, -1.f, 1.f);
+
+  if (cosTheta_i < 0) {
+    eta = 1 / eta;
+    cosTheta_i = -cosTheta_i;
+  }
+
+  float sin2Theta_i = 1 - square(cosTheta_i);
+  float sin2Theta_t = sin2Theta_i / square(eta);
+  if (sin2Theta_t >= 1)
+    return 1.f;
+  float cosTheta_t = safeSqrt(1 - sin2Theta_t);
+
+  float r_parl =
+      (eta * cosTheta_i - cosTheta_t) / (eta * cosTheta_i + cosTheta_t);
+  float r_perp =
+      (cosTheta_i - eta * cosTheta_t) / (cosTheta_i + eta * cosTheta_t);
+  return (square(r_parl) + square(r_perp)) / 2;
+}
+
 static std::shared_ptr<ConstantTexture> DefaultTexture =
     std::make_shared<ConstantTexture>(gl::vec3(1.0f));
 static std::shared_ptr<Lambertian> DefaultMaterial =
@@ -55,12 +77,13 @@ public:
     return false;
   }
 
+  // required for non-delta materials
   virtual float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
                             const Ray &scattered) const {
     return 0.0f;
   }
 
-  virtual gl::vec3 emit(const Ray &ray_in, HitRecord &rec) const{
+  virtual gl::vec3 emit(const Ray &ray_in, HitRecord &rec) const {
     return gl::vec3(0.0f);
   }
 
@@ -137,135 +160,143 @@ public:
   };
 };
 
-
 class PhongLike : public Material {
-  public:
-      PhongLike(const gl::vec3 &diffuse, const gl::vec3 &specular,
-            const gl::vec3 &ambient, float shininess = 0.5f,float fuzz=0.2f)
-          : diffuse(diffuse), specular(specular), ambient(ambient),
-          specularProb(shininess) // shininess is used as a probability threshold
-          , fuzz(fuzz) {}
-  
-      gl::vec3 diffuse;   // Diffuse reflectance color
-      gl::vec3 specular;  // Specular reflectance color
-      gl::vec3 ambient;   // Ambient component
-      float specularProb;    //
-      float fuzz; // Fuzziness for the specular highlight
-  
-      // scatter() decides how a ray scatters upon hitting the surface.
-      // It probabilistically selects between specular and diffuse scattering.
-      bool scatter(const Ray &ray_in, HitRecord &rec,
-                   ScatterRecord &srec) const override {
+public:
+  PhongLike(const gl::vec3 &diffuse, const gl::vec3 &specular,
+            const gl::vec3 &ambient, float shininess = 0.5f, float fuzz = 0.2f)
+      : diffuse(diffuse), specular(specular), ambient(ambient),
+        specularProb(shininess) // shininess is used as a probability threshold
+        ,
+        fuzz(fuzz) {}
 
-          float p = gl::rand_num();
-          if (p < specularProb) {
-              // Specular scattering branch:
-              srec.is_specular = true;
-              // Compute the perfect reflection direction.
-              gl::vec3 R = reflect(ray_in.getDirection().normalize(), rec.normal);
-              // Add fuzziness to the reflection direction.
-              R += gl::on_sphere_random_vec(fuzz);
-              R.normalized();
-              // Create a new ray in the specular direction.
-              srec.specular_ray = Ray(rec.position, R);
-              // For specular, set attenuation as the sum of specular and ambient components.
-              srec.attenuation = specular + ambient;
-              srec.pdf_ptr = nullptr; // Delta distribution; no PDF used.
-              return true;
-          } else {
-              // Diffuse scattering branch:
-              srec.is_specular = false;
-              srec.attenuation = diffuse + ambient;
-              // Use a cosine-weighted PDF for diffuse scattering.
-              srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
-              return true;
-          }
-      }
-  
-      // For specular (delta) scattering, it returns 0 since it's handled deterministically.
-      // For diffuse scattering, it returns the cosine-weighted PDF value.
-      float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
-                        const Ray &scattered) const override {
-          // Compute specular probability as above.
-          float p = gl::rand_num();
-          if (p < specularProb) {
-              // Specular branch is a delta function, so PDF is zero.
-              return 0.0f;
-          }
-          // For diffuse scattering, use cosine-weighted PDF:
-          float cosine = dot(rec.normal, scattered.getDirection().normalize());
-          return std::max(cosine / M_PI, 0.0);
-      }
+  gl::vec3 diffuse;   // Diffuse reflectance color
+  gl::vec3 specular;  // Specular reflectance color
+  gl::vec3 ambient;   // Ambient component
+  float specularProb; //
+  float fuzz;         // Fuzziness for the specular highlight
+
+  // scatter() decides how a ray scatters upon hitting the surface.
+  // It probabilistically selects between specular and diffuse scattering.
+  bool scatter(const Ray &ray_in, HitRecord &rec,
+               ScatterRecord &srec) const override {
+
+    float p = gl::rand_num();
+    if (p < specularProb) {
+      // Specular scattering branch:
+      srec.is_specular = true;
+      // Compute the perfect reflection direction.
+      gl::vec3 R = reflect(ray_in.getDirection().normalize(), rec.normal);
+      // Add fuzziness to the reflection direction.
+      R += gl::on_sphere_random_vec(fuzz);
+      R.normalized();
+      // Create a new ray in the specular direction.
+      srec.specular_ray = Ray(rec.position, R);
+      // For specular, set attenuation as the sum of specular and ambient
+      // components.
+      srec.attenuation = specular + ambient;
+      srec.pdf_ptr = nullptr; // Delta distribution; no PDF used.
+      return true;
+    } else {
+      // Diffuse scattering branch:
+      srec.is_specular = false;
+      srec.attenuation = diffuse + ambient;
+      // Use a cosine-weighted PDF for diffuse scattering.
+      srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
+      return true;
+    }
+  }
+
+  // For specular (delta) scattering, it returns 0 since it's handled
+  // deterministically. For diffuse scattering, it returns the cosine-weighted
+  // PDF value.
+  float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
+                    const Ray &scattered) const override {
+    // Compute specular probability as above.
+    float p = gl::rand_num();
+    if (p < specularProb) {
+      // Specular branch is a delta function, so PDF is zero.
+      return 0.0f;
+    }
+    // For diffuse scattering, use cosine-weighted PDF:
+    float cosine = dot(rec.normal, scattered.getDirection().normalize());
+    return std::max(cosine / M_PI, 0.0);
+  }
 };
 
 class Phong : public Material {
-  public:
-      // Constructor: diffuse - diffuse color, specular - specular color,
-      // ambient - ambient component, shininess - exponent for the specular lobe.
-      Phong(const gl::vec3 &diffuse, const gl::vec3 &specular,
-            const gl::vec3 &ambient, float shininess)
-          : diffuse(diffuse), specular(specular), ambient(ambient),
-            shininess(shininess) {}
-  
-      gl::vec3 diffuse;   // Diffuse reflectance color.
-      gl::vec3 specular;  // Specular reflectance color.
-      gl::vec3 ambient;   // Ambient component.
-      float shininess;    // Shininess exponent for specular highlight.
-  
-      // scatter() decides how the ray is scattered upon hitting the surface.
-      // This implementation uses importance sampling over two lobes: specular (Phong)
-      // and diffuse (cosine-weighted). The branch is chosen based on the relative energies.
-      bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec) const override {
-          // Compute average intensity for specular and diffuse components.
-          float specInt = (specular.x() + specular.y() + specular.z()) / 3.0f;
-          float diffInt = (diffuse.x() + diffuse.y() + diffuse.z()) / 3.0f;
-          // Use energy-based probability for choosing specular sampling.
-          float specProb = specInt / (specInt + diffInt);
-  
-          float r = gl::rand_num();
-          if (r < specProb) {
-              // Specular (glossy) branch (non-delta, with a finite Phong lobe).
-              srec.is_specular = false; // Here we mark as non-delta so that PDF is used.
-              // Compute the perfect reflection direction.
-              gl::vec3 R = reflect(ray_in.getDirection().normalize(), rec.normal);
-              // Set up a Phong-lobe PDF with the perfect reflection direction.
-              srec.pdf_ptr = std::make_shared<PhongLobePDF>(R, shininess);
-              // Sample a specular direction from the Phong-lobe PDF.
-              gl::vec3 sampledDir = srec.pdf_ptr->get();
-              srec.specular_ray = Ray(rec.position, sampledDir);
-              // Attenuation is typically set to the specular color (ambient might be added separately).
-              srec.attenuation = specular;
-              return true;
-          } else {
-              // Diffuse branch.
-              srec.is_specular = false;
-              srec.attenuation = diffuse;
-              srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
-              return true;
-          }
-      }
-  
-      // scatter_pdf() returns the probability density for the scattered ray direction.
-      // We combine the PDFs of the specular and diffuse branches using the same weighting
-      // as used in scatter().
-      float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
-                        const Ray &scattered) const override {
-          float specInt = (specular.x() + specular.y() + specular.z()) / 3.0f;
-          float diffInt = (diffuse.x() + diffuse.y() + diffuse.z()) / 3.0f;
-          float specProb = specInt / (specInt + diffInt);
-          // Compute diffuse PDF: cosine weighted.
-          float cosine = dot(rec.normal, scattered.getDirection().normalize());
-          float diffusePDF = std::max(cosine / M_PI, 0.0);
-          // Compute specular PDF using the Phong lobe. We need the perfect reflection direction.
-          gl::vec3 R = reflect(ray_in.getDirection().normalize(), rec.normal);
-          float specPDF = (shininess + 1.0f) / (2.0f * M_PI) *
-                            pow(std::max(dot(normalize(scattered.getDirection()), R), 0.0f), shininess);
-          // Linear blend (balance heuristic) based on the energy weights.
-          return specProb * specPDF + (1.0f - specProb) * diffusePDF;
-      }
-  };
-  
-  
+public:
+  // Constructor: diffuse - diffuse color, specular - specular color,
+  // ambient - ambient component, shininess - exponent for the specular lobe.
+  Phong(const gl::vec3 &diffuse, const gl::vec3 &specular,
+        const gl::vec3 &ambient, float shininess)
+      : diffuse(diffuse), specular(specular), ambient(ambient),
+        shininess(shininess) {}
+
+  gl::vec3 diffuse;  // Diffuse reflectance color.
+  gl::vec3 specular; // Specular reflectance color.
+  gl::vec3 ambient;  // Ambient component.
+  float shininess;   // Shininess exponent for specular highlight.
+
+  // scatter() decides how the ray is scattered upon hitting the surface.
+  // This implementation uses importance sampling over two lobes: specular
+  // (Phong) and diffuse (cosine-weighted). The branch is chosen based on the
+  // relative energies.
+  bool scatter(const Ray &ray_in, HitRecord &rec,
+               ScatterRecord &srec) const override {
+    // Compute average intensity for specular and diffuse components.
+    float specInt = (specular.x() + specular.y() + specular.z()) / 3.0f;
+    float diffInt = (diffuse.x() + diffuse.y() + diffuse.z()) / 3.0f;
+    // Use energy-based probability for choosing specular sampling.
+    float specProb = specInt / (specInt + diffInt);
+
+    float r = gl::rand_num();
+    if (r < specProb) {
+      // Specular (glossy) branch (non-delta, with a finite Phong lobe).
+      srec.is_specular =
+          false; // Here we mark as non-delta so that PDF is used.
+      // Compute the perfect reflection direction.
+      gl::vec3 R = reflect(ray_in.getDirection().normalize(), rec.normal);
+      // Set up a Phong-lobe PDF with the perfect reflection direction.
+      srec.pdf_ptr = std::make_shared<PhongLobePDF>(R, shininess);
+      // Sample a specular direction from the Phong-lobe PDF.
+      gl::vec3 sampledDir = srec.pdf_ptr->get();
+      srec.specular_ray = Ray(rec.position, sampledDir);
+      // Attenuation is typically set to the specular color (ambient might be
+      // added separately).
+      srec.attenuation = specular;
+      return true;
+    } else {
+      // Diffuse branch.
+      srec.is_specular = false;
+      srec.attenuation = diffuse;
+      srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
+      return true;
+    }
+  }
+
+  // scatter_pdf() returns the probability density for the scattered ray
+  // direction. We combine the PDFs of the specular and diffuse branches using
+  // the same weighting as used in scatter().
+  float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
+                    const Ray &scattered) const override {
+    float specInt = (specular.x() + specular.y() + specular.z()) / 3.0f;
+    float diffInt = (diffuse.x() + diffuse.y() + diffuse.z()) / 3.0f;
+    float specProb = specInt / (specInt + diffInt);
+    // Compute diffuse PDF: cosine weighted.
+    float cosine = dot(rec.normal, scattered.getDirection().normalize());
+    float diffusePDF = std::max(cosine / M_PI, 0.0);
+    // Compute specular PDF using the Phong lobe. We need the perfect reflection
+    // direction.
+    gl::vec3 R = reflect(ray_in.getDirection().normalize(), rec.normal);
+    float specPDF =
+        (shininess + 1.0f) / (2.0f * M_PI) *
+        pow(std::max(dot(normalize(scattered.getDirection()), R), 0.0f),
+            shininess);
+    // Linear blend (balance heuristic) based on the energy weights.
+    return specProb * specPDF + (1.0f - specProb) * diffusePDF;
+  }
+};
+
 class DiffuseEmitter : public Material {
 public:
   DiffuseEmitter(std::shared_ptr<Texture2D> a, float intensity = 1.0f)
@@ -285,7 +316,7 @@ public:
     return _text->getTexelColor(rec.texCoords) * _intensity;
     // return gl::vec3(0.0f);
   }
-  
+
   bool is_emitter() const override { return true; }
 
 private:
@@ -294,22 +325,22 @@ private:
 };
 
 class DebugTangentMaterial : public Material {
-  public:
+public:
   DebugTangentMaterial() = default;
 
-  bool scatter(const Ray&, HitRecord& rec, ScatterRecord& srec) const override {
+  bool scatter(const Ray &, HitRecord &rec,
+               ScatterRecord &srec) const override {
     // no scattering—just treat this as an emitter so we see it directly
     return false;
   }
 
-  gl::vec3 emit(const Ray& ray, HitRecord& rec) const override {
+  gl::vec3 emit(const Ray &ray, HitRecord &rec) const override {
     auto t = rec.hair_tangent;
     return gl::vec3(fabs(t.x()), fabs(t.y()), fabs(t.z()));
   }
 
   bool is_emitter() const override { return true; }
 };
-
 
 class Isotropic : public Material {
 public:
@@ -325,7 +356,6 @@ public:
     // return true;
     return true;
   }
-
 
 private:
   std::shared_ptr<Texture2D> _text;

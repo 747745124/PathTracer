@@ -1,7 +1,7 @@
 #pragma once
-#include "./base/primitive.hpp"
-#include "./utils/bezier.hpp"
-#include "./utils/utility.hpp"
+#include "../base/primitive.hpp"
+#include "../utils/bezier.hpp"
+#include "../utils/utility.hpp"
 
 enum class CurveType { Flat, Cylinder, Ribbon };
 // note that only Cyliner is implemented for now

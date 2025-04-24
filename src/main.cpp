@@ -6,7 +6,7 @@ int main() {
   // night_time();
   //  SceneInfo scene = cornell_box();
   //  SceneInfo scene = checkpoint_diffuse();
-  //  SceneInfo scene = cornell_box_modified();
+  SceneInfo scene = cornell_box_modified();
   // two_lights();
   //  SceneInfo scene = simple_light();
   // night();
@@ -15,7 +15,7 @@ int main() {
   //  SceneInfo scene = VeachMIS();
   //  SceneInfo scene = night();
 
-  SceneInfo scene = debug_curve();
+  // SceneInfo scene = debug_curve();
   scene.renderWithInfo("../output.png");
 
   return 0;

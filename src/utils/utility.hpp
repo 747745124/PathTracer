@@ -2,6 +2,7 @@
 #include "./matrix.hpp"
 #include "./transformations.hpp"
 #include <chrono>
+#include <float.h>
 #include <random>
 #include <type_traits>
 
@@ -38,11 +39,11 @@ static inline vec3 refract(const vec3 &v, const vec3 &n, float ni_over_nt,
   }
 }
 
-static inline vec3 refract(const vec3& dir, const vec3& n, float ni_over_nt) {
-    auto cos_theta = fmin(dot(-dir, n), 1.0);
-    vec3 r_out_perp =  ni_over_nt * (dir + cos_theta*n);
-    vec3 r_out_parallel = -sqrt(fabs(1.0 - dot(r_out_perp,r_out_perp))) * n;
-    return r_out_perp + r_out_parallel;
+static inline vec3 refract(const vec3 &dir, const vec3 &n, float ni_over_nt) {
+  auto cos_theta = fmin(dot(-dir, n), 1.0);
+  vec3 r_out_perp = ni_over_nt * (dir + cos_theta * n);
+  vec3 r_out_parallel = -sqrt(fabs(1.0 - dot(r_out_perp, r_out_perp))) * n;
+  return r_out_perp + r_out_parallel;
 }
 
 static inline float sign(float x) {
@@ -53,15 +54,98 @@ static inline float sign(float x) {
   return 0.f;
 }
 
+static float safeASin(float x) { return std::asin(std::clamp(x, -1.0f, 1.0f)); }
+static float safeACos(float x) { return std::acos(std::clamp(x, -1.0f, 1.0f)); }
+static float safeSqrt(float x) { return std::sqrt(std::max(0.f, x)); }
+
 inline int solveQuadratic(float A, float B, float C, float roots[2]) {
-  float disc = B*B - 4*A*C;
-  if (disc < 0) return 0;
+  float disc = B * B - 4 * A * C;
+  if (disc < 0)
+    return 0;
   float sq = sqrt(disc);
-  float q  = B<0 ? -0.5f*(B - sq) : -0.5f*(B + sq);
-  roots[0] = q/A;
-  roots[1] = C/q;
-  if (roots[0] > roots[1]) std::swap(roots[0], roots[1]);
-  return roots[0]==roots[1] ? 1 : 2;
+  float q = B < 0 ? -0.5f * (B - sq) : -0.5f * (B + sq);
+  roots[0] = q / A;
+  roots[1] = C / q;
+  if (roots[0] > roots[1])
+    std::swap(roots[0], roots[1]);
+  return roots[0] == roots[1] ? 1 : 2;
+}
+
+inline float BitsToFloat(uint32_t ui) { return std::bit_cast<float>(ui); }
+inline uint32_t floatToBits(float f) { return std::bit_cast<uint32_t>(f); }
+inline int exponent(float v) { return (floatToBits(v) >> 23) - 127; }
+
+template <typename C> constexpr float evalPolynomial(float t, C c) { return c; }
+
+template <typename C, typename... Args>
+constexpr float evalPolynomial(float t, C c, Args... cRemaining) {
+  return std::fma(t, evalPolynomial(t, cRemaining...), c);
+}
+
+static inline float square(float x) { return x * x; }
+static inline float cube(float x) { return x * x * x; }
+static inline float I0f(float x, float tol = 1e-6f, int maxIter = 500) {
+  float term = 1.0f; // term_0
+  float sum = term;  // running sum
+  float x2 = x * x;
+
+  for (int k = 1; k < maxIter; ++k) {
+    // term_k = term_{k-1} * (x^2) / (4 k^2)
+    term *= x2 / (4.0f * k * k);
+    sum += term;
+    if (term < tol * sum)
+      break;
+    // guard against extreme overflow
+    if (sum > FLT_MAX * 0.5f)
+      break;
+  }
+  return sum;
+}
+
+static inline float logI0f(float x) {
+  if (x > 12.0f) {
+    // float-precision pi
+    const float pi = 3.14159265358979323846f;
+    // asymptotic: I0(x) ~ exp(x) / sqrt(2*pi*x)
+    // so log I0 ~ x - 0.5*log(2*pi*x)
+    return x - 0.5f * std::logf(2.0f * pi * x);
+  }
+  // for smaller x, just take log of the series result
+  return std::logf(I0f(x));
+}
+
+static inline float fastExp(float x) {
+
+  float xp = x * 1.442695041f;
+  float fxp = floor(xp);
+  float f = xp - fxp;
+  int i = (int)fxp;
+
+  float twoToF =
+      evalPolynomial(f, 1.f, 0.695556856f, 0.226173572f, 0.0781455737f);
+  int exp = exponent(twoToF) + i;
+  if (exp < -126)
+    return 0;
+  if (exp > 127)
+    throw std::runtime_error("exponent out of range");
+
+  uint32_t bits = floatToBits(twoToF);
+  bits &= 0b10000000011111111111111111111111u;
+  bits |= (exp + 127) << 23;
+  return BitsToFloat(bits);
+};
+
+static inline float logistic(float x, float s) {
+  x = std::abs(x);
+  return std::exp(-x / s) / (s * square(1 + std::exp(-x / s)));
+}
+
+static inline float logisticCDF(float x, float s) {
+  return 1 / (1 + std::exp(-x / s));
+}
+
+static inline float trimmedLogistic(float x, float s, float a, float b) {
+  return logistic(x, s) / (logisticCDF(b, s) - logisticCDF(a, s));
 }
 
 static inline float lerp(float x, float y, float t) { return x + t * (y - x); }
@@ -193,19 +277,17 @@ static bool is_convex(gl::vec2 p1, gl::vec2 p2, gl::vec2 p3, gl::vec2 p4) {
   return all_neg || all_pos;
 }
 
-static std::random_device rd; // Will be used to obtain a seed for the random number engine
-static std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+static std::random_device
+    rd; // Will be used to obtain a seed for the random number engine
+static std::mt19937
+    gen(rd()); // Standard mersenne_twister_engine seeded with rd()
 static std::uniform_real_distribution<> dist(0, 1);
 
 // random number from 0 to 1
-static float rand_num() {
-  return dist(gen);
-}
+static float rand_num() { return dist(gen); }
 
 // random number from 0 to end_point
-static float rand_num(float end_point) {
-  return dist(gen) * end_point;
-}
+static float rand_num(float end_point) { return dist(gen) * end_point; }
 
 // random number from start_point to end_point
 static inline float rand_num(float start_point, float end_point) {
@@ -223,7 +305,6 @@ static inline float C_rand(float min, float max) {
   return min + (max - min) * C_rand();
 }
 
-
 static inline gl::vec3 C_rand_vec3() {
   return gl::vec3(C_rand(), C_rand(), C_rand());
 }
@@ -231,7 +312,6 @@ static inline gl::vec3 C_rand_vec3() {
 static inline gl::vec3 C_rand_vec3(float min, float max) {
   return gl::vec3(C_rand(min, max), C_rand(min, max), C_rand(min, max));
 }
-
 
 static inline vec2 circle_random_vec(float r = 1.f) {
   auto p = vec2(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
@@ -265,8 +345,8 @@ static inline vec3 on_hemisphere_random_vec(const vec3 &normal, float r = 1.f) {
   return p;
 }
 
-// Helper function: Convert spherical coordinates (theta, phi) to a 3D vector in local space,
-// where the z-axis is assumed to be "up."
+// Helper function: Convert spherical coordinates (theta, phi) to a 3D vector in
+// local space, where the z-axis is assumed to be "up."
 inline gl::vec3 sphericalDirection(float theta, float phi) {
   float sinTheta = sin(theta);
   return gl::vec3(sinTheta * cos(phi), sinTheta * sin(phi), cos(theta));

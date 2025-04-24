@@ -99,6 +99,7 @@ public:
     hit_record.texCoords.u() = fmodf(hit_record.texCoords.u() + 0.75f, 1.0f);
     hit_record.material =
         this->material == nullptr ? gl::DefaultMaterial : this->material;
+
     return true;
   };
 
