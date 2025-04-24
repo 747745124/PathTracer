@@ -100,7 +100,7 @@ public:
   bool scatter(const Ray &ray_in, HitRecord &rec,
                ScatterRecord &srec) const override {
     srec.is_specular = false;
-    srec.attenuation = albedo->getTexelColor(rec.texCoords);
+    srec.attenuation = albedo->getTexelColor(rec.texCoords) * (1.0f / M_PI);
     srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
     return true;
   }
