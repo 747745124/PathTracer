@@ -1,10 +1,10 @@
 #pragma once
 #include "../base/lightList.hpp"
 #include "../base/objectList.hpp"
+#include "../config.hpp"
 #include "../probs/hittablePDF.hpp"
 #include "../probs/mixedPDF.hpp"
 #include "../utils/bvh.hpp"
-#include "../config.hpp"
 
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                             const ObjectList &light_objects, gl::vec3 bg_color,
@@ -26,9 +26,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     return bg_color;
 
   Ray out_ray;
-  vec3 albedo;
   ScatterRecord srec;
-  float pdf = 0.f;
   auto mat = hit_record.material;
 
   if (mat->scatter(ray, hit_record, srec)) {
@@ -38,7 +36,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
       return srec.attenuation * getRayColor(srec.specular_ray, prims,
                                             light_objects, bg_color,
                                             max_depth - 1, bvh);
-                                            
+
     auto pdfs = std::vector<std::shared_ptr<PDF>>();
     for (int i = 0; i < LIGHT_SAMPLE_NUM; i++) {
       auto light = light_objects.uniform_get();
@@ -49,17 +47,20 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
 
     if (srec.pdf_ptr != nullptr)
       pdfs.push_back(srec.pdf_ptr);
+
     auto mix_pdf = MixedPDF(pdfs);
-
+    auto wo = mix_pdf.get().normalize();
     out_ray = Ray(hit_record.position, mix_pdf.get().normalize());
-    albedo = srec.attenuation;
-    pdf = mix_pdf.at(out_ray.getDirection().normalize());
+    auto f = srec.attenuation;
+    auto pdf_val = mix_pdf.at(out_ray.getDirection());
+    float cos_theta =
+        std::max(dot(hit_record.normal, out_ray.getDirection()), 0.0f);
 
-    return mat->emit(ray, hit_record) +
-           albedo *
-               getRayColor(out_ray, prims, light_objects, bg_color,
-                           max_depth - 1, bvh) *
-               mat->scatter_pdf(ray, hit_record, out_ray) / pdf;
+    return mat->emit(ray, hit_record) + f *
+                                            getRayColor(out_ray, prims,
+                                                        light_objects, bg_color,
+                                                        max_depth - 1, bvh) *
+                                            cos_theta / pdf_val;
   }
 
   return mat->emit(ray, hit_record);

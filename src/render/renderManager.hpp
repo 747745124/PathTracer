@@ -103,9 +103,13 @@ struct SceneInfo {
 #elif defined USE_RESERVOIR
             color +=
                 getRayColor(ray, objects, bg_color, lights, MAX_RAY_DEPTH, bvh);
-#else
+#elif defined USE_MAXDEPTH_NAIVE
             color += getRayColor(ray, objects, light_objects, bg_color,
                                  MAX_RAY_DEPTH, bvh);
+#else
+            std::cout << "No method selected!" << std::endl;
+            std::runtime_error(
+                "No method selected! Please define a method in the config.hpp");
 #endif
           }
 

@@ -38,7 +38,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                        ? srec.pdf_ptr
                        : std::make_shared<CosinePDF>(hit_record.normal);
 
-    auto BRDF = srec.attenuation;
+    auto f = srec.attenuation;
     auto out_ray = Ray(hit_record.position, pdf_ptr->get().normalize());
     float cos_theta = dot(hit_record.normal, out_ray.getDirection());
     cos_theta = std::max(cos_theta, 0.0f);
@@ -75,7 +75,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
       auto G = NoL * NoI / (dot(light_dir, light_dir));
       auto hit_light = false;
       auto V = is_shadow_hit ? 0.0f : 1.0f;
-      auto direct_term = BRDF * light_sample->intensity * light_sample->color *
+      auto direct_term = f * light_sample->intensity * light_sample->color *
                          light_sample->get_area() * G * V;
       light_term += direct_term;
     }
@@ -96,7 +96,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
 
     // direct light sampling + indirect light
     return mat->emit(ray, hit_record) + light_term / LIGHT_SAMPLE_NUM +
-           BRDF *
+           f *
                getRayColor(out_ray, prims, bg_color, lights, max_depth - 1,
                            bvh) *
                cos_theta / pdf_val;
