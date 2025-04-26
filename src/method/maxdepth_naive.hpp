@@ -25,7 +25,6 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   if (!is_hit)
     return bg_color;
 
-  Ray out_ray;
   ScatterRecord srec;
   auto mat = hit_record.material;
 
@@ -50,7 +49,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
 
     auto mix_pdf = MixedPDF(pdfs);
     auto wo = mix_pdf.get().normalize();
-    out_ray = Ray(hit_record.position, mix_pdf.get().normalize());
+    auto out_ray = Ray(hit_record.position, mix_pdf.get().normalize());
     auto f = srec.attenuation;
     auto pdf_val = mix_pdf.at(out_ray.getDirection());
     float cos_theta =

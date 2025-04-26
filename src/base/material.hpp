@@ -24,6 +24,7 @@ static float fresnelDielectric(float cosTheta_i, float eta) {
 
   float sin2Theta_i = 1 - square(cosTheta_i);
   float sin2Theta_t = sin2Theta_i / square(eta);
+  // the total internal reflection case
   if (sin2Theta_t >= 1)
     return 1.f;
   float cosTheta_t = safeSqrt(1 - sin2Theta_t);
