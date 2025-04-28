@@ -1,7 +1,9 @@
 #pragma once
 #include "./matrix.hpp"
+#include "./plane.hpp"
 #include "./transformations.hpp"
 #include <chrono>
+#include <complex>
 #include <float.h>
 #include <random>
 #include <type_traits>
@@ -19,8 +21,10 @@ static inline float attenuate(float distance) {
 }
 
 static inline vec3 reflect(const vec3 &v, const vec3 &n) {
-
-  return v.normalize() - 2 * dot(v.normalize(), n.normalize()) * n.normalize();
+  auto _v = v.normalize();
+  auto _n = n.normalize();
+  auto dt = dot(_v, _n);
+  return (_v - 2 * dt * _n).normalize();
 }
 
 static inline vec3 refract(const vec3 &v, const vec3 &n, float ni_over_nt,
@@ -82,8 +86,10 @@ constexpr float evalPolynomial(float t, C c, Args... cRemaining) {
   return std::fma(t, evalPolynomial(t, cRemaining...), c);
 }
 
-static inline float square(float x) { return x * x; }
-static inline float cube(float x) { return x * x * x; }
+// square and cube functions
+template <typename T> static inline T square(T x) { return x * x; }
+template <typename T> static inline T cube(T x) { return x * x * x; }
+
 static inline float I0f(float x, float tol = 1e-6f, int maxIter = 500) {
   float term = 1.0f; // term_0
   float sum = term;  // running sum
@@ -313,7 +319,9 @@ static inline gl::vec3 C_rand_vec3(float min, float max) {
   return gl::vec3(C_rand(min, max), C_rand(min, max), C_rand(min, max));
 }
 
-static inline vec2 circle_random_vec(float r = 1.f) {
+// reject sampling
+//  a uniform distribution, all points are within the circle
+static inline vec2 sampleUniformDisk(float r = 1.f) {
   auto p = vec2(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
 
   while (p.length() >= 1.f) {
@@ -321,6 +329,12 @@ static inline vec2 circle_random_vec(float r = 1.f) {
   }
   return p;
 }
+
+static inline vec2 sampleUniformDiskPolar(vec2 u) {
+  float r = sqrt(u.x());
+  float theta = 2 * M_PI * u.y();
+  return vec2(r * cos(theta), r * sin(theta));
+};
 
 // a cos(theta)^3 distribution, all points are within the sphere
 static inline vec3 sphere_random_vec(float r = 1.f) {
@@ -446,46 +460,26 @@ static gl::vec2 inverseBilinear(gl::vec2 sample, gl::vec2 p1, gl::vec2 p2,
   return res = vec2(u, v);
 }
 
+static inline float cosTheta(vec3 w) { return w.z(); }
+static inline float cos2Theta(vec3 w) { return square(w.z()); }
+static inline float absCosTheta(vec3 w) { return std::abs(w.z()); }
+
+static inline float sin2Theta(vec3 w) {
+  return std::max<float>(0, 1 - cos2Theta(w));
+}
+static inline float sinTheta(vec3 w) { return std::sqrt(sin2Theta(w)); }
+
+static inline float tanTheta(vec3 w) { return sinTheta(w) / cosTheta(w); }
+static inline float tan2Theta(vec3 w) { return sin2Theta(w) / cos2Theta(w); }
+
+static inline float isInf(float v) { return std::isinf(v); }
+
+static inline float cosPhi(vec3 w) {
+  float _sinTheta = sinTheta(w);
+  return (_sinTheta == 0) ? 1 : std::clamp(w.x() / _sinTheta, -1.f, 1.f);
+}
+static inline float sinPhi(vec3 w) {
+  float _sinTheta = sinTheta(w);
+  return (_sinTheta == 0) ? 0 : std::clamp(w.y() / _sinTheta, -1.f, 1.f);
+}
 }; // namespace gl
-
-class Plane {
-public:
-  Plane(gl::vec3 p1, gl::vec3 p2, gl::vec3 p3) {
-    gl::vec3 v1 = p2 - p1;
-    gl::vec3 v2 = p3 - p1;
-    normal = cross(v1, v2);
-    normal.normalized();
-    d = dot(-normal, p1);
-  }
-
-  Plane(gl::vec3 normal, gl::vec3 p) {
-    this->normal = normal;
-    this->normal.normalize();
-    d = dot(-normal, p);
-  }
-
-  Plane() {
-    normal = gl::vec3(0, 0, 1);
-    d = 0;
-  }
-
-  float get_x(float y, float z) {
-    return -(normal.y() * y + normal.z() * z + d) / normal.x();
-  }
-
-  float get_y(float x, float z) {
-    return -(normal.x() * x + normal.z() * z + d) / normal.y();
-  }
-
-  float get_z(float x, float y) {
-    return -(normal.x() * x + normal.y() * y + d) / normal.z();
-  }
-
-  gl::vec3 get_normal() { return normal; }
-
-  float get_d() { return d; }
-
-private:
-  gl::vec3 normal;
-  float d;
-};

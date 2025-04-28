@@ -1,9 +1,9 @@
 #pragma once
 #include "../probs/pdf.hpp"
 #include "../probs/random.hpp"
-#include "../utils/matrix.hpp"
 #include "../utils/orthoBasis.hpp"
 #include "../utils/scene_io.hpp"
+#include "./materialMath.hpp"
 #include "./ray.hpp"
 #include "./texture.hpp"
 
@@ -11,36 +11,6 @@ class Material;
 class Lambertian;
 class Mirror;
 class Dielectric;
-
-namespace gl {
-
-static float fresnelDielectric(float cosTheta_i, float eta) {
-  cosTheta_i = std::clamp(cosTheta_i, -1.f, 1.f);
-
-  if (cosTheta_i < 0) {
-    eta = 1 / eta;
-    cosTheta_i = -cosTheta_i;
-  }
-
-  float sin2Theta_i = 1 - square(cosTheta_i);
-  float sin2Theta_t = sin2Theta_i / square(eta);
-  // the total internal reflection case
-  if (sin2Theta_t >= 1)
-    return 1.f;
-  float cosTheta_t = safeSqrt(1 - sin2Theta_t);
-
-  float r_parl =
-      (eta * cosTheta_i - cosTheta_t) / (eta * cosTheta_i + cosTheta_t);
-  float r_perp =
-      (cosTheta_i - eta * cosTheta_t) / (cosTheta_i + eta * cosTheta_t);
-  return (square(r_parl) + square(r_perp)) / 2;
-}
-
-static std::shared_ptr<ConstantTexture> DefaultTexture =
-    std::make_shared<ConstantTexture>(gl::vec3(1.0f));
-static std::shared_ptr<Lambertian> DefaultMaterial =
-    std::make_shared<Lambertian>(DefaultTexture);
-}; // namespace gl
 
 // determine whether the ray is specular
 struct ScatterRecord {

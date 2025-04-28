@@ -1,5 +1,6 @@
 #pragma once
 #include "../utils/aabb.hpp"
+#include "../utils/commonMaterials.hpp"
 #include "../utils/scene_io.hpp"
 #include "../utils/utility.hpp"
 #include "./material.hpp"
