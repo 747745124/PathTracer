@@ -23,8 +23,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_compile_definitions(GL_SIMD)
 
-# add_compile_definitions(USE_MAXDEPTH_NEE)
-# add_compile_definitions(USE_ANALYTICAL_ILLUMIN)
-# add_compile_definitions(USE_ROULETTE)
-# add_compile_definitions(USE_RESERVOIR)
 add_executable(PathTracer ${SOURCE_FILES} ${BASE} ${UTILS} ${MATERIALS})

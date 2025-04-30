@@ -28,7 +28,10 @@ public:
   virtual gl::vec3 get_sample(float u, float v) const = 0;
   virtual float get_area() const { return 1.f; }
   virtual gl::vec3 get_normal_at(const gl::vec3 &p) const = 0;
-  
+  virtual float pdf_value(const gl::vec3 &origin, const gl::vec3 &dir) const {
+    return 0.f;
+  }
+
   ~Light() = default;
 
   float intensity = 1.0f;
@@ -159,7 +162,7 @@ public:
     return p;
   };
 
-  virtual gl::vec3 get_normal_at(const gl::vec3& p) const override {
+  virtual gl::vec3 get_normal_at(const gl::vec3 &p) const override {
     using namespace gl;
     vec3 v1 = vertices[1] - vertices[0];
     vec3 v2 = vertices[3] - vertices[0];
@@ -172,6 +175,49 @@ public:
     vec3 v1 = vertices[1] - vertices[0];
     vec3 v2 = vertices[3] - vertices[0];
     return cross(v1, v2).length();
+  }
+
+  virtual float pdf_value(const gl::vec3 &origin,
+                          const gl::vec3 &dir) const override {
+    using namespace gl;
+    // 1) intersect ray (origin + t*dir) with plane of the quad
+    vec3 v0 = vertices[0];
+    vec3 edge1 = vertices[1] - v0;
+    vec3 edge2 = vertices[3] - v0;
+    vec3 N = cross(edge1, edge2).normalize();
+    float denom = dot(N, dir);
+    if (fabs(denom) < 1e-6f)
+      return 0.f; // parallel
+
+    float t = dot(v0 - origin, N) / denom;
+    if (t <= 0)
+      return 0.f; // behind origin
+
+    vec3 P = origin + dir * t;
+
+    // 2) test if P is inside the quad via two‐triangle test
+    auto inTri = [&](const vec3 &A, const vec3 &B, const vec3 &C) {
+      // barycentric‐style edge tests
+      vec3 nABC = N;
+      if (dot(cross(B - A, C - A), nABC) < 0)
+        return false;
+      if (dot(cross(C - B, P - B), nABC) < 0)
+        return false;
+      if (dot(cross(A - C, P - C), nABC) < 0)
+        return false;
+      return true;
+    };
+    if (!inTri(v0, vertices[1], vertices[2]) &&
+        !inTri(v0, vertices[2], vertices[3]))
+      return 0.f; // outside the quad
+
+    // 3) convert area‐pdf to solid‐angle pdf
+    float area = get_area();
+    float dist2 = dot(P - origin, P - origin);
+    float cosθ = fabs(dot(N, -dir)); // cos of angle at P
+    // uniform‐area pdf = 1/area
+    // PDF_Ω = PDF_A * (r² / cosθ)
+    return dist2 / (area * cosθ);
   }
 
   ~QuadLight() = default;
@@ -223,7 +269,7 @@ public:
     return p;
   };
 
-  virtual gl::vec3 get_normal_at(const gl::vec3& p) const override{
+  virtual gl::vec3 get_normal_at(const gl::vec3 &p) const override {
     using namespace gl;
     vec3 normal = (p - center).normalize();
     return normal;
@@ -232,6 +278,22 @@ public:
   virtual float get_area() const override {
     using namespace gl;
     return 2 * M_PI * radius * radius;
+  }
+
+  virtual float pdf_value(const gl::vec3 &origin,
+                          const gl::vec3 &dir) const override {
+    using namespace gl;
+    // Vector from shading point to sphere center
+    vec3 wc = center - origin;
+    float dc2 = dot(wc, wc), r2 = radius * radius;
+    if (dc2 <= r2)
+      return 1.f / (4.f * M_PI); // we're inside: uniform over whole sphere
+
+    // cone half‐angle θ_max from origin
+    float cosΘmax = sqrtf(1.f - r2 / dc2);
+    // solid angle of visible cap
+    float omega = 2.f * M_PI * (1.f - cosΘmax);
+    return 1.f / omega;
   }
 
   ~SphereLight() = default;

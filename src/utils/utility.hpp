@@ -291,7 +291,6 @@ static std::uniform_real_distribution<> dist(0, 1);
 
 // random number from 0 to 1
 static float rand_num() { return dist(gen); }
-
 // random number from 0 to end_point
 static float rand_num(float end_point) { return dist(gen) * end_point; }
 
