@@ -34,6 +34,7 @@ public:
     auto denominator = 4 * std::abs(dot(wo_local, m));
     if (denominator < 1e-6)
       return 0;
+    // m = gl::pbrt::faceForward(normalize(m), gl::vec3(0.f, 0.f, 1.f));
     // microfacet PDF = D(m) / (4 * |dot(wi,m)|)
     return distrib.PDF(wo_local, m) / denominator;
   }

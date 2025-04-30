@@ -14,8 +14,9 @@ class Dielectric;
 
 // determine whether the ray is specular
 struct ScatterRecord {
-  Ray specular_ray;
+  Ray sampled_ray;
   bool is_specular;
+  float pdf_val = 0.0f;
   gl::vec3 attenuation;
   std::shared_ptr<PDF> pdf_ptr;
 };
@@ -87,6 +88,8 @@ public:
     srec.is_specular = false;
     srec.attenuation = albedo->getTexelColor(rec.texCoords) * (1.0f / M_PI);
     srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
+    srec.sampled_ray = Ray(rec.position, srec.pdf_ptr->get().normalize());
+    srec.pdf_val = srec.pdf_ptr->at(srec.sampled_ray.getDirection());
     return true;
   }
 
@@ -115,10 +118,11 @@ public:
     gl::vec3 reflected =
         reflect(ray_in.getDirection().normalize(), rec.normal) +
         gl::on_sphere_random_vec(fuzz);
-    srec.specular_ray = Ray(rec.position, reflected);
+    srec.sampled_ray = Ray(rec.position, reflected);
     srec.attenuation = albedo;
     srec.is_specular = true;
     srec.pdf_ptr = nullptr;
+    srec.pdf_val = 0.0f; // delta function
     return true;
   }
 
@@ -145,7 +149,8 @@ public:
     bool is_refract = false;
     gl::vec3 out_ray = refract(ray_in.getDirection().normalize(), rec.normal,
                                ri_ro, is_refract);
-    srec.specular_ray = Ray(rec.position, out_ray);
+    srec.sampled_ray = Ray(rec.position, out_ray);
+    srec.pdf_val = 0.0f; // delta function
     return true;
   };
 };
@@ -180,11 +185,12 @@ public:
       R += gl::on_sphere_random_vec(fuzz);
       R.normalized();
       // Create a new ray in the specular direction.
-      srec.specular_ray = Ray(rec.position, R);
+      srec.sampled_ray = Ray(rec.position, R);
       // For specular, set attenuation as the sum of specular and ambient
       // components.
       srec.attenuation = specular + ambient;
       srec.pdf_ptr = nullptr; // Delta distribution; no PDF used.
+      srec.pdf_val = 0.0f;    // Delta function, so PDF is zero.
       return true;
     } else {
       // Diffuse scattering branch:
@@ -192,6 +198,10 @@ public:
       srec.attenuation = diffuse + ambient;
       // Use a cosine-weighted PDF for diffuse scattering.
       srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
+      // Sample a direction from the cosine-weighted PDF.
+      srec.sampled_ray = Ray(rec.position, srec.pdf_ptr->get().normalize());
+      // Set the PDF value for the sampled direction.
+      srec.pdf_val = srec.pdf_ptr->at(srec.sampled_ray.getDirection());
       return true;
     }
   }
@@ -260,16 +270,22 @@ public:
       srec.pdf_ptr = std::make_shared<PhongLobePDF>(R, shininess);
       // Sample a specular direction from the Phong-lobe PDF.
       gl::vec3 sampledDir = srec.pdf_ptr->get();
-      srec.specular_ray = Ray(rec.position, sampledDir);
+      srec.sampled_ray = Ray(rec.position, sampledDir);
       // Attenuation is typically set to the specular color (ambient might be
       // added separately).
       srec.attenuation = specular;
+      // PDF value is computed based on the sampled direction.
+      srec.pdf_val = srec.pdf_ptr->at(sampledDir);
+      // Note: The PDF value is not used in this case, but it's good practice
       return true;
     } else {
       // Diffuse branch.
       srec.is_specular = false;
       srec.attenuation = diffuse;
       srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
+      // Sample a direction from the cosine-weighted PDF.
+      gl::vec3 sampledDir = srec.pdf_ptr->get();
+      srec.sampled_ray = Ray(rec.position, sampledDir);
       return true;
     }
   }

@@ -32,16 +32,17 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     // for specular and dielectric materials, directly trace further
     if (srec.is_specular)
       return mat->emit(ray, hit_record) +
-             srec.attenuation * getRayColor(srec.specular_ray, prims, bg_color,
+             srec.attenuation * getRayColor(srec.sampled_ray, prims, bg_color,
                                             lights, max_depth - 1, bvh);
     auto pdf_ptr = srec.pdf_ptr
                        ? srec.pdf_ptr
                        : std::make_shared<CosinePDF>(hit_record.normal);
 
-    auto out_ray = Ray(hit_record.position, pdf_ptr->get().normalize());
-    float cos_theta = dot(hit_record.normal, out_ray.getDirection());
+    auto wo_world = -ray.getDirection().normalize();
+    auto wi_world = srec.sampled_ray.getDirection().normalize();
+    float cos_theta = dot(hit_record.normal, wi_world);
     cos_theta = std::max(cos_theta, 0.0f);
-    auto pdf_val = pdf_ptr->at(out_ray.getDirection().normalize());
+    auto pdf_val = srec.pdf_val;
 
     // note that below are sample from light,i.e. DI
     gl::vec3 light_term = gl::vec3(0.f);
@@ -76,7 +77,6 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
       auto hit_light = false;
       auto V = is_shadow_hit ? 0.0f : 1.0f;
 
-      auto wo_world = -ray.getDirection().normalize();
       auto wi_world = shadow_ray.getDirection().normalize();
       auto f = mat->f(wo_world, wi_world, hit_record);
 
@@ -90,9 +90,11 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     bool is_next_hit = false;
 
     if (bvh == nullptr)
-      is_next_hit = prims.intersect(out_ray, next_hit_record);
+      is_next_hit =
+          prims.intersect(Ray(hit_record.position, wi_world), next_hit_record);
     else
-      is_next_hit = bvh->intersect(out_ray, next_hit_record);
+      is_next_hit =
+          bvh->intersect(Ray(hit_record.position, wi_world), next_hit_record);
 
     // next-event estimation, avoid double counting
     if (is_next_hit && next_hit_record.material->is_emitter())
@@ -102,8 +104,8 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     // direct light sampling + indirect light
     return mat->emit(ray, hit_record) + light_term / LIGHT_SAMPLE_NUM +
            f *
-               getRayColor(out_ray, prims, bg_color, lights, max_depth - 1,
-                           bvh) *
+               getRayColor(Ray(hit_record.position, wi_world), prims, bg_color,
+                           lights, max_depth - 1, bvh) *
                cos_theta / pdf_val;
   }
 

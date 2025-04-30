@@ -32,7 +32,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
 
     // if it's specular, just reflect
     if (srec.is_specular)
-      return srec.attenuation * getRayColor(srec.specular_ray, prims,
+      return srec.attenuation * getRayColor(srec.sampled_ray, prims,
                                             light_objects, bg_color,
                                             max_depth - 1, bvh);
 
@@ -48,10 +48,11 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
       pdfs.push_back(srec.pdf_ptr);
 
     auto mix_pdf = MixedPDF(pdfs);
-    auto wo = mix_pdf.get().normalize();
-    auto out_ray = Ray(hit_record.position, mix_pdf.get().normalize());
-    auto f = srec.attenuation;
+    auto wi = mix_pdf.get().normalize();
+    auto out_ray = Ray(hit_record.position, wi.normalize());
+    auto f = mat->f(-ray.getDirection().normalize(), wi, hit_record);
     auto pdf_val = mix_pdf.at(out_ray.getDirection());
+
     float cos_theta =
         std::max(dot(hit_record.normal, out_ray.getDirection()), 0.0f);
 

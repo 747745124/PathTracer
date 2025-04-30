@@ -34,7 +34,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     // if it's specular, just reflect
     if (srec.is_specular)
       return srec.attenuation *
-             getRayColor(srec.specular_ray, prims, light_objects, bg_color,
+             getRayColor(srec.sampled_ray, prims, light_objects, bg_color,
                          bvh) /
              (1 - p_threshold);
 

@@ -489,5 +489,9 @@ static inline float sinPhi(vec3 w) {
   float _sinTheta = sinTheta(w);
   return (_sinTheta == 0) ? 0 : std::clamp(w.y() / _sinTheta, -1.f, 1.f);
 }
+
+static inline vec3 faceForward(vec3 n, vec3 v) {
+  return (dot(n, v) < 0.f) ? -n : n;
+}
 }; // namespace pbrt
 }; // namespace gl

@@ -20,13 +20,14 @@ public:
       if (dot(rec.normal, wi) <= 0)
         return false;
 
-      srec.specular_ray = Ray(rec.position, wi);
+      srec.sampled_ray = Ray(rec.position, wi);
       // Fresnel reflectance at this angle:
       float absCosThetaI = fabs(dot(rec.normal, wi));
       vec3 f = fresnelComplex(absCosThetaI, eta, k);
       srec.attenuation = f;
       srec.is_specular = true;
       srec.pdf_ptr = nullptr; // delta
+      srec.pdf_val = 0.0f;
       return true;
     }
 
@@ -35,14 +36,17 @@ public:
     auto pdf_ptr = std::make_shared<MicrofacetPDF>(mfDistribution, basis, wo);
 
     // 2) sample an incoming direction `wi`
-    vec3 wi = pdf_ptr->get();
+    vec3 wi = pdf_ptr->get().normalize();
     // 3) reject if it’s below the geometric normal
     if (dot(rec.normal, wi) <= 0)
       return false;
 
+    srec.sampled_ray = Ray(rec.position, wi);
     srec.attenuation = f(wo, wi, rec);
     srec.is_specular = false;
     srec.pdf_ptr = pdf_ptr;
+    // 4) compute the PDF value
+    srec.pdf_val = pdf_ptr->at(wi);
     return true;
   }
 
@@ -61,8 +65,8 @@ public:
 
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
              const HitRecord &rec) const override {
-    using namespace gl;
 
+    using namespace gl;
     OrthoBasis basis(rec.normal);
     vec3 wo_l = basis.toLocal(wo_world.normalize());
     vec3 wi_l = basis.toLocal(wi_world.normalize());
