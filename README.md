@@ -10,7 +10,7 @@ Once CMake is installed, use below commands to build with CMake.
 This project uses OpenMP for parallization, for ARM Mac users, please refer to this [post][https://stackoverflow.com/questions/71061894/how-to-install-openmp-on-mac-m1] .
 
 Add GL_SIMD to compile definition to enable SIMD (for vec and matrix class).
-
+```
 mkdir build
 cd build
 cmake ..
@@ -76,6 +76,7 @@ File Structures:
     ├── ./src/utils/timeit.hpp
     ├── ./src/utils/transformations.hpp
     └── ./src/utils/utility.hpp
+```
 src/base contains base classes
 src/utils contains common materials, utility functions and classes
 src/probs contains PDF related functions and classes
