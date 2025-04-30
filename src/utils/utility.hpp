@@ -460,6 +460,15 @@ static gl::vec2 inverseBilinear(gl::vec2 sample, gl::vec2 p1, gl::vec2 p2,
   return res = vec2(u, v);
 }
 
+static inline float isInf(float v) { return std::isinf(v); }
+
+// these are functions follows pbrt conventions
+namespace pbrt {
+// this one assumes wo points from the surface to the light
+static inline vec3 reflect(const vec3 &wo, const vec3 &n) {
+  return -wo + 2 * dot(wo, n) * n;
+}
+
 static inline float cosTheta(vec3 w) { return w.z(); }
 static inline float cos2Theta(vec3 w) { return square(w.z()); }
 static inline float absCosTheta(vec3 w) { return std::abs(w.z()); }
@@ -472,8 +481,6 @@ static inline float sinTheta(vec3 w) { return std::sqrt(sin2Theta(w)); }
 static inline float tanTheta(vec3 w) { return sinTheta(w) / cosTheta(w); }
 static inline float tan2Theta(vec3 w) { return sin2Theta(w) / cos2Theta(w); }
 
-static inline float isInf(float v) { return std::isinf(v); }
-
 static inline float cosPhi(vec3 w) {
   float _sinTheta = sinTheta(w);
   return (_sinTheta == 0) ? 1 : std::clamp(w.x() / _sinTheta, -1.f, 1.f);
@@ -482,4 +489,5 @@ static inline float sinPhi(vec3 w) {
   float _sinTheta = sinTheta(w);
   return (_sinTheta == 0) ? 0 : std::clamp(w.y() / _sinTheta, -1.f, 1.f);
 }
+}; // namespace pbrt
 }; // namespace gl

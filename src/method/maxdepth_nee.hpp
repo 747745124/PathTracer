@@ -38,7 +38,6 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                        ? srec.pdf_ptr
                        : std::make_shared<CosinePDF>(hit_record.normal);
 
-    auto f = srec.attenuation;
     auto out_ray = Ray(hit_record.position, pdf_ptr->get().normalize());
     float cos_theta = dot(hit_record.normal, out_ray.getDirection());
     cos_theta = std::max(cos_theta, 0.0f);
@@ -66,6 +65,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
         is_shadow_hit = bvh->intersect(shadow_ray, shadow_hit_record, 0.001f,
                                        light_dir.length() - 0.001f);
 
+      auto light_pdf = 1.f / (light_sample->get_area() * lights.size());
       // cos wi
       auto NoI =
           std::max(dot(hit_record.normal, shadow_ray.getDirection()), 0.f);
@@ -75,8 +75,13 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
       auto G = NoL * NoI / (dot(light_dir, light_dir));
       auto hit_light = false;
       auto V = is_shadow_hit ? 0.0f : 1.0f;
-      auto direct_term = f * light_sample->intensity * light_sample->color *
-                         light_sample->get_area() * G * V;
+
+      auto wo_world = -ray.getDirection().normalize();
+      auto wi_world = shadow_ray.getDirection().normalize();
+      auto f = mat->f(wo_world, wi_world, hit_record);
+
+      auto direct_term =
+          f * light_sample->intensity * light_sample->color * G * V / light_pdf;
       light_term += direct_term;
     }
 
@@ -90,10 +95,10 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
       is_next_hit = bvh->intersect(out_ray, next_hit_record);
 
     // next-event estimation, avoid double counting
-    if (is_next_hit && (!next_hit_record.material->scatter(
-                           out_ray, next_hit_record, next_scatter_record)))
-      return 0.f;
+    if (is_next_hit && next_hit_record.material->is_emitter())
+      return mat->emit(ray, hit_record) + light_term / LIGHT_SAMPLE_NUM;
 
+    auto f = srec.attenuation;
     // direct light sampling + indirect light
     return mat->emit(ray, hit_record) + light_term / LIGHT_SAMPLE_NUM +
            f *

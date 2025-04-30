@@ -56,12 +56,12 @@ public:
 
   float D(gl::vec3 wm) const {
     using namespace gl;
-    float _tan2Theta = tan2Theta(wm);
+    float _tan2Theta = pbrt::tan2Theta(wm);
     if (isInf(_tan2Theta))
       return 0;
-    float _cos4Theta = square(cos2Theta(wm));
-    float e = _tan2Theta *
-              (square(cosPhi(wm) / alpha_x) + square(sinPhi(wm) / alpha_y));
+    float _cos4Theta = square(pbrt::cos2Theta(wm));
+    float e = _tan2Theta * (square(pbrt::cosPhi(wm) / alpha_x) +
+                            square(pbrt::sinPhi(wm) / alpha_y));
     return 1 / (M_PI * alpha_x * alpha_y * _cos4Theta * square(1 + e));
   }
 
@@ -71,10 +71,11 @@ public:
 
   float lambda(gl::vec3 w) const {
     using namespace gl;
-    float _tan2Theta = tan2Theta(w);
+    float _tan2Theta = pbrt::tan2Theta(w);
     if (isInf(_tan2Theta))
       return 0;
-    float alpha2 = square(cosPhi(w) * alpha_x) + square(sinPhi(w) * alpha_y);
+    float alpha2 =
+        square(pbrt::cosPhi(w) * alpha_x) + square(pbrt::sinPhi(w) * alpha_y);
     return (std::sqrt(1 + alpha2 * _tan2Theta) - 1) / 2;
   }
 
@@ -84,7 +85,7 @@ public:
 
   float D(gl::vec3 w, gl::vec3 wm) const {
     using namespace gl;
-    return G1(w) / absCosTheta(w) * D(wm) * fabs(dot(w, wm));
+    return G1(w) / pbrt::absCosTheta(w) * D(wm) * fabs(dot(w, wm));
   }
 
   // how likely you are to sample a bump-normal of orientation ωₘ when your rays

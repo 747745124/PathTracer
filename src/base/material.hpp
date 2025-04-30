@@ -54,6 +54,20 @@ public:
     return 0.0f;
   }
 
+  // required for direct light sampling (non-delta materials), pure bxdf
+  // evaluations. Note that we conform to the PBRT convention of
+  // wo_world = -ray_in.getDirection()
+  virtual gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
+                     const HitRecord &rec) const {
+    return gl::vec3(0.0f);
+  };
+
+  float scatter_pdf(const ScatterRecord &srec, const Ray &wi) const {
+    if (srec.pdf_ptr != nullptr)
+      return 0;
+    return srec.pdf_ptr->at(wi.getDirection().normalize());
+  }
+
   virtual gl::vec3 emit(const Ray &ray_in, HitRecord &rec) const {
     return gl::vec3(0.0f);
   }
@@ -80,6 +94,11 @@ public:
                     const Ray &scattered) const override {
     float cosine = dot(rec.normal, scattered.getDirection().normalize());
     return std::max(cosine / M_PI, 0.0);
+  }
+
+  gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
+             const HitRecord &rec) const override {
+    return albedo->getTexelColor(rec.texCoords) * (1.0f / M_PI);
   }
 
   std::shared_ptr<Texture2D> albedo;
@@ -192,6 +211,16 @@ public:
     float cosine = dot(rec.normal, scattered.getDirection().normalize());
     return std::max(cosine / M_PI, 0.0);
   }
+
+  gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
+             const HitRecord &rec) const override {
+    float p = gl::rand_num();
+    if (p < specularProb) {
+      return gl::vec3(0.0f);
+    }
+    // f = rho/pi
+    return diffuse + ambient;
+  }
 };
 
 class Phong : public Material {
@@ -265,6 +294,49 @@ public:
             shininess);
     // Linear blend (balance heuristic) based on the energy weights.
     return specProb * specPDF + (1.0f - specProb) * diffusePDF;
+  }
+
+  gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
+             const HitRecord &rec) const override {
+    using namespace gl;
+
+    vec3 wo = wo_world.normalize(); // toward camera
+    vec3 wi = wi_world.normalize(); // toward light
+
+    // 2) Reject below‐surface
+    float cosThetaI = dot(rec.normal, wi);
+    if (cosThetaI <= 0) {
+      return vec3(0.f);
+    }
+
+    // 3) Energy‐based mixing weight
+    float specInt = (specular.x() + specular.y() + specular.z()) / 3.0f;
+    float diffInt = (diffuse.x() + diffuse.y() + diffuse.z()) / 3.0f;
+    float specProb = specInt / (specInt + diffInt);
+
+    // 4) Diffuse term: Lambertian
+    //    f_diffuse = diffuse / π
+    vec3 diffBRDF = diffuse * (1.0f / M_PI);
+
+    // 5) Specular term: Phong lobe around the perfect reflection
+    //    R = reflect(wo, N)
+    vec3 R = gl::pbrt::reflect(wo, rec.normal);
+    float cosAlpha = std::max(dot(wi, R), 0.0f);
+    float phongTerm = std::pow(cosAlpha, shininess);
+    //    normalization = (shininess + 2) / (2π)
+    float specNorm = (shininess + 2.0f) / (2.0f * M_PI);
+    vec3 specBRDF = specular * (specNorm * phongTerm);
+
+    // 6) Mix BRDF
+    vec3 f_val = specProb * specBRDF + (1.0f - specProb) * diffBRDF;
+
+    // 7) Compute PDF for this wi, matching scatter_pdf()
+    //    pdf_spec = (shininess+1)/(2π) * cosAlpha^shininess
+    float specPDF = (shininess + 1.0f) / (2.0f * M_PI) * phongTerm;
+    //    pdf_diff = cosθᵢ / π
+    float diffPDF = cosThetaI / M_PI;
+
+    return f_val;
   }
 };
 

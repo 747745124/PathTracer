@@ -9,6 +9,8 @@ int main() {
   SceneInfo scene = cornell_box_modified();
   // two_lights();
   //  SceneInfo scene = simple_light();
+  // SceneInfo scene = diffuse_diffuse();
+
   // night();
   //  checkpoint_2();
   // checkpoint_3();

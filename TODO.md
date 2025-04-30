@@ -1,4 +1,6 @@
-1. Make srec.attenuation = bsdf, change integrator accordingly
-2. Check if there's difference 2 implementations
-3. Add sampling PDF for Marschner
-4. Add Kajiya-Kay
+# TODO
+1. Add sampling PDF for Marschner
+2. Add Kajiya-Kay
+3. Finish the Microfacet BRDF models
+4. Possibly medium / volume scattering
+5. BDPT

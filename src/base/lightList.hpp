@@ -23,10 +23,12 @@ public:
 
   std::shared_ptr<Light> get(int index) const { return this->lights[index]; }
 
-  std::shared_ptr<Light> uniform_get() const{
-    int index = (int)(gl::rand_num()*lights.size());
-    return this->lights[index%lights.size()];
+  std::shared_ptr<Light> uniform_get() const {
+    int index = (int)(gl::rand_num() * lights.size());
+    return this->lights[index % lights.size()];
   }
+
+  uint64_t size() const { return this->lights.size(); }
 
 private:
   std::vector<std::shared_ptr<Light>> lights;

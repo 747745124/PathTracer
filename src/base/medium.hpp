@@ -14,12 +14,11 @@ public:
   };
 
   ConstantMedium(std::shared_ptr<Hittable> boundary, float density,
-                 const gl::vec3& color)
+                 const gl::vec3 &color)
       : boundary(boundary), density(density),
         phase(std::make_shared<Isotropic>(color)) {
     this->objtype = ObjType::MEDIUM_OBJ;
   };
-
 
   bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0001,
                  float tmax = 10000.f) const override;
@@ -34,8 +33,7 @@ public:
 };
 
 inline bool ConstantMedium::intersect(const Ray &ray, HitRecord &hit_record,
-                                      float tmin,
-                                      float tmax) const {
+                                      float tmin, float tmax) const {
   HitRecord rec_1, rec_2;
   if (!boundary->intersect(ray, rec_1, tmin, tmax))
     return false;
@@ -64,4 +62,6 @@ inline bool ConstantMedium::intersect(const Ray &ray, HitRecord &hit_record,
     hit_record.material = phase;
     return true;
   }
+
+  return false;
 }

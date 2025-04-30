@@ -10,50 +10,81 @@ public:
   bool scatter(const Ray &ray_in, HitRecord &rec,
                ScatterRecord &srec) const override {
 
-    OrthoBasis basis(rec.normal);
-    auto pdf_ptr = std::make_shared<MicrofacetPDF>(mfDistribution, basis,
-                                                   ray_in.getDirection());
+    using namespace gl;
+
+    vec3 wo = -ray_in.getDirection().normalize();
 
     if (mfDistribution.effectivelySmooth()) {
-      gl::vec3 inDir = ray_in.getDirection().normalize();
-      gl::vec3 R = reflect(inDir, rec.normal);
 
-      srec.specular_ray = Ray(rec.position, R);
+      gl::vec3 wi = gl::pbrt::reflect(wo, rec.normal).normalize();
+      if (dot(rec.normal, wi) <= 0)
+        return false;
 
+      srec.specular_ray = Ray(rec.position, wi);
       // Fresnel reflectance at this angle:
-      float cosThetaI = fabs(dot(rec.normal, inDir));
-
-      srec.attenuation = fresnelComplex(cosThetaI, eta, k);
+      float absCosThetaI = fabs(dot(rec.normal, wi));
+      vec3 f = fresnelComplex(absCosThetaI, eta, k);
+      srec.attenuation = f;
       srec.is_specular = true;
       srec.pdf_ptr = nullptr; // delta
       return true;
     }
 
-    return false;
+    // --- rough (microfacet) case ---
+    OrthoBasis basis(rec.normal);
+    auto pdf_ptr = std::make_shared<MicrofacetPDF>(mfDistribution, basis, wo);
 
-    // if (gl::dot(wo_world, rec.normal) <= 0.0f)
-    //   return false;
+    // 2) sample an incoming direction `wi`
+    vec3 wi = pdf_ptr->get();
+    // 3) reject if it’s below the geometric normal
+    if (dot(rec.normal, wi) <= 0)
+      return false;
 
-    // // Compute half-vector in world space
-    // gl::vec3 m_world = (wi_local + wo_world).normalize();
-
-    // // Fresnel term (using conductor IOR k, eta)
-    // float cosThetaI = std::abs(dot(wi_flip, m_world));
-    // gl::vec3 F = fresnelConductor(cosThetaI, eta, k);
-
-    // float D = mfDistribution.D(m_world);
-    // float G = mfDistribution.G(wi_flip, wo_world);
-    // float cosI = std::abs(dot(rec.normal, wi_world));
-    // float cosO = std::abs(dot(rec.normal, wo_world));
+    srec.attenuation = f(wo, wi, rec);
+    srec.is_specular = false;
+    srec.pdf_ptr = pdf_ptr;
+    return true;
   }
 
   float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
                     const Ray &scattered) const override {
+
     if (mfDistribution.effectivelySmooth()) {
       return 0.0f;
     }
 
-    return 0.0f;
+    OrthoBasis basis(rec.normal);
+    MicrofacetPDF mfPdf(mfDistribution, basis,
+                        -ray_in.getDirection().normalize());
+    return mfPdf.at(scattered.getDirection());
+  };
+
+  gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
+             const HitRecord &rec) const override {
+    using namespace gl;
+
+    OrthoBasis basis(rec.normal);
+    vec3 wo_l = basis.toLocal(wo_world.normalize());
+    vec3 wi_l = basis.toLocal(wi_world.normalize());
+    // 2) below‐surface => zero
+    if (wi_l.z() <= 0 || wo_l.z() <= 0) {
+      return vec3(0.f);
+    }
+    // 3) handle delta case
+    if (mfDistribution.effectivelySmooth()) {
+      return vec3(0.f);
+    }
+    // 4) microfacet half-vector
+    vec3 m_l = normalize(wo_l + wi_l);
+    // 5) D, G, F
+    float D = mfDistribution.D(m_l);
+    float G = mfDistribution.G(wo_l, wi_l);
+    vec3 F = fresnelComplex(fabs(dot(wo_l, m_l)), eta, k);
+    // 6) f value
+    vec3 f =
+        D * F * G / (4.f * pbrt::absCosTheta(wo_l) * pbrt::absCosTheta(wi_l));
+
+    return f;
   };
 
 private:
