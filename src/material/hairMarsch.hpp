@@ -52,6 +52,11 @@ public:
     // TODO
   }
 
+  gl::vec3 f(const gl::vec3 &wo, const gl::vec3 &wi,
+             const HitRecord &rec) const override {
+    // TODO
+  }
+
 private:
   static constexpr int pMax = 3;
   // initialized with passed parameters

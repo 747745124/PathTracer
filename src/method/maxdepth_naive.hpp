@@ -49,12 +49,11 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
 
     auto mix_pdf = MixedPDF(pdfs);
     auto wi = mix_pdf.get().normalize();
-    auto out_ray = Ray(hit_record.position, wi.normalize());
+    auto out_ray = Ray(hit_record.position, wi);
     auto f = mat->f(-ray.getDirection().normalize(), wi, hit_record);
-    auto pdf_val = mix_pdf.at(out_ray.getDirection());
+    auto pdf_val = mix_pdf.at(wi);
 
-    float cos_theta =
-        std::max(dot(hit_record.normal, out_ray.getDirection()), 0.0f);
+    float cos_theta = std::max(dot(hit_record.normal, wi), 0.0f);
 
     return mat->emit(ray, hit_record) + f *
                                             getRayColor(out_ray, prims,

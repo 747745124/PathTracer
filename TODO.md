@@ -1,6 +1,7 @@
 # TODO
 1. Add sampling PDF for Marschner
-2. Add Kajiya-Kay
-3. Finish the Microfacet BRDF models
-4. Possibly medium / volume scattering
-5. BDPT
+2. NEE+MIS
+3. Add Kajiya-Kay
+4. Add 
+5. Possibly medium / volume scattering
+6. BDPT
