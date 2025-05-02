@@ -1,8 +1,8 @@
-Path Tracer
+# Path Tracer
 An importance sampled path tracer, supports Marschner Hair / Phong / Dielectric / Conductor material and various Monte Carlo effects.
 
-
-Build Instructions:
+![image](images/sample.png)
+## Build Instructions:
 This project uses CMake to build and is correctly built under M1 macOS environment. The C++ standard is set to C++ 20.
 
 Once CMake is installed, use below commands to build with CMake.
@@ -17,15 +17,15 @@ cmake ..
 make .
 ```
 
-* Importance Sampling:
+### MIS+NEE:
 
-The path tracer uses an importance sampling strategy, a mixed PDF of cosine and light sampling with NEE (next-event-estimation).
+The path tracer uses an importance sampling strategy, a mixed PDF of Material PDF and light sampling with NEE (next-event-estimation).
 
-* Monte Carlo and Post-processing effects:
+### Monte Carlo and Post-processing effects:
 
 The path tracer supports DoF, motion blur. Image filtering and tone-mapping.
 
-* Materials:
+### Materials:
 1. Marschner Hair
 2. Phong
 3. Dielectric
