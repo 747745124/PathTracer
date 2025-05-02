@@ -1,7 +1,7 @@
 # TODO
-1. Add sampling PDF for Marschner
-2. NEE+MIS
-3. Add Kajiya-Kay
-4. Add 
-5. Possibly medium / volume scattering
-6. BDPT
+1. NEE+MIS
+2. Add Kajiya-Kay
+3. Unify light/object interface
+4. Possibly medium / volume scattering
+5. BDPT
+   
