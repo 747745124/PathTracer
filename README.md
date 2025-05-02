@@ -1,9 +1,9 @@
 Path Tracer
-An importance sampled path tracer, supports Phong / Dielectric / Metal material and various Monte Carlo effects.
+An importance sampled path tracer, supports Hair / Phong / Dielectric / Conductor material and various Monte Carlo effects.
 
 
 Build Instructions:
-This project uses CMake to build and is correctly built under M1 macOS environment. The C++ standard is set to C++ 17.
+This project uses CMake to build and is correctly built under M1 macOS environment. The C++ standard is set to C++ 20.
 
 Once CMake is installed, use below commands to build with CMake.
 
@@ -91,25 +91,19 @@ Analytical Direct Illumination: This one provides an analytical direct lighting 
 analytical_box
 
 Max Depth NEE: This one uses next event estimation to sample direct illumination.
+
 Shadowray Path Tracer: This one uses shadowray method to separate direct and indirect illumination.
+
 Max Depth Naive: This one is the basic importance sampled path tracer, with a max depth limit.
+
 Roulette Naive: This one is the basic importance sampled path tracer, uses Russian Roulette method for unbiased estimation.
-Whitted: This one is the traditional Whitted-style ray tracing. See src/deprecated/whitted.hpp
-cornell_box_modified_2
 
 Importance Sampling:
 
 The path tracer uses an importance sampling strategy, a mixed PDF of cosine and light sampling. The light sampling can be arbitrary numbers.
-Veach MIS
 
 Monte Carlo and Post-processing effects:
 
 The path tracer supports DoF, motion blur. Image filtering and tone-mapping.
-Whitted
 
-TODO:
-Integrate MIS in NEE
-Add sampling PDF for Marschner
-Bidirectional Path Tracing implementation
-Volume interfaces, Volumetric Path Tracing
 
