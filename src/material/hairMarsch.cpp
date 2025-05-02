@@ -1,4 +1,40 @@
 #include "./hairMarsch.hpp"
+#include "../probs/hairPDF.hpp"
+
+bool HairMarschner::scatter(const Ray &ray_in, HitRecord &rec,
+                            ScatterRecord &srec) const {
+  gl::vec3 wo_world = -ray_in.getDirection().normalize();
+
+  // if hair_tangent is not set, use normal
+  if (rec.hair_tangent.near_zero()) {
+    rec.hair_tangent = rec.normal;
+  }
+
+  OrthoBasis basis(rec.hair_tangent);
+  auto pdf_ptr = std::make_shared<HairPDF>(*this, basis, wo_world);
+  auto wi_world = pdf_ptr->get().normalize();
+
+  srec.attenuation = f(wo_world, wi_world, rec);
+  srec.is_specular = false;
+  srec.pdf_ptr = pdf_ptr;
+  srec.pdf_val = pdf_ptr->at(wi_world);
+  srec.sampled_ray = Ray(rec.position, wi_world);
+  return true;
+};
+
+float HairMarschner::scatter_pdf(const Ray &ray_in, const HitRecord &rec,
+                                 const Ray &scattered) const {
+
+  if (rec.hair_tangent.near_zero()) {
+    throw std::runtime_error(
+        "HairMarschner::scatter_pdf: hair_tangent is not set");
+  }
+
+  gl::vec3 wo_world = -ray_in.getDirection().normalize();
+  OrthoBasis basis(rec.hair_tangent);
+  HairPDF pdf(*this, basis, wo_world);
+  return pdf.at(scattered.getDirection().normalize());
+};
 
 gl::vec3 HairMarschner::evalMarschner(const gl::vec3 &wi,
                                       const gl::vec3 &wo) const {

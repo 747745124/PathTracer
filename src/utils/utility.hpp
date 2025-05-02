@@ -77,7 +77,65 @@ inline int solveQuadratic(float A, float B, float C, float roots[2]) {
 
 inline float BitsToFloat(uint32_t ui) { return std::bit_cast<float>(ui); }
 inline uint32_t floatToBits(float f) { return std::bit_cast<uint32_t>(f); }
+// get base-2 exponent
 inline int exponent(float v) { return (floatToBits(v) >> 23) - 127; }
+
+inline float nextFloatDown(float x) {
+  return std::nextafter(x, -std::numeric_limits<float>::infinity());
+};
+
+inline float nextFloatUp(float x) {
+  return std::nextafter(x, std::numeric_limits<float>::infinity());
+};
+
+template <typename T, int N>
+std::vector<T> to_vector(const std::array<T, N> &data) {
+  return std::vector<T>(data.begin(), data.end());
+}
+
+template <typename T> std::vector<T> move_to_vector(std::vector<T> &&data) {
+  return std::vector<T>(std::make_move_iterator(std::move(data.begin())),
+                        std::make_move_iterator(std::move(data.end())));
+}
+
+// PBRT impl
+inline int sampleDiscrete(const std::vector<float> &weights, float u,
+                          float *pmf, float *u_remapped) {
+  if (weights.size() == 0) {
+    if (pmf)
+      *pmf = 0;
+    return -1;
+  }
+
+  float sumWeights = 0.f;
+  for (const auto &w : weights) {
+    sumWeights += w;
+  }
+
+  float up = u * sumWeights;
+  if (up == sumWeights)
+    up = std::nextafter(up, -std::numeric_limits<float>::infinity());
+
+  // find offsets
+  int offset = 0;
+  float sum = 0.f;
+  while (sum + weights[offset] <= up) {
+    sum += weights[offset];
+    ++offset;
+  }
+
+  if (pmf)
+    *pmf = weights[offset] / sumWeights;
+  if (u_remapped)
+    *u_remapped = std::min((up - sum) / weights[offset], (float)0x1.fffffep-1);
+
+  return offset;
+};
+
+// per channel exp
+inline vec3 exp(const vec3 &v) {
+  return vec3(std::exp(v.x()), std::exp(v.y()), std::exp(v.z()));
+}
 
 template <typename C> constexpr float evalPolynomial(float t, C c) { return c; }
 
@@ -156,6 +214,21 @@ static inline float trimmedLogistic(float x, float s, float a, float b) {
 
 static inline float lerp(float x, float y, float t) { return x + t * (y - x); }
 
+static inline float sampleLogistic(float u, float s) {
+  return -s * std::log(1 / u - 1);
+}
+
+static inline float invertLogisticSample(float x, float s) {
+  return 1 / (1 + std::exp(-x / s));
+}
+
+static inline float sampleTrimmedLogistic(float u, float s, float a, float b) {
+  auto P = [&](float x) { return invertLogisticSample(x, s); };
+  u = lerp(P(a), P(b), u);
+  float x = sampleLogistic(u, s);
+  return std::clamp(x, a, b);
+}
+
 template <int N>
 static inline vec<N, float> lerp(vec<N, float> x, vec<N, float> y, float t) {
   vec<N, float> res;
@@ -206,6 +279,10 @@ static inline float smoothstep(float edge0, float edge1, float x) {
   x = std::clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
   return x * x * (3 - 2 * x);
 };
+
+static inline float clamp(float x, float min, float max) {
+  return std::clamp(x, min, max);
+}
 
 static inline vec3 clamp(vec3 v, float min, float max) {
   return vec3(std::clamp(v.x(), min, max), std::clamp(v.y(), min, max),
@@ -319,7 +396,7 @@ static inline gl::vec3 C_rand_vec3(float min, float max) {
 }
 
 // reject sampling
-//  a uniform distribution, all points are within the circle
+// a uniform distribution, all points are within the circle
 static inline vec2 sampleUniformDisk(float r = 1.f) {
   auto p = vec2(C_rand(-1.f, 1.f), C_rand(-1.f, 1.f));
 

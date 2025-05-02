@@ -31,34 +31,28 @@ public:
   }
 
   bool scatter(const Ray &ray_in, HitRecord &rec,
-               ScatterRecord &srec) const override {
-    // gl::vec3 wi = ray_in.getDirection();
-    // OrthoBasis basis(rec.hair_tangent);
-    // auto pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
-    // auto wo = pdf_ptr->get();
-
-    // const gl::vec3 wo_local = basis.at(wo);
-    // const gl::vec3 wi_local = basis.at(wi);
-
-    // gl::vec3 bsdf = evalMarschner(wi_local, wo_local);
-    // srec.attenuation = bsdf;
-    // srec.is_specular = false;
-    // srec.pdf_ptr = pdf_ptr;
-    // return true;
-  }
+               ScatterRecord &srec) const override;
 
   float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
-                    const Ray &scattered) const override {
-    // TODO
-  }
+                    const Ray &scattered) const override;
 
-  gl::vec3 f(const gl::vec3 &wo, const gl::vec3 &wi,
+  gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
              const HitRecord &rec) const override {
-    // TODO
+    using namespace gl;
+    OrthoBasis basis(rec.normal);
+    vec3 wo_l = basis.toLocal(wo_world.normalize());
+    vec3 wi_l = basis.toLocal(wi_world.normalize());
+
+    return evalMarschner(wi_l, wo_l);
   }
 
 private:
+  // grant access to HairPDF
+  friend class HairPDF;
+
   static constexpr int pMax = 3;
+  float sin2kAlpha[pMax], cos2kAlpha[pMax];
+
   // initialized with passed parameters
   float h, eta;
   gl::vec3 sigma_a;
@@ -66,9 +60,9 @@ private:
   // will be initialize in constructor
   float v[pMax + 1];
   float s;
-  float sin2kAlpha[pMax], cos2kAlpha[pMax];
 
   gl::vec3 evalMarschner(const gl::vec3 &wi, const gl::vec3 &wo) const;
+
   // longitudinal scattering, complex, ignore the details
   float Mp(float cosTheta_i, float cosTheta_o, float sinTheta_i,
            float sinTheta_o, float v) const {
@@ -112,4 +106,34 @@ private:
 
     return gl::trimmedLogistic(dphi, s, -M_PI, M_PI);
   }
+
+public:
+  std::array<float, pMax + 1> ApPDF(float cosTheta_o) const {
+    using namespace gl;
+    float sinTheta_o = safeSqrt(1 - square(cosTheta_o));
+
+    float sinTheta_t = sinTheta_o / eta;
+    float cosTheta_t = safeSqrt(1 - square(sinTheta_t));
+
+    float etap = safeSqrt(square(eta) - square(sinTheta_o)) / cosTheta_o;
+    float sinGamma_t = h / etap;
+    float cosGamma_t = safeSqrt(1 - square(sinGamma_t));
+    float gamma_t = safeASin(sinGamma_t);
+
+    vec3 T = gl::exp(-sigma_a * (2 * cosGamma_t / cosTheta_t));
+    std::array<gl::vec3, pMax + 1> ap = Ap(cosTheta_o, eta, h, T);
+
+    std::array<float, pMax + 1> apPdf;
+    float sumY = 0.f;
+
+    for (const auto &v : ap) {
+      sumY += v.average();
+    }
+
+    for (int i = 0; i < pMax + 1; ++i) {
+      apPdf[i] = ap[i].average() / sumY;
+    }
+
+    return apPdf;
+  };
 };

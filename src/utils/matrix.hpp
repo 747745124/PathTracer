@@ -69,20 +69,19 @@ public:
     return data[1];
   }
 
-  const T &x() const 
-  { return data[0]; }
+  const T &x() const { return data[0]; }
 
-  const T &y() const { 
-      assert(data.size() >= 2);
-      return data[1]; 
+  const T &y() const {
+    assert(data.size() >= 2);
+    return data[1];
   }
 
-  const T &z() const { 
-      assert(data.size() >= 3);
-      return data[2]; 
+  const T &z() const {
+    assert(data.size() >= 3);
+    return data[2];
   }
 
-  const T &w() const{
+  const T &w() const {
     assert(data.size() == 4);
     return data[3];
   }
@@ -101,13 +100,12 @@ public:
     return data[3];
   }
 
-  const T &u() const{ return data[0]; }
+  const T &u() const { return data[0]; }
 
-  const T &v() const{
+  const T &v() const {
     assert(data.size() >= 2);
     return data[1];
   }
-
 
   // below accessor are pass by value
   vec<2, T> xy() {
@@ -206,6 +204,22 @@ public:
       return std::fabs(data[0]) < s && std::fabs(data[1]) < s &&
              std::fabs(data[2]) < s && std::fabs(data[3]) < s;
   }
+
+  static float average(const vec<N, T> &v) {
+    float sum = 0.f;
+    for (int i = 0; i < N; i++) {
+      sum += v[i];
+    }
+    return sum / N;
+  };
+
+  float average() const {
+    float sum = 0.f;
+    for (int i = 0; i < N; i++) {
+      sum += data[i];
+    }
+    return sum / N;
+  };
 
 #ifdef GL_SIMD
   vec<N, T> operator/(const float divisor) const {

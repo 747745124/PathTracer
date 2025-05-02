@@ -447,12 +447,13 @@ SceneInfo cornell_box_modified() {
       make_shared<AARectangle<Axis::Z>>(555, 0, 555, 0, 555, white));
 
   shared_ptr<Hittable> box_left =
-      make_shared<Box>(vec3(0.f), vec3(165, 330, 165), GOLD_MAT);
+      make_shared<Box>(vec3(0.f), vec3(165, 330, 165), ROUGH_SILVER_MAT);
   box_left = make_shared<Rotate<Axis::Y>>(box_left, gl::to_radian(15.f));
   box_left = make_shared<Translate>(box_left, vec3(265, 0, 295));
   objects.addObject(box_left);
 
-  shared_ptr<Sphere> sphere = make_shared<Sphere>(vec3(190, 90, 190), 90, red);
+  shared_ptr<Sphere> sphere =
+      make_shared<Sphere>(vec3(190, 90, 190), 90, MARSCH_HAIR);
   objects.addObject(sphere);
 
   std::array<gl::vec3, 4> vertices;

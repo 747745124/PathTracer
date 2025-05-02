@@ -13,12 +13,48 @@
 // #define SHADER_TEST
 // #define BVH_TEST
 // #define PDF_TEST
-// #define DIFFUSE
+// #define DIFFUSE_TEST
+#define HAIRPDF_TEST
 
 uint64_t hit_count = 0;
 int main() {
 
-#ifdef DIFFUSE
+#ifdef HAIRPDF_TEST
+  using namespace gl;
+
+  vec3 basis(0.f, 0.f, 1.f);
+  vec3 wo_world(0.f, 1.f, 0.f);
+  wo_world.normalized();
+  HairMarschner hair(vec3(0.419f, 0.697f, 1.37f), 0.f, 1.55f, 0.7f, 0.5f,
+                     to_radian(2.f));
+  // pick some fixed wo and hair parameters...
+  HairPDF pdf(hair, basis, wo_world);
+
+  // normalization test
+  {
+    const int N = 200000;
+    double sum = 0;
+    for (int i = 0; i < N; ++i) {
+      // sample a direction uniformly on the sphere:
+      float u1 = rand_num(), u2 = rand_num();
+      vec3 wi =
+          uniformSampleSphere(u1, u2); // your usual uniform-sphere sampler
+      float p = pdf.at(wi);
+      if (p < 0) {
+        std::cout << "Negative PDF value: " << p << std::endl;
+        throw std::runtime_error("Negative PDF value");
+      }
+      sum += p;
+    }
+    // the average of p(w) over a uniform sphere times 4π should be ≈ 1
+    double avg = sum / double(N);
+    double estimate = avg * (4.0 * M_PI);
+    std::cout << "∫ p(w)dω ≈ " << estimate << std::endl;
+  }
+
+#endif
+
+#ifdef DIFFUSE_TEST
   using namespace gl;
 
   SceneInfo scene = night();
@@ -363,7 +399,6 @@ int main() {
   fb.writeToFile("../test.png");
 #endif
 
-#define MATH_TEST
 #ifdef MATH_TEST
 
   std::cout << gl::fastExp(1.0f) << std::endl;

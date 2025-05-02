@@ -4,6 +4,16 @@
 
 namespace gl {
 
+inline gl::vec3 uniformSampleSphere(float u1, float u2) {
+  // z ∈ [−1,1], φ ∈ [0,2π)
+  float z = 1.0f - 2.0f * u1;
+  float r = std::sqrt(std::max(0.f, 1.f - z * z));
+  float phi = 2.0f * M_PI * u2;
+  float x = r * std::cos(phi);
+  float y = r * std::sin(phi);
+  return gl::vec3(x, y, z);
+}
+
 inline vec3 uniformSampleHemiSphere() {
   float r1 = rand_num();
   float r2 = rand_num();
@@ -25,14 +35,15 @@ inline vec3 cosineSampleHemiSphere() {
 inline vec3 randomToSphere(float radius, float distance_squared) {
   float r1 = rand_num();
   float r2 = rand_num();
-  float z = 1.f + r2 * (std::sqrt(1.f - radius * radius / distance_squared) - 1.f);
+  float z =
+      1.f + r2 * (std::sqrt(1.f - radius * radius / distance_squared) - 1.f);
   float phi = 2.f * M_PI * r1;
   float x = std::cos(phi) * std::sqrt(1.f - z * z);
   float y = std::sin(phi) * std::sqrt(1.f - z * z);
   return vec3(x, y, z);
 }
 
-//stratified sampling offset
+// stratified sampling offset
 inline std::vector<gl::vec2> getOffsets(int spp_x, int spp_y) {
   // sample_offset offset in the grid
   std::vector<gl::vec2> sample_offset;
@@ -51,4 +62,4 @@ inline std::vector<gl::vec2> getOffsets(int spp_x, int spp_y) {
   return sample_offset;
 }
 
-};
+}; // namespace gl

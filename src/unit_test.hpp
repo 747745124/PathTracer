@@ -7,6 +7,9 @@
 #include "./base/ray.hpp"
 #include "./base/texture.hpp"
 #include "./method/roulette_naive.hpp"
+#include "./probs/hairPDF.hpp"
 #include "./render/scenes.hpp"
+#include "./test/hairPDFTest.hpp"
+#include "./utils/commonMaterials.hpp"
 #include "./utils/scene_io.hpp"
 #include <omp.h>

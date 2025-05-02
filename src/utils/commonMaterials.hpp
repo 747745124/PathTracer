@@ -38,6 +38,12 @@ static std::shared_ptr<Material> ROUGH_GOLD_MAT = std::make_shared<Conductor>(
     /* alpha_x = */ 0.1f,
     /* alpha_y = */ 0.1f);
 
+static std::shared_ptr<Material> ROUGH_SILVER_MAT = std::make_shared<Conductor>(
+    /* eta = */ vec3(0.04f, 0.06f, 0.04f),
+    /*   k = */ vec3(4.8f, 3.586f, 2.657f),
+    /* alpha_x = */ 0.1f,
+    /* alpha_y = */ 0.1f);
+
 static std::shared_ptr<ConstantTexture> DefaultTexture =
     std::make_shared<ConstantTexture>(gl::vec3(1.0f));
 static std::shared_ptr<Lambertian> DefaultMaterial =

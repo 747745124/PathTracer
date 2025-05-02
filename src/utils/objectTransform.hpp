@@ -4,26 +4,24 @@
 #include "../base/primitive.hpp"
 
 class FlipFace : public Hittable {
-  public:
-    FlipFace(std::shared_ptr<Hittable> object) : object(object) {
-      this->objtype = object->objtype;
-    };
+public:
+  FlipFace(std::shared_ptr<Hittable> object) : object(object) {
+    this->objtype = object->objtype;
+  };
 
-    bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0001,
-                   float tmax = 10000.f) const override {
-      if (!object->intersect(ray, hit_record, tmin, tmax)) {
-        return false;
-      }
+  bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0001,
+                 float tmax = 10000.f) const override {
+    if (!object->intersect(ray, hit_record, tmin, tmax)) {
+      return false;
+    }
 
-      hit_record.is_inside = !hit_record.is_inside;
-      return true;
-    };
+    hit_record.is_inside = !hit_record.is_inside;
+    return true;
+  };
 
-    AABB getAABB(float t0, float t1) override {
-      return object->getAABB(t0, t1);
-    };
+  AABB getAABB(float t0, float t1) override { return object->getAABB(t0, t1); };
 
-    std::shared_ptr<Hittable> object;
+  std::shared_ptr<Hittable> object;
 };
 
 class Translate : public Hittable {
@@ -73,4 +71,3 @@ public:
   float sin_theta;
   float cos_theta;
 };
-

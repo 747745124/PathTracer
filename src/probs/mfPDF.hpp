@@ -24,7 +24,7 @@ public:
     return onb.toWorld(wi_local);
   }
 
-  // PDF for a given outgoing direction (world→local)
+  // PDF for a given outgoing direction
   float at(const gl::vec3 &wi_world) const override {
     gl::vec3 wi = onb.toLocal(wi_world.normalize());
     if (wi.z() <= 0)
@@ -40,7 +40,7 @@ public:
   }
 
 private:
-  TrowbridgeReitzDistribution distrib;
+  const TrowbridgeReitzDistribution &distrib;
   OrthoBasis onb;
   gl::vec3 wo_local;
 };
