@@ -1,6 +1,5 @@
 #pragma once
 #include "../utils/utility.hpp"
-#include "./compound.hpp"
 #include "./material.hpp"
 #include "./primitive.hpp"
 

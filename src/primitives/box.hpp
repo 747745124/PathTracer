@@ -1,6 +1,6 @@
 #pragma once
-#include "./objectList.hpp"
-#include "./primitive.hpp"
+#include "../base/objectList.hpp"
+#include "../base/primitive.hpp"
 
 class Box : public Hittable {
 public:

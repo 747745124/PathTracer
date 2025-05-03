@@ -15,9 +15,11 @@ endif()
 
 include_directories(./src)
 set(BASE ./src/base/camera.cpp ./src/base/object3D.cpp ./src/base/primitive.cpp ./src/base/framebuffer.cpp ./src/base/objectList.cpp ./src/base/texture.cpp)
-set(UTILS ./src/utils/scene_io.cpp ./src/utils/objectTransform.cpp)
+set(UTILS ./src/external/scene_io.cpp ./src/utils/objectTransform.cpp)
 file(GLOB_RECURSE MATERIALS ./src/material/*.cpp)
 file(GLOB_RECURSE PROBS ./src/probs/*.cpp)
+file(GLOB_RECURSE MESH ./src/mesh_io/*.cpp)
+file(GLOB_RECURSE PRIMITIVES ./src/primitives/*.cpp)
 
 # set(SOURCE_FILES ./src/unit_test.cpp)
 set(SOURCE_FILES ./src/main.cpp)
@@ -25,4 +27,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_compile_definitions(GL_SIMD)
 
-add_executable(PathTracer ${SOURCE_FILES} ${BASE} ${UTILS} ${MATERIALS} ${PROBS})
+add_executable(PathTracer ${SOURCE_FILES} ${BASE} ${UTILS} ${MATERIALS} ${PROBS} ${MESH} ${PRIMITIVES})

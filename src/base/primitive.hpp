@@ -1,7 +1,7 @@
 #pragma once
+#include "../external/scene_io.hpp"
 #include "../utils/aabb.hpp"
 #include "../utils/commonMaterials.hpp"
-#include "../utils/scene_io.hpp"
 #include "../utils/utility.hpp"
 #include "./material.hpp"
 #include "./object3D.hpp"
@@ -11,9 +11,9 @@
 
 using Materials = std::vector<std::shared_ptr<Material>>;
 extern uint64_t hit_count;
-
 enum class IntersectionMode { DEFAULT, CUSTOM };
 enum class Axis { X = 0, Y = 1, Z = 2 };
+
 class Hittable : public Object3D {
 public:
   virtual bool intersect(const Ray &ray, HitRecord &record, float tmin,
@@ -21,6 +21,7 @@ public:
   // prepare for motion blur (not required tho)
   // all objects static for now
   virtual AABB getAABB(float t0, float t1) = 0;
+
   virtual void setIntersectionMode(IntersectionMode mode) {
     this->intersection_mode = mode;
   };
@@ -39,10 +40,13 @@ public:
 };
 
 class Sphere : public Hittable {
+private:
+  std::shared_ptr<Material> material;
+
 public:
   float radius;
   gl::vec3 center;
-  std::shared_ptr<Material> material;
+
   Sphere(const gl::vec3 &center, float radius)
       : center(center), radius(radius) {
     this->objtype = ObjType::SPHERE_OBJ;
@@ -126,10 +130,12 @@ public:
 };
 
 template <Axis axis> class AARectangle : public Hittable {
-public:
-  float _d0_min, _d0_max, _d1_min, _d1_max, _k;
+
+private:
   std::shared_ptr<Material> material;
 
+public:
+  float _d0_min, _d0_max, _d1_min, _d1_max, _k;
   AARectangle(float k, float d0_min, float d0_max, float d1_min, float d1_max)
       : _d0_min(d0_min), _d0_max(d0_max), _d1_min(d1_min), _d1_max(d1_max),
         _k(k) {

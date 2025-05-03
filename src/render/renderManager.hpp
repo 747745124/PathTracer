@@ -1,28 +1,29 @@
 #pragma once
 #include "../base/camera.hpp"
-#include "../base/compound.hpp"
 #include "../base/framebuffer.hpp"
 #include "../base/material.hpp"
 #include "../base/medium.hpp"
 #include "../base/objectList.hpp"
 #include "../base/primitive.hpp"
+#include "../config.hpp"
+#include "../primitives/box.hpp"
 #include "../primitives/curve.hpp"
 #include "../utils/bvh.hpp"
 #include "../utils/objectTransform.hpp"
 #include "../utils/timeit.hpp"
 
 #ifdef USE_ANALYTICAL_ILLUMIN
-#include "../method/analytical_illumin.hpp"
+#include "../render_method/analytical_illumin.hpp"
 #elif defined USE_MAXDEPTH_MIS
-#include "../method/maxdepth_mis.hpp"
+#include "../render_method/maxdepth_mis.hpp"
 #elif defined USE_MAXDEPTH_NAIVE
-#include "../method/maxdepth_naive.hpp"
+#include "../render_method/maxdepth_naive.hpp"
 #elif defined USE_MAXDEPTH_NEE
-#include "../method/maxdepth_nee.hpp"
+#include "../render_method/maxdepth_nee.hpp"
 #elif defined USE_MAXDEPTH_RESERVOIR
-#include "../method/max_depth_reservoir_di.hpp"
+#include "../render_method/max_depth_reservoir_di.hpp"
 #elif defined USE_ROULETTE
-#include "../method/roulette_naive.hpp"
+#include "../render_method/roulette_naive.hpp"
 #endif
 
 extern uint64_t hit_count;

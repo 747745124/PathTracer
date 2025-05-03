@@ -6,10 +6,10 @@
 #include "./base/primitive.hpp"
 #include "./base/ray.hpp"
 #include "./base/texture.hpp"
-#include "./method/roulette_naive.hpp"
+#include "./external/scene_io.hpp"
 #include "./probs/hairPDF.hpp"
 #include "./render/scenes.hpp"
+#include "./render_method/roulette_naive.hpp"
 #include "./test/hairPDFTest.hpp"
 #include "./utils/commonMaterials.hpp"
-#include "./utils/scene_io.hpp"
 #include <omp.h>

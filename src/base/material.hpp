@@ -1,8 +1,8 @@
 #pragma once
+#include "../external/scene_io.hpp"
 #include "../probs/pdf.hpp"
 #include "../probs/random.hpp"
 #include "../utils/orthoBasis.hpp"
-#include "../utils/scene_io.hpp"
 #include "./materialMath.hpp"
 #include "./ray.hpp"
 #include "./texture.hpp"
@@ -28,7 +28,6 @@ public:
   gl::vec3 position;
   std::shared_ptr<Material> material;
   gl::vec2 texCoords = gl::vec2(0.0f);
-
   gl::vec3 hair_tangent = gl::vec3(0.0f);
   // the tangent of the hair, used for hair shading
 

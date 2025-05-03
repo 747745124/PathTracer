@@ -1,5 +1,5 @@
 #pragma once
-#include "../utils/scene_io.hpp"
+#include "../external/scene_io.hpp"
 #include "../utils/utility.hpp"
 #include "./object3D.hpp"
 #include "./primitive.hpp"

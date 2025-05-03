@@ -119,11 +119,15 @@ public:
 
   // for now, we don't treat them as emitters
   float pdf_value(const gl::vec3 &origin, const gl::vec3 &dir) const override {
+    throw std::runtime_error(
+        "pdf_value not implemented for Curve, use pdf_value for cylinder");
     return 0.0f;
   };
 
   // for now, we don't treat them as emitters
   gl::vec3 get_sample(const gl::vec3 &origin) const override {
+    throw std::runtime_error(
+        "get_sample not implemented for Curve, use get_sample for cylinder");
     return gl::vec3(1.f, 0.f, 0.f);
   };
 };

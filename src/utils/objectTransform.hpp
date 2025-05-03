@@ -1,5 +1,4 @@
 #pragma once
-#include "../base/compound.hpp"
 #include "../base/objectList.hpp"
 #include "../base/primitive.hpp"
 
