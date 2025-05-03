@@ -18,7 +18,7 @@ int main() {
   //  SceneInfo scene = night();
 
   // SceneInfo scene = debug_curve();
-  scene.renderWithInfo("../output.png");
+  scene.renderWithInfo("../../output.png");
 
   return 0;
 };
