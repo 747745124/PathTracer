@@ -1,0 +1,15 @@
+#pragma once
+#include "../src/base/camera.hpp"
+#include "../src/base/framebuffer.hpp"
+#include "../src/base/light.hpp"
+#include "../src/base/material.hpp"
+#include "../src/base/primitive.hpp"
+#include "../src/base/ray.hpp"
+#include "../src/base/texture.hpp"
+#include "../src/external/scene_io.hpp"
+#include "../src/probs/hairPDF.hpp"
+#include "../src/render/scenes.hpp"
+#include "../src/render_method/roulette_naive.hpp"
+#include "../src/utils/bvh.hpp"
+#include "../src/utils/commonMaterials.hpp"
+#include <omp.h>

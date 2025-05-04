@@ -46,6 +46,7 @@ static std::shared_ptr<Material> ROUGH_SILVER_MAT = std::make_shared<Conductor>(
 
 static std::shared_ptr<ConstantTexture> DefaultTexture =
     std::make_shared<ConstantTexture>(gl::vec3(1.0f));
+
 static std::shared_ptr<Lambertian> DefaultMaterial =
     std::make_shared<Lambertian>(DefaultTexture);
 }; // namespace gl

@@ -49,3 +49,5 @@ endif()
 # Your existing subdirectory setup
 # ────────────────────────────────────────────────────────────────────
 add_subdirectory(src)
+enable_testing()
+add_subdirectory(tests) # builds and registers unit tests

@@ -14,6 +14,8 @@ public:
 
   AABB getAABB(float t0, float t1) override;
 
+  const MeshData &getMeshData() const { return mesh; }
+
   float pdf_value(const gl::vec3 &origin,
                   const gl::vec3 &direction) const override {
     // skip for now, don't treat this as a light
@@ -28,9 +30,9 @@ public:
     return gl::vec3(1.f, 0.f, 0.f);
   }
 
-  std::shared_ptr<Material> material;
-
 private:
-  MeshData mesh;                    // owns positions, normals, indices
+  std::shared_ptr<Material> material;
+  MeshData mesh; // owns positions, normals, indices
+  AABB meshAABB;
   std::unique_ptr<MeshBVHNode> bvh; // your internal BVH over mesh.indices
 };

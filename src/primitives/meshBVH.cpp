@@ -1,20 +1,20 @@
-
 // MeshBVHNode.cpp
 #include "./meshBVH.hpp"
 #include "../utils/utility.hpp"
 #include <algorithm>
 
-MeshBVHNode::MeshBVHNode(const std::vector<gl::vec3> *verts,
-                         const std::vector<std::array<int, 3>> *tris,
+MeshBVHNode::MeshBVHNode(const std::vector<gl::vec3> &verts,
+                         const std::vector<std::array<int, 3>> &tris,
+                         const std::vector<gl::vec2> &uvs,
                          const std::vector<int> &ids, int start, int end)
-    : vertices(verts), triangles(tris) {
+    : vertices(verts), triangles(tris), uvs(uvs) {
   // Compute bounding box for triangles[start..end)
   gl::vec3 mn(+INFINITY), mx(-INFINITY);
   for (int i = start; i < end; ++i) {
-    auto &t = (*triangles)[ids[i]];
+    auto &t = triangles[ids[i]];
     for (int k : {t[0], t[1], t[2]}) {
-      mn = gl::min(mn, (*vertices)[k]);
-      mx = gl::max(mx, (*vertices)[k]);
+      mn = gl::min(mn, vertices[k]);
+      mx = gl::max(mx, vertices[k]);
     }
   }
   box = AABB(mn, mx);
@@ -33,40 +33,19 @@ MeshBVHNode::MeshBVHNode(const std::vector<gl::vec3> *verts,
     // sort indices by triangle centroid on that axis
     std::vector<int> sorted(ids.begin() + start, ids.begin() + end);
     std::sort(sorted.begin(), sorted.end(), [&](int a, int b) {
-      auto ca = (((*vertices)[(*tris)[a][0]] + (*vertices)[(*tris)[a][1]] +
-                  (*vertices)[(*tris)[a][2]]) /
-                 3.0f);
-      auto cb = (((*vertices)[(*tris)[b][0]] + (*vertices)[(*tris)[b][1]] +
-                  (*vertices)[(*tris)[b][2]]) /
-                 3.0f);
+      auto ca =
+          (vertices[tris[a][0]] + vertices[tris[a][1]] + vertices[tris[a][2]]) /
+          3.0f;
+      auto cb =
+          (vertices[tris[b][0]] + vertices[tris[b][1]] + vertices[tris[b][2]]) /
+          3.0f;
       return ca[axis] < cb[axis];
     });
     int mid = count / 2;
-    left = std::make_unique<MeshBVHNode>(verts, tris, sorted, 0, mid);
-    right = std::make_unique<MeshBVHNode>(verts, tris, sorted, mid, count);
+    left = std::make_unique<MeshBVHNode>(verts, tris, uvs, sorted, 0, mid);
+    right = std::make_unique<MeshBVHNode>(verts, tris, uvs, sorted, mid, count);
   }
 }
-
-// struct HitRecord {
-//     public:
-//       float t;
-//       gl::vec3 normal;
-//       gl::vec3 position;
-//       std::shared_ptr<Material> material;
-//       gl::vec2 texCoords = gl::vec2(0.0f);
-//       gl::vec3 hair_tangent = gl::vec3(0.0f);
-//       // the tangent of the hair, used for hair shading
-
-//       // Ref: rt in one weeknd
-//       // This is used to determine whether the ray is inside or outside the
-//       object
-//       // As we want have the normal always point against the ray
-//       bool is_inside;
-//       void set_normal(const Ray &ray, const gl::vec3 &n) {
-//         this->is_inside = dot(ray.getDirection(), n) < 0;
-//         this->normal = this->is_inside ? n : -n;
-//       }
-//     };
 
 bool MeshBVHNode::intersect(const Ray &ray, HitRecord &rec, float tmin,
                             float tmax) const {
@@ -97,10 +76,11 @@ bool MeshBVHNode::intersect(const Ray &ray, HitRecord &rec, float tmin,
 
 bool MeshBVHNode::hitTriangle(int triIdx, const Ray &ray, float tmin,
                               float tmax, HitRecord &rec) const {
-  auto &tri = (*triangles)[triIdx];
-  const gl::vec3 &p0 = (*vertices)[tri[0]];
-  const gl::vec3 &p1 = (*vertices)[tri[1]];
-  const gl::vec3 &p2 = (*vertices)[tri[2]];
+  gl::hit_count++;
+  auto &tri = triangles[triIdx];
+  const gl::vec3 &p0 = vertices[tri[0]];
+  const gl::vec3 &p1 = vertices[tri[1]];
+  const gl::vec3 &p2 = vertices[tri[2]];
 
   gl::vec3 e1 = p1 - p0;
   gl::vec3 e2 = p2 - p0;
@@ -124,8 +104,18 @@ bool MeshBVHNode::hitTriangle(int triIdx, const Ray &ray, float tmin,
   if (t < tmin || t > tmax)
     return false;
 
+  if (!uvs.empty()) {
+    auto &idx = triangles[triIdx];
+    auto uv0 = uvs[idx[0]];
+    auto uv1 = uvs[idx[1]];
+    auto uv2 = uvs[idx[2]];
+    rec.texCoords = (1 - u - v) * uv0 + u * uv1 + v * uv2;
+  } else {
+    std::cout << "No UVs defined on Mesh" << std::endl;
+  }
+
   rec.t = t;
   rec.position = ray.at(t);
-  rec.normal = gl::normalize(gl::cross(e1, e2));
+  rec.normal = normalize(cross(e1, e2));
   return true;
 }

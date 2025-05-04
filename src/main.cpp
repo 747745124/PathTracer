@@ -1,6 +1,4 @@
-#include "./unit_test.hpp"
-#include "./utils/bvh.hpp"
-uint64_t hit_count = 0;
+#include "../include/test_header.hpp"
 
 int main() {
   // night_time();

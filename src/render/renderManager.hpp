@@ -26,8 +26,6 @@
 #include "../render_method/roulette_naive.hpp"
 #endif
 
-extern uint64_t hit_count;
-
 static std::vector<gl::vec3> light_vertices = {
     {2, 4, 3}, {4, 4, 3}, {4, 4, 0}, {2, 4, 0}};
 static gl::vec3 light_color = {1.0f, 1.0f, 1.0f};
@@ -154,6 +152,6 @@ struct SceneInfo {
       std::cout << "Rendering time: " << duration.count() << " seconds"
                 << std::endl;
     if (show_hitcount)
-      std::cout << "Total hit count: " << hit_count << std::endl;
+      std::cout << "Total hit count: " << gl::hit_count << std::endl;
   }
 };

@@ -284,6 +284,10 @@ static inline float clamp(float x, float min, float max) {
   return std::clamp(x, min, max);
 }
 
+static inline vec2 clamp(vec2 v, float min, float max) {
+  return vec2(std::clamp(v.x(), min, max), std::clamp(v.y(), min, max));
+}
+
 static inline vec3 clamp(vec3 v, float min, float max) {
   return vec3(std::clamp(v.x(), min, max), std::clamp(v.y(), min, max),
               std::clamp(v.z(), min, max));

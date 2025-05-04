@@ -1,5 +1,7 @@
 #include "./primitive.hpp"
-extern uint64_t hit_count;
+namespace gl {
+uint64_t hit_count = 0;
+}
 
 template <> AABB AARectangle<Axis::X>::getAABB(float t0, float t1) {
   AABB aabb(gl::vec3(this->_k - 0.001, this->_d0_min, this->_d1_min),
@@ -24,7 +26,7 @@ bool AARectangle<Axis::X>::intersect(const Ray &ray, HitRecord &hit_record,
                                      float tmin, float tmax) const {
   if (this->intersection_mode != IntersectionMode::DEFAULT)
     throw std::runtime_error("CUSTOM intersection not supported");
-  hit_count++;
+  gl::hit_count++;
   auto ray_dir = ray.getDirection().normalize();
   auto ray_origin = ray.getOrigin();
 
@@ -53,7 +55,7 @@ bool AARectangle<Axis::Y>::intersect(const Ray &ray, HitRecord &hit_record,
                                      float tmin, float tmax) const {
   if (this->intersection_mode != IntersectionMode::DEFAULT)
     throw std::runtime_error("CUSTOM intersection not supported");
-  hit_count++;
+  gl::hit_count++;
   auto ray_dir = ray.getDirection().normalize();
   auto ray_origin = ray.getOrigin();
 
@@ -82,7 +84,7 @@ bool AARectangle<Axis::Z>::intersect(const Ray &ray, HitRecord &hit_record,
                                      float tmin, float tmax) const {
   if (this->intersection_mode != IntersectionMode::DEFAULT)
     throw std::runtime_error("CUSTOM intersection not supported");
-  hit_count++;
+  gl::hit_count++;
   auto ray_dir = ray.getDirection().normalize();
   auto ray_origin = ray.getOrigin();
 

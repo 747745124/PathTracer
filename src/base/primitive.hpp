@@ -10,9 +10,11 @@
 #include <memory>
 
 using Materials = std::vector<std::shared_ptr<Material>>;
-extern uint64_t hit_count;
-enum class IntersectionMode { DEFAULT, CUSTOM };
+enum class IntersectionMode { DEFAULT };
 enum class Axis { X = 0, Y = 1, Z = 2 };
+namespace gl {
+extern uint64_t hit_count;
+}
 
 class Hittable : public Object3D {
 public:
@@ -70,7 +72,7 @@ public:
     if (this->intersection_mode != IntersectionMode::DEFAULT)
       throw std::runtime_error("CUSTOM intersection not supported for Curve");
 
-    hit_count++;
+    gl::hit_count++;
     auto ray_dir = ray.getDirection().normalize();
     auto ray_origin = ray.getOrigin();
     auto oc = ray_origin - this->center;

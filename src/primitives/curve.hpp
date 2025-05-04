@@ -34,7 +34,7 @@ public:
 
   bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0,
                  float tmax = 10000.f) const override {
-    hit_count++;
+    gl::hit_count++;
     if (this->intersection_mode != IntersectionMode::DEFAULT)
       throw std::runtime_error("CUSTOM intersection not supported for Curve");
 

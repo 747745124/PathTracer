@@ -17,6 +17,3 @@ endif()
 
 add_executable(PathTracer main.cpp)
 target_link_libraries(PathTracer PRIVATE pathtracer)
-
-add_executable(UnitTests unit_test.cpp)
-target_link_libraries(UnitTests PRIVATE pathtracer)
