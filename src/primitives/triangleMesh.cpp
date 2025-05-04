@@ -11,7 +11,8 @@ TriangleMesh::TriangleMesh(MeshData &&data, std::shared_ptr<Material> mat)
     mn = gl::min(mn, v);
     mx = gl::max(mx, v);
   }
-  meshAABB = AABB(mn, mx);
+
+  meshAABB = AABB(mn - gl::epsilon, mx + gl::epsilon);
   // build internal BVH
   std::vector<int> ids(mesh.indices.size());
   std::iota(ids.begin(), ids.end(), 0);
@@ -22,6 +23,7 @@ TriangleMesh::TriangleMesh(MeshData &&data, std::shared_ptr<Material> mat)
 
 bool TriangleMesh::intersect(const Ray &ray, HitRecord &rec, float tmin,
                              float tmax) const {
+
   if (!bvh->intersect(ray, rec, tmin, tmax))
     return false;
 

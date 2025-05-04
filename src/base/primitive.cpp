@@ -4,20 +4,20 @@ uint64_t hit_count = 0;
 }
 
 template <> AABB AARectangle<Axis::X>::getAABB(float t0, float t1) {
-  AABB aabb(gl::vec3(this->_k - 0.001, this->_d0_min, this->_d1_min),
-            gl::vec3(this->_k + 0.001, this->_d0_max, this->_d1_max));
+  AABB aabb(gl::vec3(this->_k - gl::epsilon, this->_d0_min, this->_d1_min),
+            gl::vec3(this->_k + gl::epsilon, this->_d0_max, this->_d1_max));
   return aabb;
 }
 
 template <> AABB AARectangle<Axis::Y>::getAABB(float t0, float t1) {
-  AABB aabb(gl::vec3(this->_d0_min, this->_k - 0.001, this->_d1_min),
-            gl::vec3(this->_d0_max, this->_k + 0.001, this->_d1_max));
+  AABB aabb(gl::vec3(this->_d0_min, this->_k - gl::epsilon, this->_d1_min),
+            gl::vec3(this->_d0_max, this->_k + gl::epsilon, this->_d1_max));
   return aabb;
 }
 
 template <> AABB AARectangle<Axis::Z>::getAABB(float t0, float t1) {
-  AABB aabb(gl::vec3(this->_d0_min, this->_d1_min, this->_k - 0.001),
-            gl::vec3(this->_d0_max, this->_d1_max, this->_k + 0.001));
+  AABB aabb(gl::vec3(this->_d0_min, this->_d1_min, this->_k - gl::epsilon),
+            gl::vec3(this->_d0_max, this->_d1_max, this->_k + gl::epsilon));
   return aabb;
 }
 

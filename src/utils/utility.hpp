@@ -1,4 +1,5 @@
 #pragma once
+#include "./constants.hpp"
 #include "./matrix.hpp"
 #include "./plane.hpp"
 #include "./transformations.hpp"

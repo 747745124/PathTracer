@@ -191,8 +191,7 @@ public:
     }
   }
 
-  bool near_zero() const {
-    const auto s = 1e-8;
+  bool near_zero(const float s = 1e-6) const {
     if (N == 1)
       return std::fabs(data[0]) < s;
     else if (N == 2)

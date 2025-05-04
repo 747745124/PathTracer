@@ -17,7 +17,8 @@ MeshBVHNode::MeshBVHNode(const std::vector<gl::vec3> &verts,
       mx = gl::max(mx, vertices[k]);
     }
   }
-  box = AABB(mn, mx);
+
+  box = AABB(mn - gl::epsilon, mx + gl::epsilon);
 
   int count = end - start;
   if (count <= 4) {
@@ -51,6 +52,7 @@ bool MeshBVHNode::intersect(const Ray &ray, HitRecord &rec, float tmin,
                             float tmax) const {
   if (!box.intersect(ray, tmin, tmax))
     return false;
+
   bool hit = false;
   float closest = tmax;
 
