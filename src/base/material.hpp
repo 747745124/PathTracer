@@ -411,7 +411,8 @@ public:
   }
 
   gl::vec3 emit(const Ray &ray, HitRecord &rec) const override {
-    return gl::abs(rec.normal);
+    return rec.normal * 0.5f + 0.5f;
+    // return rec.normal;
   }
 
   bool is_emitter() const override { return true; }

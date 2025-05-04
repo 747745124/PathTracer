@@ -447,7 +447,7 @@ SceneInfo cornell_box_modified() {
       make_shared<AARectangle<Axis::Z>>(555, 0, 555, 0, 555, white));
 
   shared_ptr<Hittable> box_left =
-      make_shared<Box>(vec3(0.f), vec3(165, 330, 165), ROUGH_SILVER_MAT);
+      make_shared<Box>(vec3(0.f), vec3(165, 330, 165), SILVER_MAT);
   box_left = make_shared<Rotate<Axis::Y>>(box_left, gl::to_radian(15.f));
   box_left = make_shared<Translate>(box_left, vec3(265, 0, 295));
   objects.addObject(box_left);
@@ -757,9 +757,10 @@ SceneInfo custom_mesh() {
   LightList lights;
 
   std::shared_ptr<Hittable> mesh =
-      loadOBJMesh("../../assets/teapot.obj", DefaultMaterial);
+      loadOBJMesh("../../assets/teapot.obj", debugNormalMaterial);
   mesh = make_shared<Rotate<Axis::X>>(mesh, M_PI_2);
-  mesh = make_shared<Rotate<Axis::Y>>(mesh, M_PI / 2);
+  mesh = make_shared<Rotate<Axis::Y>>(mesh, M_PI_2);
+  mesh = make_shared<Scale>(mesh, 0.5);
 
   objects.addObject(mesh);
 
@@ -769,13 +770,18 @@ SceneInfo custom_mesh() {
                                         make_shared<Lambertian>(noise_text)));
 
   auto difflight = make_shared<DiffuseEmitter>(gl::DefaultTexture, 3);
+
   auto sphere_light = make_shared<Sphere>(vec3(-8, 4, 5), 2, difflight);
+
   auto light_obj =
       make_shared<AARectangle<Axis::Y>>(7, -2, 6, -3, 5, difflight);
 
   objects.addObject(light_obj);
+
   objects.addObject(sphere_light);
+
   lights.addLight(make_shared<QuadLight>(light_obj, gl::WHITE, 3));
+
   lights.addLight(make_shared<SphereLight>(sphere_light, gl::WHITE, 3));
 
   // adding a backdrop

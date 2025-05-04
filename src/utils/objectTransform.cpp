@@ -129,7 +129,7 @@ bool Rotate<Axis::X>::intersect(const Ray &ray, HitRecord &hit_record,
       -sin_theta * hit_record.normal[1] + cos_theta * hit_record.normal[2];
 
   hit_record.position = position;
-  hit_record.set_normal(rotated_ray, normal);
+  hit_record.set_normal(ray, normal);
 
   return true;
 }
@@ -169,7 +169,7 @@ bool Rotate<Axis::Y>::intersect(const Ray &ray, HitRecord &hit_record,
       -sin_theta * hit_record.normal[0] + cos_theta * hit_record.normal[2];
 
   hit_record.position = position;
-  hit_record.set_normal(rotated_ray, normal);
+  hit_record.set_normal(ray, normal);
   return true;
 }
 
@@ -208,6 +208,6 @@ bool Rotate<Axis::Z>::intersect(const Ray &ray, HitRecord &hit_record,
       -sin_theta * hit_record.normal[0] + cos_theta * hit_record.normal[1];
 
   hit_record.position = position;
-  hit_record.set_normal(rotated_ray, normal);
+  hit_record.set_normal(ray, normal);
   return true;
 }
