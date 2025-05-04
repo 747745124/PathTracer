@@ -16,6 +16,7 @@ class Dielectric;
 struct ScatterRecord {
   Ray sampled_ray;
   bool is_specular;
+  bool is_refract;
   float pdf_val = 0.0f;
   gl::vec3 attenuation;
   std::shared_ptr<PDF> pdf_ptr;

@@ -2,9 +2,14 @@
 #include "../base/material.hpp"
 #include "../material/conductor.hpp"
 #include "../material/hairMarsch.hpp"
+#include "../material/simpleDispersion.hpp"
+#include "../material/thinDielectric.hpp"
 #include "./colors.hpp"
 namespace gl {
 static std::shared_ptr<Material> GLASS = std::make_shared<Dielectric>(1.5f);
+static std::shared_ptr<Material> THIN_GLASS =
+    std::make_shared<ThinDielectric>(1.5f);
+
 static std::shared_ptr<Material> MIRROR =
     std::make_shared<Mirror>(vec3(0.8f, 0.8f, 0.8f), 0.0f);
 static std::shared_ptr<Material> ROUGH_MIRROR =

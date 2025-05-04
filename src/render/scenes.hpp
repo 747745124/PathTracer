@@ -447,13 +447,13 @@ SceneInfo cornell_box_modified() {
       make_shared<AARectangle<Axis::Z>>(555, 0, 555, 0, 555, white));
 
   shared_ptr<Hittable> box_left =
-      make_shared<Box>(vec3(0.f), vec3(165, 330, 165), SILVER_MAT);
+      make_shared<Box>(vec3(0.f), vec3(165, 330, 165), ROUGH_GOLD_MAT);
   box_left = make_shared<Rotate<Axis::Y>>(box_left, gl::to_radian(15.f));
   box_left = make_shared<Translate>(box_left, vec3(265, 0, 295));
   objects.addObject(box_left);
 
   shared_ptr<Sphere> sphere =
-      make_shared<Sphere>(vec3(190, 90, 190), 90, MARSCH_HAIR);
+      make_shared<Sphere>(vec3(190, 90, 190), 90, THIN_GLASS);
   objects.addObject(sphere);
 
   std::array<gl::vec3, 4> vertices;
@@ -775,7 +775,7 @@ SceneInfo custom_mesh() {
   auto top_light =
       make_shared<AARectangle<Axis::Y>>(12, -2, 6, -3, 5, difflight);
 
-  auto right_sphere_light = make_shared<Sphere>(vec3(-6, 4, -5), 2, difflight);
+  auto right_sphere_light = make_shared<Sphere>(vec3(-6, 0, -5), 2, difflight);
 
   objects.addObject(top_light);
   objects.addObject(left_sphere_light);
@@ -786,11 +786,11 @@ SceneInfo custom_mesh() {
   lights.addLight(make_shared<SphereLight>(right_sphere_light, gl::WHITE, 3));
   // adding a backdrop
   objects.addObject(
-      make_shared<AARectangle<Axis::X>>(-12, -40, 40, -40, 40, ROUGH_GOLD_MAT));
+      make_shared<AARectangle<Axis::X>>(-12, -40, 40, -40, 40, LAMBERTIAN_RED));
 
   // second back drop
   objects.addObject(make_shared<AARectangle<Axis::Z>>(-8, -40, 40, -40, 40,
-                                                      ROUGH_SILVER_MAT));
+                                                      LAMBERTIAN_GREEN));
 
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
