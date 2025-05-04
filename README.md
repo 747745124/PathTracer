@@ -2,6 +2,7 @@
 An importance sampled path tracer, supports Marschner Hair / Phong / Dielectric / Conductor material and various Monte Carlo effects.
 
 ![image](images/sample.png)
+![image](images/bunny.png)
 ## Build Instructions:
 This project uses CMake to build and is correctly built under M1 macOS environment. The C++ standard is set to C++ 20.
 
@@ -28,9 +29,13 @@ The path tracer supports DoF, motion blur. Image filtering and tone-mapping.
 ### Materials:
 1. Marschner Hair
 2. Phong
-3. Dielectric
+3. Dielectric (Microfacet BxDF + simple dispersion approximation)
 4. Conductor (Microfacet BRDF)
 5. Lambertian
 6. Kajiya-Kay
+
+### Object IO
+1. .obj
+2. .fbx (WIP)
 
 

@@ -756,40 +756,41 @@ SceneInfo custom_mesh() {
   ObjectList objects;
   LightList lights;
 
-  std::shared_ptr<Hittable> mesh =
-      loadOBJMesh("../../assets/teapot.obj", debugNormalMaterial);
-  mesh = make_shared<Rotate<Axis::X>>(mesh, M_PI_2);
+  std::shared_ptr<Hittable> mesh = loadOBJMesh("../../assets/bunny.obj", GLASS);
+  // mesh = make_shared<Rotate<Axis::X>>(mesh, M_PI_2);
   mesh = make_shared<Rotate<Axis::Y>>(mesh, M_PI_2);
-  mesh = make_shared<Scale>(mesh, 0.5);
+  mesh = make_shared<Scale>(mesh, 40.f);
 
   objects.addObject(mesh);
 
   auto noise_text = make_shared<ConstantTexture>(gl::vec3(1.0, 1.0, 1.0));
 
-  objects.addObject(make_shared<Sphere>(vec3(0, -1000, 0), 999,
+  objects.addObject(make_shared<Sphere>(vec3(0, -1000, 0), 999.5,
                                         make_shared<Lambertian>(noise_text)));
 
   auto difflight = make_shared<DiffuseEmitter>(gl::DefaultTexture, 3);
 
-  auto sphere_light = make_shared<Sphere>(vec3(-8, 4, 5), 2, difflight);
+  auto left_sphere_light = make_shared<Sphere>(vec3(-8, 4, 5), 2, difflight);
 
-  auto light_obj =
-      make_shared<AARectangle<Axis::Y>>(7, -2, 6, -3, 5, difflight);
+  auto top_light =
+      make_shared<AARectangle<Axis::Y>>(12, -2, 6, -3, 5, difflight);
 
-  objects.addObject(light_obj);
+  auto right_sphere_light = make_shared<Sphere>(vec3(-6, 4, -5), 2, difflight);
 
-  objects.addObject(sphere_light);
+  objects.addObject(top_light);
+  objects.addObject(left_sphere_light);
+  objects.addObject(right_sphere_light);
 
-  lights.addLight(make_shared<QuadLight>(light_obj, gl::WHITE, 3));
-
-  lights.addLight(make_shared<SphereLight>(sphere_light, gl::WHITE, 3));
-
+  lights.addLight(make_shared<QuadLight>(top_light, gl::WHITE, 3));
+  lights.addLight(make_shared<SphereLight>(left_sphere_light, gl::WHITE, 3));
+  lights.addLight(make_shared<SphereLight>(right_sphere_light, gl::WHITE, 3));
   // adding a backdrop
   objects.addObject(
-      make_shared<AARectangle<Axis::X>>(-12, -40, 40, -40, 40, LAMBERTIAN_RED));
+      make_shared<AARectangle<Axis::X>>(-12, -40, 40, -40, 40, ROUGH_GOLD_MAT));
 
-  objects.addObject(make_shared<AARectangle<Axis::Z>>(-10, -40, 40, -40, 40,
-                                                      LAMBERTIAN_GREEN));
+  // second back drop
+  objects.addObject(make_shared<AARectangle<Axis::Z>>(-8, -40, 40, -40, 40,
+                                                      ROUGH_SILVER_MAT));
 
   scene.camera = make_shared<PerspectiveCamera>(
       gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,

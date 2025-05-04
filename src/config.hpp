@@ -1,11 +1,11 @@
 #pragma once
 #include "./utils/matrix.hpp"
 
-#define LIGHT_SAMPLE_X 2
-#define LIGHT_SAMPLE_Y 2
+#define LIGHT_SAMPLE_X 4
+#define LIGHT_SAMPLE_Y 4
 #define MAX_RAY_DEPTH 10
-#define SPP_X 4
-#define SPP_Y 4
+#define SPP_X 25
+#define SPP_Y 25
 #define GAMMA 2.0
 #define WIDTH 500
 #define HEIGHT 500
