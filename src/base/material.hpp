@@ -394,7 +394,24 @@ public:
 
   gl::vec3 emit(const Ray &ray, HitRecord &rec) const override {
     auto t = rec.hair_tangent;
-    return gl::vec3(fabs(t.x()), fabs(t.y()), fabs(t.z()));
+    return gl::abs(t);
+  }
+
+  bool is_emitter() const override { return true; }
+};
+
+class DebugNormalMaterial : public Material {
+public:
+  DebugNormalMaterial() = default;
+
+  bool scatter(const Ray &, HitRecord &rec,
+               ScatterRecord &srec) const override {
+    // no scattering—just treat this as an emitter so we see it directly
+    return false;
+  }
+
+  gl::vec3 emit(const Ray &ray, HitRecord &rec) const override {
+    return gl::abs(rec.normal);
   }
 
   bool is_emitter() const override { return true; }

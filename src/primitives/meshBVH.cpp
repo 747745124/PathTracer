@@ -5,9 +5,13 @@
 
 MeshBVHNode::MeshBVHNode(const std::vector<gl::vec3> &verts,
                          const std::vector<std::array<int, 3>> &tris,
+                         const std::vector<gl::vec3> &normals,
+                         const std::vector<std::array<int, 3>> &normalIdx,
                          const std::vector<gl::vec2> &uvs,
+                         const std::vector<std::array<int, 3>> &uvIdx,
                          const std::vector<int> &ids, int start, int end)
-    : vertices(verts), triangles(tris), uvs(uvs) {
+    : vertices(verts), triangles(tris), normals(normals), normalIdx(normalIdx),
+      uvs(uvs), uvIdx(uvIdx) {
   // Compute bounding box for triangles[start..end)
   gl::vec3 mn(+INFINITY), mx(-INFINITY);
   for (int i = start; i < end; ++i) {
@@ -43,8 +47,10 @@ MeshBVHNode::MeshBVHNode(const std::vector<gl::vec3> &verts,
       return ca[axis] < cb[axis];
     });
     int mid = count / 2;
-    left = std::make_unique<MeshBVHNode>(verts, tris, uvs, sorted, 0, mid);
-    right = std::make_unique<MeshBVHNode>(verts, tris, uvs, sorted, mid, count);
+    left = std::make_unique<MeshBVHNode>(verts, tris, normals, normalIdx, uvs,
+                                         uvIdx, sorted, 0, mid);
+    right = std::make_unique<MeshBVHNode>(verts, tris, normals, normalIdx, uvs,
+                                          uvIdx, sorted, mid, count);
   }
 }
 
@@ -106,18 +112,32 @@ bool MeshBVHNode::hitTriangle(int triIdx, const Ray &ray, float tmin,
   if (t < tmin || t > tmax)
     return false;
 
-  if (!uvs.empty()) {
-    auto &idx = triangles[triIdx];
-    auto uv0 = uvs[idx[0]];
-    auto uv1 = uvs[idx[1]];
-    auto uv2 = uvs[idx[2]];
-    rec.texCoords = (1 - u - v) * uv0 + u * uv1 + v * uv2;
+  // 1) interpolate smooth normal if available, else geometric
+  if (!normals.empty() && !normalIdx.empty()) {
+    auto &ni = normalIdx[triIdx];
+    gl::vec3 n0 = normals[ni[0]], n1 = normals[ni[1]], n2 = normals[ni[2]];
+    rec.normal = gl::normalize((1 - u - v) * n0 + u * n1 + v * n2);
   } else {
-    std::cout << "No UVs defined on Mesh" << std::endl;
+    rec.normal = gl::normalize(gl::cross(e1, e2));
+  }
+
+  // ★ 2) make sure rec.normal lies on the same side as the face normal ★
+  {
+    // geometric face normal
+    gl::vec3 Ng = gl::normalize(gl::cross(e1, e2));
+    // if the dot is negative, flip rec.normal
+    if (gl::dot(rec.normal, Ng) < 0.f)
+      rec.normal = -rec.normal;
+  }
+
+  // 3) uv interpolation
+  if (!uvs.empty() && !uvIdx.empty()) {
+    auto &ui = uvIdx[triIdx];
+    gl::vec2 uv0 = uvs[ui[0]], uv1 = uvs[ui[1]], uv2 = uvs[ui[2]];
+    rec.texCoords = (1 - u - v) * uv0 + u * uv1 + v * uv2;
   }
 
   rec.t = t;
   rec.position = ray.at(t);
-  rec.normal = normalize(cross(e1, e2));
   return true;
 }

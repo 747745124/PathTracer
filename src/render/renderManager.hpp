@@ -6,6 +6,7 @@
 #include "../base/objectList.hpp"
 #include "../base/primitive.hpp"
 #include "../config.hpp"
+#include "../mesh_io/meshLoader.hpp"
 #include "../primitives/box.hpp"
 #include "../primitives/curve.hpp"
 #include "../utils/bvh.hpp"

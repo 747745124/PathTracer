@@ -36,10 +36,20 @@ std::shared_ptr<TriangleMesh> loadOBJMesh(const std::string &path,
       size_t fv = shape.mesh.num_face_vertices[f];
       if (fv != 3)
         throw std::runtime_error("Non-triangle face in OBJ");
-      const auto &idx0 = shape.mesh.indices[indexOffset + 0].vertex_index;
-      const auto &idx1 = shape.mesh.indices[indexOffset + 1].vertex_index;
-      const auto &idx2 = shape.mesh.indices[indexOffset + 2].vertex_index;
-      data.indices.push_back({idx0, idx1, idx2});
+
+      auto &I0 = shape.mesh.indices[indexOffset + 0];
+      auto &I1 = shape.mesh.indices[indexOffset + 1];
+      auto &I2 = shape.mesh.indices[indexOffset + 2];
+
+      data.indices.push_back(
+          {I0.vertex_index, I1.vertex_index, I2.vertex_index});
+
+      data.normalIndices.push_back(
+          {I0.normal_index, I1.normal_index, I2.normal_index});
+
+      data.uvIndices.push_back(
+          {I0.texcoord_index, I1.texcoord_index, I2.texcoord_index});
+
       indexOffset += fv;
     }
   }

@@ -16,8 +16,9 @@ TriangleMesh::TriangleMesh(MeshData &&data, std::shared_ptr<Material> mat)
   // build internal BVH
   std::vector<int> ids(mesh.indices.size());
   std::iota(ids.begin(), ids.end(), 0);
-  bvh = std::make_unique<MeshBVHNode>(mesh.positions, mesh.indices, mesh.uvs,
-                                      ids, 0, (int)ids.size());
+  bvh = std::make_unique<MeshBVHNode>(
+      mesh.positions, mesh.indices, mesh.normals, mesh.normalIndices, mesh.uvs,
+      mesh.uvIndices, ids, 0, (int)ids.size());
   this->objtype = ObjType::MESH_OBJ;
 }
 

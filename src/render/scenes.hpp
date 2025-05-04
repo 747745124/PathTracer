@@ -747,3 +747,51 @@ SceneInfo debug_curve() {
 
   return scene;
 };
+
+SceneInfo custom_mesh() {
+  using namespace std;
+  using namespace gl;
+
+  SceneInfo scene;
+  ObjectList objects;
+  LightList lights;
+
+  std::shared_ptr<Hittable> mesh =
+      loadOBJMesh("../../assets/teapot.obj", DefaultMaterial);
+  mesh = make_shared<Rotate<Axis::X>>(mesh, M_PI_2);
+  mesh = make_shared<Rotate<Axis::Y>>(mesh, M_PI / 2);
+
+  objects.addObject(mesh);
+
+  auto noise_text = make_shared<ConstantTexture>(gl::vec3(1.0, 1.0, 1.0));
+
+  objects.addObject(make_shared<Sphere>(vec3(0, -1000, 0), 999,
+                                        make_shared<Lambertian>(noise_text)));
+
+  auto difflight = make_shared<DiffuseEmitter>(gl::DefaultTexture, 3);
+  auto sphere_light = make_shared<Sphere>(vec3(-8, 4, 5), 2, difflight);
+  auto light_obj =
+      make_shared<AARectangle<Axis::Y>>(7, -2, 6, -3, 5, difflight);
+
+  objects.addObject(light_obj);
+  objects.addObject(sphere_light);
+  lights.addLight(make_shared<QuadLight>(light_obj, gl::WHITE, 3));
+  lights.addLight(make_shared<SphereLight>(sphere_light, gl::WHITE, 3));
+
+  // adding a backdrop
+  objects.addObject(
+      make_shared<AARectangle<Axis::X>>(-12, -40, 40, -40, 40, LAMBERTIAN_RED));
+
+  objects.addObject(make_shared<AARectangle<Axis::Z>>(-10, -40, 40, -40, 40,
+                                                      LAMBERTIAN_GREEN));
+
+  scene.camera = make_shared<PerspectiveCamera>(
+      gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
+      1000.f, vec3(0, 1, 0), vec3(-26.f, -1.f, -8.f).normalize(),
+      vec3(22.f, 3.f, 8.f));
+
+  scene.objects = objects;
+  scene.lights = lights;
+
+  return scene;
+};

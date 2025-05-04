@@ -17,6 +17,10 @@ static std::shared_ptr<Material> PHONG_GRAY =
     std::make_shared<PhongLike>(GRAY, vec3(0.5f), vec3(0.f), 0.5f);
 static std::shared_ptr<Material> LAMBERTIAN_GRAY =
     std::make_shared<Lambertian>(GRAY);
+static std::shared_ptr<Material> LAMBERTIAN_RED =
+    std::make_shared<Lambertian>(RED);
+static std::shared_ptr<Material> LAMBERTIAN_GREEN =
+    std::make_shared<Lambertian>(GREEN);
 static std::shared_ptr<Material> MARSCH_HAIR = std::make_shared<HairMarschner>(
     vec3(0.419f, 0.697f, 1.37f), 0.f, 1.55f, 0.7f, 0.5f, to_radian(2.f));
 
@@ -49,4 +53,7 @@ static std::shared_ptr<ConstantTexture> DefaultTexture =
 
 static std::shared_ptr<Lambertian> DefaultMaterial =
     std::make_shared<Lambertian>(DefaultTexture);
+
+static std::shared_ptr<DebugNormalMaterial> debugNormalMaterial =
+    std::make_shared<DebugNormalMaterial>();
 }; // namespace gl
