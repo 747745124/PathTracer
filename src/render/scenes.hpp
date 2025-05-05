@@ -453,7 +453,7 @@ SceneInfo cornell_box_modified() {
   objects.addObject(box_left);
 
   shared_ptr<Sphere> sphere =
-      make_shared<Sphere>(vec3(190, 90, 190), 90, THIN_GLASS);
+      make_shared<Sphere>(vec3(190, 90, 190), 90, GLASS_MF);
   objects.addObject(sphere);
 
   std::array<gl::vec3, 4> vertices;

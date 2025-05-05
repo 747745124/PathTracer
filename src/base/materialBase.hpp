@@ -1,24 +1,10 @@
 #pragma once
 #include "../probs/pdf.hpp"
 #include "../probs/random.hpp"
+#include "./materialFlags.hpp"
 #include "./ray.hpp"
 
 class Material;
-enum class TransportMode { Radiance, Importance };
-enum BxDFFlags {
-  Reflection = 1 << 0,
-  Transmission = 1 << 1,
-  Diffuse = 1 << 2,
-  Glossy = 1 << 3,
-  Specular = 1 << 4,
-  DiffuseReflection = Diffuse | Reflection,
-  DiffuseTransmission = Diffuse | Transmission,
-  GlossyReflection = Glossy | Reflection,
-  GlossyTransmission = Glossy | Transmission,
-  SpecularReflection = Specular | Reflection,
-  SpecularTransmission = Specular | Transmission,
-  All = ~0u
-};
 
 // determine whether the ray is specular
 struct ScatterRecord {

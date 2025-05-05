@@ -9,12 +9,13 @@ public:
   ThinDielectric(float eta, bool use_split_ray = false)
       : eta(eta), use_split_ray(use_split_ray){};
 
-  bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
-               float uc = gl::rand_num(), // coin-flip sample
-               const gl::vec2 &u = {gl::rand_num(),
-                                    gl::rand_num()}, // 2D microfacet sample
-               TransportMode mode = TransportMode::Radiance,
-               uint32_t flags = BxDFFlags::All) const override {
+  bool
+  scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
+          float uc = gl::rand_num(), // coin-flip sample
+          const gl::vec2 &u = {gl::rand_num(),
+                               gl::rand_num()}, // 2D microfacet sample
+          TransportMode mode = TransportMode::Radiance,
+          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
     using namespace gl;
 
     vec3 wo_world = -ray_in.getDirection().normalize();
@@ -28,6 +29,11 @@ public:
     }
 
     float pr = R, pt = T;
+
+    if (!(flags & BxDFReflTransFlags::Reflection))
+      return pr = 0;
+    if (!(flags & BxDFReflTransFlags::Transmission))
+      return pt = 0;
     if (pr == 0 && pt == 0)
       return false;
 
@@ -56,10 +62,10 @@ public:
     return true;
   };
 
-  float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
-                    const Ray &scattered,
-                    TransportMode mode = TransportMode::Radiance,
-                    uint32_t flags = BxDFFlags::All) const override {
+  float scatter_pdf(
+      const Ray &ray_in, const HitRecord &rec, const Ray &scattered,
+      TransportMode mode = TransportMode::Radiance,
+      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
     return 0.f;
   }
 };

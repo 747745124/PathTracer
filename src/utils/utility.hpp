@@ -44,6 +44,18 @@ static inline vec3 refract(const vec3 &v, const vec3 &n, float ni_over_nt,
   }
 }
 
+static inline bool refract(const vec3 &wo, const vec3 &n, float eta,
+                           float &etaScale, vec3 &wi) {
+  // call your existing function
+  bool didRefract;
+  vec3 tdir = refract(wo, n, eta, didRefract);
+  if (!didRefract)
+    return false;
+  wi = tdir;
+  etaScale = eta; // pass back the same ηᵢ/ηₜ ratio you used
+  return true;
+}
+
 static inline vec3 refract(const vec3 &dir, const vec3 &n, float ni_over_nt) {
   auto cos_theta = fmin(dot(-dir, n), 1.0);
   vec3 r_out_perp = ni_over_nt * (dir + cos_theta * n);
@@ -460,8 +472,8 @@ static inline vec3 on_hemisphere_random_vec(const vec3 &normal, float r = 1.f) {
   return p;
 }
 
-// Helper function: Convert spherical coordinates (theta, phi) to a 3D vector in
-// local space, where the z-axis is assumed to be "up."
+// Helper function: Convert spherical coordinates (theta, phi) to a 3D vector
+// in local space, where the z-axis is assumed to be "up."
 inline gl::vec3 sphericalDirection(float theta, float phi) {
   float sinTheta = sin(theta);
   return gl::vec3(sinTheta * cos(phi), sinTheta * sin(phi), cos(theta));
@@ -510,8 +522,8 @@ static inline float get_depth_bilinear(gl::vec2 sample_coord, gl::vec3 p1,
 // https://stackoverflow.com/questions/808441/inverse-bilinear-interpolation
 // The good thing is the order of the points is preserved after projection
 // If the points is not passed in clockwise or counter clockwise order, the
-// result will be wrong This returns the interpolated params u,v Use u,v we can
-// interpolate depth, normal, color, etc.
+// result will be wrong This returns the interpolated params u,v Use u,v we
+// can interpolate depth, normal, color, etc.
 static gl::vec2 inverseBilinear(gl::vec2 sample, gl::vec2 p1, gl::vec2 p2,
                                 gl::vec2 p3, gl::vec2 p4) {
   using namespace gl;
@@ -568,6 +580,30 @@ namespace pbrt {
 // this one assumes wo points from the surface to the light
 static inline vec3 reflect(const vec3 &wo, const vec3 &n) {
   return -wo + 2 * dot(wo, n) * n;
+}
+
+static inline bool refract(vec3 wi, vec3 n, float eta, float *etap, vec3 *wt) {
+  float cosTheta_i = dot(n, wi);
+
+  if (cosTheta_i < 0) {
+    eta = 1 / eta;
+    cosTheta_i = -cosTheta_i;
+    n = -n;
+  }
+
+  float sin2Theta_i = std::max<float>(0, 1 - square(cosTheta_i));
+  float sin2Theta_t = sin2Theta_i / square(eta);
+
+  if (sin2Theta_t >= 1)
+    return false;
+
+  float cosTheta_t = safeSqrt(1 - sin2Theta_t);
+
+  *wt = -wi / eta + (cosTheta_i / eta - cosTheta_t) * vec3(n);
+  if (etap)
+    *etap = eta;
+
+  return true;
 }
 
 static inline float cosTheta(vec3 w) { return w.z(); }

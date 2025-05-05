@@ -4,7 +4,8 @@
 bool HairMarschner::scatter(const Ray &ray_in, HitRecord &rec,
                             ScatterRecord &srec, float uc,
                             const gl::vec2 &u, // 2D microfacet sample
-                            TransportMode mode, uint32_t flags) const {
+                            TransportMode mode,
+                            BxDFReflTransFlags flags) const {
   gl::vec3 wo_world = -ray_in.getDirection().normalize();
 
   // if hair_tangent is not set, use normal
@@ -26,7 +27,7 @@ bool HairMarschner::scatter(const Ray &ray_in, HitRecord &rec,
 
 float HairMarschner::scatter_pdf(const Ray &ray_in, const HitRecord &rec,
                                  const Ray &scattered, TransportMode mode,
-                                 uint32_t flags) const {
+                                 BxDFReflTransFlags flags) const {
 
   if (rec.hair_tangent.near_zero()) {
     throw std::runtime_error(

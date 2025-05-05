@@ -7,14 +7,17 @@ public:
             float alpha_y)
       : eta(eta), k(k), mfDistribution(alpha_x, alpha_y) {}
 
-  bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
-               float uc = gl::rand_num(), // coin-flip sample
-               const gl::vec2 &u = {gl::rand_num(),
-                                    gl::rand_num()}, // 2D microfacet sample
-               TransportMode mode = TransportMode::Radiance,
-               uint32_t flags = BxDFFlags::All) const override {
+  bool
+  scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
+          float uc = gl::rand_num(), // coin-flip sample
+          const gl::vec2 &u = {gl::rand_num(),
+                               gl::rand_num()}, // 2D microfacet sample
+          TransportMode mode = TransportMode::Radiance,
+          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
 
     using namespace gl;
+    if (!(flags & BxDFReflTransFlags::Reflection))
+      return false;
 
     vec3 wo = -ray_in.getDirection().normalize();
 
@@ -54,10 +57,13 @@ public:
     return true;
   }
 
-  float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
-                    const Ray &scattered,
-                    TransportMode mode = TransportMode::Radiance,
-                    uint32_t flags = BxDFFlags::All) const override {
+  float scatter_pdf(
+      const Ray &ray_in, const HitRecord &rec, const Ray &scattered,
+      TransportMode mode = TransportMode::Radiance,
+      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+
+    if (!(flags & BxDFReflTransFlags::Reflection))
+      return false;
 
     if (mfDistribution.effectivelySmooth()) {
       return 0.0f;
