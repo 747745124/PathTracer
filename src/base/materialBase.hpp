@@ -29,6 +29,14 @@ struct ScatterRecord {
   std::shared_ptr<PDF> pdf_ptr;
 
   bool is_specular() { return this->sampled_type & BxDFFlags::Specular; }
+  bool is_specular_reflection() {
+    return (this->sampled_type & BxDFFlags::SpecularReflection) ==
+           BxDFFlags::SpecularReflection;
+  }
+  bool is_specular_transmission() {
+    return (this->sampled_type & BxDFFlags::SpecularTransmission) ==
+           BxDFFlags::SpecularTransmission;
+  }
 };
 
 struct HitRecord {

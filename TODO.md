@@ -4,9 +4,11 @@
 *  Refactor code for dependency management
 
 ## TEST LEVEL
-* Verify obj lodader correctness
+* ✅ Verify obj lodader correctness
 
 ## FEATURE LEVEL - Material
+* ✅ Interface extension
+* Rough dielectric
 * Adding detailed dieletric interface
    * Per channel refract (i.e. dispersion)
 * Add Kajiya-Kay Material
@@ -19,5 +21,7 @@
 * NEE+MIS
 * BDPT
 
-
-   
+## FEATURE LEVEL - Sampler
+* ✅ Halton Sampler
+* ✅ Stratified Sampling
+* Sobol sampler

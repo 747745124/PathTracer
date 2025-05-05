@@ -15,8 +15,8 @@ int main() {
   // night_time();
   // SceneInfo scene = cornell_box();
   //  SceneInfo scene = checkpoint_diffuse();
-  SceneInfo scene = cornell_box_modified();
-  // SceneInfo scene = custom_mesh();
+  // SceneInfo scene = cornell_box_modified();
+  SceneInfo scene = custom_mesh();
   // two_lights();
   //  SceneInfo scene = simple_light();
   // SceneInfo scene = diffuse_diffuse();
@@ -24,7 +24,7 @@ int main() {
   // night();
   //  checkpoint_2();
   // checkpoint_3();
-  //  SceneInfo scene = VeachMIS();
+  // SceneInfo scene = VeachMIS();
   //  SceneInfo scene = night();
 
   // SceneInfo scene = debug_curve();

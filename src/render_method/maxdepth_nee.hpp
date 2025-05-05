@@ -29,11 +29,36 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   auto mat = hit_record.material;
   if (mat->scatter(ray, hit_record, srec, halton_sampler.get1D())) {
 
-    // for specular and dielectric materials, directly trace further
-    if (srec.is_specular())
+    // ray splitting, if it has both specular
+    bool hasRefl = srec.is_specular_reflection();
+    bool hasTran = srec.is_specular_transmission();
+
+    if (hasRefl && hasTran) {
+      float R = srec.pdf_val;
+      float T = 1.0f - R;
+      vec3 wo = -ray.getDirection().normalize();
+      vec3 n = hit_record.normal;
+      vec3 sum(0.0f);
+
+      // branch 0 = reflect, 1 = transmit
+      for (int b = 0; b < 2; ++b) {
+        bool doRefl = (b == 0);
+        float w = doRefl ? R : T;
+        vec3 wi = doRefl ? pbrt::reflect(wo, n) : -wo;
+        Ray next = Ray(hit_record.position, wi);
+        sum +=
+            w * getRayColor(next, prims, bg_color, lights, max_depth - 1, bvh);
+      }
+
+      return mat->emit(ray, hit_record) + sum;
+    }
+
+    if (hasRefl || hasTran) {
       return mat->emit(ray, hit_record) +
              srec.attenuation * getRayColor(srec.sampled_ray, prims, bg_color,
                                             lights, max_depth - 1, bvh);
+    }
+
     auto pdf_ptr = srec.pdf_ptr
                        ? srec.pdf_ptr
                        : std::make_shared<CosinePDF>(hit_record.normal);

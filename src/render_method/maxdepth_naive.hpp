@@ -30,6 +30,11 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
 
   if (mat->scatter(ray, hit_record, srec)) {
 
+    bool hasRefl = srec.is_specular_reflection();
+    bool hasTran = srec.is_specular_transmission();
+
+    if (hasRefl && hasTran)
+      throw std::runtime_error("Not supported yet");
     // if it's specular, just reflect
     if (srec.is_specular())
       return srec.attenuation * getRayColor(srec.sampled_ray, prims,

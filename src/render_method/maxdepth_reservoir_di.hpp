@@ -30,6 +30,12 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
 
   if (mat->scatter(ray, hit_record, srec)) {
 
+    bool hasRefl = srec.is_specular_reflection();
+    bool hasTran = srec.is_specular_transmission();
+
+    if (hasRefl && hasTran)
+      throw std::runtime_error("Not supported yet");
+
     auto pdf_ptr = srec.pdf_ptr
                        ? srec.pdf_ptr
                        : std::make_shared<CosinePDF>(hit_record.normal);
