@@ -3,9 +3,11 @@
 class ThinDielectric : public Material {
 private:
   float eta;
+  bool use_split_ray;
 
 public:
-  ThinDielectric(float eta) : eta(eta){};
+  ThinDielectric(float eta, bool use_split_ray = false)
+      : eta(eta), use_split_ray(use_split_ray){};
 
   bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
                float uc = gl::rand_num(), // coin-flip sample
@@ -29,29 +31,29 @@ public:
     if (pr == 0 && pt == 0)
       return false;
 
-    srec.sampled_type =
-        BxDFFlags::SpecularReflection | BxDFFlags::SpecularTransmission;
-    srec.pdf_val = R;
-    return true;
+    if (use_split_ray) {
+      srec.sampled_type =
+          BxDFFlags::SpecularReflection | BxDFFlags::SpecularTransmission;
+      srec.pdf_val = R;
+      return true;
+    }
 
-    // if (uc < pr / (pr + pt)) {
-    //   vec3 wi_world = pbrt::reflect(wo_world, rec.normal).normalize();
-    //   srec.sampled_ray = Ray(rec.position, wi_world);
-    //   srec.sampled_type = BxDFFlags::SpecularReflection;
-    //   srec.pdf_ptr = nullptr;
-    //   float cosThetaI = fabs(dot(rec.normal, wi_world));
-    //   srec.attenuation = vec3(R / cosThetaI);
-    //   srec.pdf_val = R;
-    // } else {
-    //   vec3 wi_world = -wo_world.normalize();
-    //   srec.sampled_ray = Ray(rec.position, wi_world);
-    //   srec.sampled_type = BxDFFlags::SpecularTransmission;
-    //   srec.pdf_ptr = nullptr;
-    //   float cosThetaI = fabs(dot(rec.normal, wi_world));
-    //   srec.attenuation = vec3(T / cosThetaI);
-    //   srec.pdf_val = T;
-    // }
-    // return true;
+    if (uc < pr / (pr + pt)) {
+      vec3 wi_world = pbrt::reflect(wo_world, rec.normal).normalize();
+      srec.sampled_ray = Ray(rec.position, wi_world);
+      srec.sampled_type = BxDFFlags::SpecularReflection;
+      srec.pdf_ptr = nullptr;
+      srec.attenuation = 1.0f;
+      srec.pdf_val = R;
+    } else {
+      vec3 wi_world = -wo_world.normalize();
+      srec.sampled_ray = Ray(rec.position, wi_world);
+      srec.sampled_type = BxDFFlags::SpecularTransmission;
+      srec.pdf_ptr = nullptr;
+      srec.attenuation = 1.0f;
+      srec.pdf_val = T;
+    }
+    return true;
   };
 
   float scatter_pdf(const Ray &ray_in, const HitRecord &rec,

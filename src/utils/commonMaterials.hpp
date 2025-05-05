@@ -8,7 +8,9 @@
 namespace gl {
 static std::shared_ptr<Material> GLASS = std::make_shared<Dielectric>(1.5f);
 static std::shared_ptr<Material> THIN_GLASS =
-    std::make_shared<ThinDielectric>(1.5f);
+    std::make_shared<ThinDielectric>(1.5f, false);
+static std::shared_ptr<Material> THIN_GLASS_SPLIT =
+    std::make_shared<ThinDielectric>(1.5f, true);
 
 static std::shared_ptr<Material> MIRROR =
     std::make_shared<Mirror>(vec3(0.8f, 0.8f, 0.8f), 0.0f);
