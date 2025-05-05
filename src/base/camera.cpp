@@ -42,9 +42,9 @@ PerspectiveCamera::PerspectiveCamera(const CameraIO *_io, float aspect,
 Ray PerspectiveCamera::generateRay(float u, float v) const {
   using namespace gl;
   float radius = focalDist / aperture * 0.5f;
-  
+
   auto random_vec_on_lens =
-      vec2(C_rand(-radius, radius), C_rand(-radius, radius));
+      vec2(rand_num(-radius, radius), rand_num(-radius, radius));
   auto random_vec_on_plane = plane_h_vec * random_vec_on_lens.u() +
                              plane_v_vec * random_vec_on_lens.v();
   vec3 point_s = this->position + random_vec_on_plane;
@@ -59,16 +59,5 @@ Ray PerspectiveCamera::generateRay(gl::vec2 uv) const {
   using namespace gl;
   auto u = uv.u();
   auto v = uv.v();
-  float radius = focalDist / aperture * 0.5f;
-
-  auto random_vec_on_lens =
-      vec2(C_rand(-radius, radius), C_rand(-radius, radius));
-  auto random_vec_on_plane = plane_h_vec * random_vec_on_lens.u() +
-                             plane_v_vec * random_vec_on_lens.v();
-  vec3 point_s = this->position + random_vec_on_plane;
-
-  auto dir =
-      bottom_left_pos + u * plane_horizontal + v * plane_vertical - point_s;
-
-  return Ray(point_s, dir);
+  return generateRay(u, v);
 }
