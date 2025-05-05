@@ -5,23 +5,30 @@
 
 class Material;
 enum class TransportMode { Radiance, Importance };
-enum BxDFReflTransFlags {
+enum BxDFFlags {
   Reflection = 1 << 0,
   Transmission = 1 << 1,
   Diffuse = 1 << 2,
   Glossy = 1 << 3,
   Specular = 1 << 4,
+  DiffuseReflection = Diffuse | Reflection,
+  DiffuseTransmission = Diffuse | Transmission,
+  GlossyReflection = Glossy | Reflection,
+  GlossyTransmission = Glossy | Transmission,
+  SpecularReflection = Specular | Reflection,
+  SpecularTransmission = Specular | Transmission,
   All = ~0u
 };
 
 // determine whether the ray is specular
 struct ScatterRecord {
   Ray sampled_ray;
-  bool is_specular;
-  bool is_refract;
+  uint32_t sampled_type = BxDFFlags::All;
   float pdf_val = 0.0f;
   gl::vec3 attenuation;
   std::shared_ptr<PDF> pdf_ptr;
+
+  bool is_specular() { return this->sampled_type & BxDFFlags::Specular; }
 };
 
 struct HitRecord {

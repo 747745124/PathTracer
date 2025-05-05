@@ -2,7 +2,9 @@
 #include "../probs/hairPDF.hpp"
 
 bool HairMarschner::scatter(const Ray &ray_in, HitRecord &rec,
-                            ScatterRecord &srec) const {
+                            ScatterRecord &srec, float uc,
+                            const gl::vec2 &u, // 2D microfacet sample
+                            TransportMode mode, uint32_t flags) const {
   gl::vec3 wo_world = -ray_in.getDirection().normalize();
 
   // if hair_tangent is not set, use normal
@@ -15,15 +17,16 @@ bool HairMarschner::scatter(const Ray &ray_in, HitRecord &rec,
   auto wi_world = pdf_ptr->get().normalize();
 
   srec.attenuation = f(wo_world, wi_world, rec);
-  srec.is_specular = false;
   srec.pdf_ptr = pdf_ptr;
   srec.pdf_val = pdf_ptr->at(wi_world);
   srec.sampled_ray = Ray(rec.position, wi_world);
+  srec.sampled_type = BxDFFlags::GlossyReflection;
   return true;
 };
 
 float HairMarschner::scatter_pdf(const Ray &ray_in, const HitRecord &rec,
-                                 const Ray &scattered) const {
+                                 const Ray &scattered, TransportMode mode,
+                                 uint32_t flags) const {
 
   if (rec.hair_tangent.near_zero()) {
     throw std::runtime_error(

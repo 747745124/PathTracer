@@ -7,8 +7,12 @@ public:
             float alpha_y)
       : eta(eta), k(k), mfDistribution(alpha_x, alpha_y) {}
 
-  bool scatter(const Ray &ray_in, HitRecord &rec,
-               ScatterRecord &srec) const override {
+  bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
+               float uc = gl::rand_num(), // coin-flip sample
+               const gl::vec2 &u = {gl::rand_num(),
+                                    gl::rand_num()}, // 2D microfacet sample
+               TransportMode mode = TransportMode::Radiance,
+               uint32_t flags = BxDFFlags::All) const override {
 
     using namespace gl;
 
@@ -25,7 +29,7 @@ public:
       float absCosThetaI = fabs(dot(rec.normal, wi));
       vec3 f = fresnelComplex(absCosThetaI, eta, k);
       srec.attenuation = f;
-      srec.is_specular = true;
+      srec.sampled_type = BxDFFlags::SpecularReflection;
       srec.pdf_ptr = nullptr; // delta
       srec.pdf_val = 0.0f;
       return true;
@@ -42,8 +46,8 @@ public:
       return false;
 
     srec.sampled_ray = Ray(rec.position, wi);
+    srec.sampled_type = BxDFFlags::GlossyReflection;
     srec.attenuation = f(wo, wi, rec);
-    srec.is_specular = false;
     srec.pdf_ptr = pdf_ptr;
     // 4) compute the PDF value
     srec.pdf_val = pdf_ptr->at(wi);
@@ -51,7 +55,9 @@ public:
   }
 
   float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
-                    const Ray &scattered) const override {
+                    const Ray &scattered,
+                    TransportMode mode = TransportMode::Radiance,
+                    uint32_t flags = BxDFFlags::All) const override {
 
     if (mfDistribution.effectivelySmooth()) {
       return 0.0f;
@@ -64,7 +70,8 @@ public:
   };
 
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
-             const HitRecord &rec) const override {
+             const HitRecord &rec,
+             TransportMode mode = TransportMode::Radiance) const override {
 
     using namespace gl;
     OrthoBasis basis(rec.normal);

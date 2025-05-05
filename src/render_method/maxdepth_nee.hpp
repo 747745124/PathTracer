@@ -30,7 +30,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   if (mat->scatter(ray, hit_record, srec)) {
 
     // for specular and dielectric materials, directly trace further
-    if (srec.is_specular)
+    if (srec.is_specular())
       return mat->emit(ray, hit_record) +
              srec.attenuation * getRayColor(srec.sampled_ray, prims, bg_color,
                                             lights, max_depth - 1, bvh);

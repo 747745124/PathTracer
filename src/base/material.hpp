@@ -14,14 +14,21 @@ class PhongLike;
 
 class Material {
 public:
-  virtual bool scatter(const Ray &ray_in, HitRecord &rec,
-                       ScatterRecord &srec) const {
+  virtual bool
+  scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
+          float uc = gl::rand_num(), // coin-flip sample
+          const gl::vec2 &u = {gl::rand_num(),
+                               gl::rand_num()}, // 2D microfacet sample
+          TransportMode mode = TransportMode::Radiance,
+          uint32_t flags = BxDFFlags::All) const {
     return false;
   }
 
   // required for non-delta materials
   virtual float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
-                            const Ray &scattered) const {
+                            const Ray &scattered,
+                            TransportMode mode = TransportMode::Radiance,
+                            uint32_t flags = BxDFFlags::All) const {
     return 0.0f;
   }
 
@@ -29,11 +36,14 @@ public:
   // evaluations. Note that we conform to the PBRT convention of
   // wo_world = -ray_in.getDirection()
   virtual gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
-                     const HitRecord &rec) const {
+                     const HitRecord &rec,
+                     TransportMode mode = TransportMode::Radiance) const {
     return gl::vec3(0.0f);
   };
 
-  float scatter_pdf(const ScatterRecord &srec, const Ray &wi) const {
+  float scatter_pdf(const ScatterRecord &srec, const Ray &wi,
+                    TransportMode mode = TransportMode::Radiance,
+                    uint32_t flags = BxDFFlags::All) const {
     if (srec.pdf_ptr != nullptr)
       return 0;
     return srec.pdf_ptr->at(wi.getDirection().normalize());
@@ -53,9 +63,13 @@ public:
   Lambertian(const gl::vec3 &a)
       : albedo(std::make_shared<ConstantTexture>(a)){};
   // scatter the ray with lambertian reflection
-  bool scatter(const Ray &ray_in, HitRecord &rec,
-               ScatterRecord &srec) const override {
-    srec.is_specular = false;
+  bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
+               float uc = gl::rand_num(), // coin-flip sample
+               const gl::vec2 &u = {gl::rand_num(),
+                                    gl::rand_num()}, // 2D microfacet sample
+               TransportMode mode = TransportMode::Radiance,
+               uint32_t flags = BxDFFlags::All) const override {
+    srec.sampled_type = BxDFFlags::Diffuse;
     srec.attenuation = albedo->getTexelColor(rec.texCoords) * (1.0f / M_PI);
     srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
     srec.sampled_ray = Ray(rec.position, srec.pdf_ptr->get().normalize());
@@ -64,13 +78,16 @@ public:
   }
 
   float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
-                    const Ray &scattered) const override {
+                    const Ray &scattered,
+                    TransportMode mode = TransportMode::Radiance,
+                    uint32_t flags = BxDFFlags::All) const override {
     float cosine = dot(rec.normal, scattered.getDirection().normalize());
     return std::max(cosine / M_PI, 0.0);
   }
 
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
-             const HitRecord &rec) const override {
+             const HitRecord &rec,
+             TransportMode mode = TransportMode::Radiance) const override {
     return albedo->getTexelColor(rec.texCoords) * (1.0f / M_PI);
   }
 
@@ -83,21 +100,27 @@ public:
   // it's hard to use a delta functinon as BRDF,
   // since the floating point precision causes trouble
   // This design is a reference from Raytracing the rest of your life
-  bool scatter(const Ray &ray_in, HitRecord &rec,
-               ScatterRecord &srec) const override {
+  bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
+               float uc = gl::rand_num(), // coin-flip sample
+               const gl::vec2 &u = {gl::rand_num(),
+                                    gl::rand_num()}, // 2D microfacet sample
+               TransportMode mode = TransportMode::Radiance,
+               uint32_t flags = BxDFFlags::All) const override {
     gl::vec3 reflected =
         reflect(ray_in.getDirection().normalize(), rec.normal) +
         gl::on_sphere_random_vec(fuzz);
     srec.sampled_ray = Ray(rec.position, reflected);
+    srec.sampled_type = BxDFFlags::SpecularReflection;
     srec.attenuation = albedo;
-    srec.is_specular = true;
     srec.pdf_ptr = nullptr;
     srec.pdf_val = 0.0f; // delta function
     return true;
   }
 
   float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
-                    const Ray &scattered) const override {
+                    const Ray &scattered,
+                    TransportMode mode = TransportMode::Radiance,
+                    uint32_t flags = BxDFFlags::All) const override {
     return 0.0f;
   };
 
@@ -110,15 +133,20 @@ public:
   float ior;
   Dielectric(float ior) : ior(ior){};
 
-  bool scatter(const Ray &ray_in, HitRecord &rec,
-               ScatterRecord &srec) const override {
-    srec.is_specular = true;
+  bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
+               float uc = gl::rand_num(), // coin-flip sample
+               const gl::vec2 &u = {gl::rand_num(),
+                                    gl::rand_num()}, // 2D microfacet sample
+               TransportMode mode = TransportMode::Radiance,
+               uint32_t flags = BxDFFlags::All) const override {
     srec.pdf_ptr = nullptr;
     srec.attenuation = gl::vec3(1.0f);
     float ri_ro = rec.is_inside ? 1.0f / ior : ior;
     bool is_refract = false;
     gl::vec3 out_ray = refract(ray_in.getDirection().normalize(), rec.normal,
                                ri_ro, is_refract);
+    srec.sampled_type = is_refract ? BxDFFlags::SpecularTransmission
+                                   : BxDFFlags::SpecularReflection;
     srec.sampled_ray = Ray(rec.position, out_ray);
     srec.pdf_val = 0.0f; // delta function
     return true;
@@ -142,13 +170,17 @@ public:
 
   // scatter() decides how a ray scatters upon hitting the surface.
   // It probabilistically selects between specular and diffuse scattering.
-  bool scatter(const Ray &ray_in, HitRecord &rec,
-               ScatterRecord &srec) const override {
+  bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
+               float uc = gl::rand_num(), // coin-flip sample
+               const gl::vec2 &u = {gl::rand_num(),
+                                    gl::rand_num()}, // 2D microfacet sample
+               TransportMode mode = TransportMode::Radiance,
+               uint32_t flags = BxDFFlags::All) const override {
 
     float p = gl::rand_num();
     if (p < specularProb) {
       // Specular scattering branch:
-      srec.is_specular = true;
+      srec.sampled_type = BxDFFlags::SpecularReflection;
       // Compute the perfect reflection direction.
       gl::vec3 R = reflect(ray_in.getDirection().normalize(), rec.normal);
       // Add fuzziness to the reflection direction.
@@ -163,13 +195,12 @@ public:
       srec.pdf_val = 0.0f;    // Delta function, so PDF is zero.
       return true;
     } else {
-      // Diffuse scattering branch:
-      srec.is_specular = false;
       srec.attenuation = diffuse + ambient;
       // Use a cosine-weighted PDF for diffuse scattering.
       srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
       // Sample a direction from the cosine-weighted PDF.
       srec.sampled_ray = Ray(rec.position, srec.pdf_ptr->get().normalize());
+      srec.sampled_type = BxDFFlags::DiffuseReflection;
       // Set the PDF value for the sampled direction.
       srec.pdf_val = srec.pdf_ptr->at(srec.sampled_ray.getDirection());
       return true;
@@ -180,7 +211,9 @@ public:
   // deterministically. For diffuse scattering, it returns the cosine-weighted
   // PDF value.
   float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
-                    const Ray &scattered) const override {
+                    const Ray &scattered,
+                    TransportMode mode = TransportMode::Radiance,
+                    uint32_t flags = BxDFFlags::All) const override {
     // Compute specular probability as above.
     float p = gl::rand_num();
     if (p < specularProb) {
@@ -193,7 +226,8 @@ public:
   }
 
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
-             const HitRecord &rec) const override {
+             const HitRecord &rec,
+             TransportMode mode = TransportMode::Radiance) const override {
     float p = gl::rand_num();
     if (p < specularProb) {
       return gl::vec3(0.0f);
@@ -221,8 +255,12 @@ public:
   // This implementation uses importance sampling over two lobes: specular
   // (Phong) and diffuse (cosine-weighted). The branch is chosen based on the
   // relative energies.
-  bool scatter(const Ray &ray_in, HitRecord &rec,
-               ScatterRecord &srec) const override {
+  bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
+               float uc = gl::rand_num(), // coin-flip sample
+               const gl::vec2 &u = {gl::rand_num(),
+                                    gl::rand_num()}, // 2D microfacet sample
+               TransportMode mode = TransportMode::Radiance,
+               uint32_t flags = BxDFFlags::All) const override {
     // Compute average intensity for specular and diffuse components.
     float specInt = (specular.x() + specular.y() + specular.z()) / 3.0f;
     float diffInt = (diffuse.x() + diffuse.y() + diffuse.z()) / 3.0f;
@@ -232,8 +270,7 @@ public:
     float r = gl::rand_num();
     if (r < specProb) {
       // Specular (glossy) branch (non-delta, with a finite Phong lobe).
-      srec.is_specular =
-          false; // Here we mark as non-delta so that PDF is used.
+      srec.sampled_type = BxDFFlags::GlossyReflection;
       // Compute the perfect reflection direction.
       gl::vec3 R = reflect(ray_in.getDirection().normalize(), rec.normal);
       // Set up a Phong-lobe PDF with the perfect reflection direction.
@@ -250,7 +287,7 @@ public:
       return true;
     } else {
       // Diffuse branch.
-      srec.is_specular = false;
+      srec.sampled_type = BxDFFlags::DiffuseReflection;
       srec.attenuation = diffuse;
       srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
       // Sample a direction from the cosine-weighted PDF.
@@ -264,7 +301,9 @@ public:
   // direction. We combine the PDFs of the specular and diffuse branches using
   // the same weighting as used in scatter().
   float scatter_pdf(const Ray &ray_in, const HitRecord &rec,
-                    const Ray &scattered) const override {
+                    const Ray &scattered,
+                    TransportMode mode = TransportMode::Radiance,
+                    uint32_t flags = BxDFFlags::All) const override {
     float specInt = (specular.x() + specular.y() + specular.z()) / 3.0f;
     float diffInt = (diffuse.x() + diffuse.y() + diffuse.z()) / 3.0f;
     float specProb = specInt / (specInt + diffInt);
@@ -283,7 +322,8 @@ public:
   }
 
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
-             const HitRecord &rec) const override {
+             const HitRecord &rec,
+             TransportMode mode = TransportMode::Radiance) const override {
     using namespace gl;
 
     vec3 wo = wo_world.normalize(); // toward camera
@@ -333,8 +373,12 @@ public:
   DiffuseEmitter(const gl::vec3 &a, float intensity = 1.0f)
       : _text(std::make_shared<ConstantTexture>(a)), _intensity(intensity){};
 
-  bool scatter(const Ray &ray_in, HitRecord &rec,
-               ScatterRecord &srec) const override {
+  bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
+               float uc = gl::rand_num(), // coin-flip sample
+               const gl::vec2 &u = {gl::rand_num(),
+                                    gl::rand_num()}, // 2D microfacet sample
+               TransportMode mode = TransportMode::Radiance,
+               uint32_t flags = BxDFFlags::All) const override {
     return false;
   }
 
@@ -357,8 +401,12 @@ class DebugTangentMaterial : public Material {
 public:
   DebugTangentMaterial() = default;
 
-  bool scatter(const Ray &, HitRecord &rec,
-               ScatterRecord &srec) const override {
+  bool scatter(const Ray &, HitRecord &rec, ScatterRecord &srec,
+               float uc = gl::rand_num(), // coin-flip sample
+               const gl::vec2 &u = {gl::rand_num(),
+                                    gl::rand_num()}, // 2D microfacet sample
+               TransportMode mode = TransportMode::Radiance,
+               uint32_t flags = BxDFFlags::All) const override {
     // no scattering—just treat this as an emitter so we see it directly
     return false;
   }
@@ -375,8 +423,12 @@ class DebugNormalMaterial : public Material {
 public:
   DebugNormalMaterial() = default;
 
-  bool scatter(const Ray &, HitRecord &rec,
-               ScatterRecord &srec) const override {
+  bool scatter(const Ray &, HitRecord &rec, ScatterRecord &srec,
+               float uc = gl::rand_num(), // coin-flip sample
+               const gl::vec2 &u = {gl::rand_num(),
+                                    gl::rand_num()}, // 2D microfacet sample
+               TransportMode mode = TransportMode::Radiance,
+               uint32_t flags = BxDFFlags::All) const override {
     // no scattering—just treat this as an emitter so we see it directly
     return false;
   }
@@ -394,8 +446,12 @@ public:
   Isotropic(std::shared_ptr<Texture2D> a) : _text(a){};
   Isotropic(const gl::vec3 &a) : _text(std::make_shared<ConstantTexture>(a)){};
 
-  bool scatter(const Ray &ray_in, HitRecord &rec,
-               ScatterRecord &srec) const override {
+  bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
+               float uc = gl::rand_num(), // coin-flip sample
+               const gl::vec2 &u = {gl::rand_num(),
+                                    gl::rand_num()}, // 2D microfacet sample
+               TransportMode mode = TransportMode::Radiance,
+               uint32_t flags = BxDFFlags::All) const override {
     // scatter the ray with lambertian reflection
     // any direction scatter with equal probability
     // ray_scattered = Ray(rec.position, gl::sphere_random_vec());
