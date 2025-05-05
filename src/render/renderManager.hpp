@@ -50,7 +50,6 @@ struct SceneInfo {
   uint spp_y = 2;
   float _gamma = 1.0f;
   LightList lights = {std::make_shared<QuadLight>(light_info)};
-
   SceneInfo() = default;
 
   void render(const std::string &out_path = "./output.png",

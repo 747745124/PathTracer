@@ -1,6 +1,17 @@
 #include "../include/test_header.hpp"
 
 int main() {
+
+#if defined(_OPENMP)
+  std::cout << "✅ OpenMP is enabled (version " << _OPENMP << ")\n"
+            << "   Max threads: " << omp_get_max_threads() << "\n"
+            << "   Using threads: " << NUM_THREADS << "\n";
+
+  omp_set_num_threads(NUM_THREADS);
+#else
+  std::cout << "❌ OpenMP is NOT enabled\n";
+#endif
+
   // night_time();
   // SceneInfo scene = cornell_box();
   //  SceneInfo scene = checkpoint_diffuse();

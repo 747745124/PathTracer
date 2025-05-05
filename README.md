@@ -39,3 +39,6 @@ The path tracer supports DoF, motion blur. Image filtering and tone-mapping.
 2. .fbx (WIP)
 
 
+### Sampler
+1. Halton Sampler
+2. Sobol Sampler (WIP)

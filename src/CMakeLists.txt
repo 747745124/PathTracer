@@ -4,6 +4,7 @@ file(GLOB_RECURSE SRC_CPP
     mesh_io/*.cpp
     primitives/*.cpp
     probs/*.cpp
+    sampler/*.cpp
     external/scene_io.cpp
     utils/objectTransform.cpp
 )

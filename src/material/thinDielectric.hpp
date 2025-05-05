@@ -29,7 +29,7 @@ public:
     if (pr == 0 && pt == 0)
       return false;
 
-    if (rand_num() < pr / (pr + pt)) {
+    if (uc < pr / (pr + pt)) {
       vec3 wi_world = pbrt::reflect(wo_world, rec.normal).normalize();
       srec.sampled_ray = Ray(rec.position, wi_world);
       srec.sampled_type = BxDFFlags::SpecularReflection;

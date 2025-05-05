@@ -4,8 +4,8 @@
 #include "../config.hpp"
 #include "../probs/hittablePDF.hpp"
 #include "../probs/mixedPDF.hpp"
+#include "../sampler/sampler.hpp"
 #include "../utils/bvh.hpp"
-
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                             gl::vec3 bg_color, const LightList &lights,
                             uint max_depth = 40,
@@ -27,7 +27,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
 
   ScatterRecord srec;
   auto mat = hit_record.material;
-  if (mat->scatter(ray, hit_record, srec)) {
+  if (mat->scatter(ray, hit_record, srec, halton_sampler.get1D())) {
 
     // for specular and dielectric materials, directly trace further
     if (srec.is_specular())

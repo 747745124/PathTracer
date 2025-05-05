@@ -301,6 +301,26 @@ static inline float smoothstep_alt(float edge0, float edge1, float x) {
 
 static inline float fract(float x) { return x - floor(x); }
 
+static const int Primes[] = {2,  3,  5,  7,  11, 13, 17, 19, 23, 29, 31, 37, 41,
+                             43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97};
+static const int PrimeCount = sizeof(Primes) / sizeof(Primes[0]);
+
+static constexpr float OneMinusEpsilon = 0x1.fffffep-1;
+
+static float radicalInverse(int baseIndex, uint64_t a) {
+  int base = Primes[baseIndex % PrimeCount];
+  float invBase = (float)1 / (float)base, invBaseM = 1;
+  uint64_t reversedDigits = 0;
+  while (a) {
+    uint64_t next = a / base;
+    uint64_t digit = a - next * base;
+    reversedDigits = reversedDigits * base + digit;
+    invBaseM *= invBase;
+    a = next;
+  }
+  return std::min(reversedDigits * invBaseM, OneMinusEpsilon);
+};
+
 static inline float VanDerCorput(uint bits) {
   bits = (bits << 16u) | (bits >> 16u);
   bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
