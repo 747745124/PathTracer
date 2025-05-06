@@ -11,21 +11,29 @@ public:
 };
 
 class HaltonSampler : public Sampler {
-private:
-  uint32_t sampleIndex = 0;
+  uint32_t sampleIndex = 0; // which point in the sequence
+  int dimension = 0;        // which coordinate of that point
 
 public:
-  HaltonSampler() = default;
-  // Reset the sequence (e.g. at the start of each pixel)
-  void reset() { sampleIndex = 0; }
+  // required to call before each sample ray
+  void startSample() {
+    sampleIndex++;
+    dimension = 0;
+  }
 
-  // 1D Halton in base 2
-  float get1D() override { return gl::radicalInverse(0, ++sampleIndex); }
+  // Returns the next 1D Halton component for this sample
+  float get1D() override {
+    float v = gl::radicalInverse(dimension, sampleIndex);
+    dimension++;
+    return v;
+  }
 
-  // 2D Halton: x in base 2, y in base 3
+  // Returns two consecutive components for this sample
   gl::vec2 get2D() override {
-    uint32_t i = ++sampleIndex;
-    return {gl::radicalInverse(0, i), gl::radicalInverse(1, i)};
+    float x = gl::radicalInverse(dimension, sampleIndex);
+    float y = gl::radicalInverse(dimension + 1, sampleIndex);
+    dimension += 2;
+    return {x, y};
   }
 };
 

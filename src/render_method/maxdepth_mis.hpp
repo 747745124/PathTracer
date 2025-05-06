@@ -4,8 +4,8 @@
 #include "../config.hpp"
 #include "../probs/hittablePDF.hpp"
 #include "../probs/mixedPDF.hpp"
+#include "../sampler/sampler.hpp"
 #include "../utils/bvh.hpp"
-
 // Power heuristic for MIS
 inline float powerHeuristic(float pdfA, float pdfB) {
   float a2 = pdfA * pdfA;

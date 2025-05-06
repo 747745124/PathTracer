@@ -76,7 +76,7 @@ public:
     srec.sampled_type = BxDFFlags::Diffuse;
     srec.attenuation = albedo->getTexelColor(rec.texCoords) * (1.0f / M_PI);
     srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
-    srec.sampled_ray = Ray(rec.position, srec.pdf_ptr->get().normalize());
+    srec.sampled_ray = Ray(rec.position, srec.pdf_ptr->get(uc, u).normalize());
     srec.pdf_val = srec.pdf_ptr->at(srec.sampled_ray.getDirection());
     return true;
   }
@@ -211,7 +211,8 @@ public:
       // Use a cosine-weighted PDF for diffuse scattering.
       srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
       // Sample a direction from the cosine-weighted PDF.
-      srec.sampled_ray = Ray(rec.position, srec.pdf_ptr->get().normalize());
+      srec.sampled_ray =
+          Ray(rec.position, srec.pdf_ptr->get(uc, u).normalize());
       srec.sampled_type = BxDFFlags::DiffuseReflection;
       // Set the PDF value for the sampled direction.
       srec.pdf_val = srec.pdf_ptr->at(srec.sampled_ray.getDirection());
@@ -289,7 +290,7 @@ public:
       // Set up a Phong-lobe PDF with the perfect reflection direction.
       srec.pdf_ptr = std::make_shared<PhongLobePDF>(R, shininess);
       // Sample a specular direction from the Phong-lobe PDF.
-      gl::vec3 sampledDir = srec.pdf_ptr->get();
+      gl::vec3 sampledDir = srec.pdf_ptr->get(uc, u);
       srec.sampled_ray = Ray(rec.position, sampledDir);
       // Attenuation is typically set to the specular color (ambient might be
       // added separately).
@@ -304,7 +305,7 @@ public:
       srec.attenuation = diffuse;
       srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
       // Sample a direction from the cosine-weighted PDF.
-      gl::vec3 sampledDir = srec.pdf_ptr->get();
+      gl::vec3 sampledDir = srec.pdf_ptr->get(uc, u);
       srec.sampled_ray = Ray(rec.position, sampledDir);
       return true;
     }

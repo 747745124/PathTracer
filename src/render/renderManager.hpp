@@ -97,7 +97,12 @@ struct SceneInfo {
 
         for (int j = 0; j < _height; j++) {
           auto color = vec3(0.0);
+
+          // per sample
           for (int k = 0; k < fb.getSampleCount(); k++) {
+
+            // per sample, reset sampler
+            halton_sampler.startSample();
             auto sample_color = vec3(0.0);
             vec2 uv = (vec2(i, j) + offsets[k]) / vec2(_width, _height);
             Ray ray = camera->generateRay(uv.u(), uv.v());

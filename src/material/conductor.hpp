@@ -43,7 +43,7 @@ public:
     auto pdf_ptr = std::make_shared<MicrofacetPDF>(mfDistribution, basis, wo);
 
     // 2) sample an incoming direction `wi`
-    vec3 wi = pdf_ptr->get().normalize();
+    vec3 wi = pdf_ptr->get(uc, u).normalize();
     // 3) reject if it’s below the geometric normal
     if (dot(rec.normal, wi) <= 0)
       return false;

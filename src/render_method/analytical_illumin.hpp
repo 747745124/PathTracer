@@ -1,6 +1,7 @@
 #pragma once
 #include "../base/lightList.hpp"
 #include "../base/objectList.hpp"
+#include "../sampler/sampler.hpp"
 #include "../utils/bvh.hpp"
 
 static inline gl::vec3

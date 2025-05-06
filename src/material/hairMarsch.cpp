@@ -15,7 +15,7 @@ bool HairMarschner::scatter(const Ray &ray_in, HitRecord &rec,
 
   OrthoBasis basis(rec.hair_tangent);
   auto pdf_ptr = std::make_shared<HairPDF>(*this, basis, wo_world);
-  auto wi_world = pdf_ptr->get().normalize();
+  auto wi_world = pdf_ptr->get(uc, u).normalize();
 
   srec.attenuation = f(wo_world, wi_world, rec);
   srec.pdf_ptr = pdf_ptr;

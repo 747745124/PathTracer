@@ -4,8 +4,8 @@
 #include "../config.hpp"
 #include "../probs/hittablePDF.hpp"
 #include "../probs/mixedPDF.hpp"
+#include "../sampler/sampler.hpp"
 #include "../utils/bvh.hpp"
-
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                             const ObjectList &light_objects, gl::vec3 bg_color,
                             uint max_depth = 40,

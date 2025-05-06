@@ -4,8 +4,8 @@
 #include "../config.hpp"
 #include "../probs/hittablePDF.hpp"
 #include "../probs/mixedPDF.hpp"
+#include "../sampler/sampler.hpp"
 #include "../utils/bvh.hpp"
-
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                             gl::vec3 bg_color, const LightList &lights,
                             uint max_depth = 40,
@@ -27,8 +27,9 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
 
   ScatterRecord srec;
   auto mat = hit_record.material;
-
-  if (mat->scatter(ray, hit_record, srec)) {
+  float uc = halton_sampler.get1D();
+  vec2 u = halton_sampler.get2D();
+  if (mat->scatter(ray, hit_record, srec, uc, u)) {
 
     bool hasRefl = srec.is_specular_reflection();
     bool hasTran = srec.is_specular_transmission();
@@ -41,7 +42,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                        : std::make_shared<CosinePDF>(hit_record.normal);
 
     auto f = srec.attenuation;
-    auto out_ray = Ray(hit_record.position, pdf_ptr->get().normalize());
+    auto out_ray = Ray(hit_record.position, pdf_ptr->get(uc, u).normalize());
     float cos_theta = dot(hit_record.normal, out_ray.getDirection());
     cos_theta = std::max(cos_theta, 0.0f);
     auto pdf_val = pdf_ptr->at(out_ray.getDirection().normalize());

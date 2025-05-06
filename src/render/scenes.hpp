@@ -453,7 +453,7 @@ SceneInfo cornell_box_modified() {
   objects.addObject(box_left);
 
   shared_ptr<Sphere> sphere =
-      make_shared<Sphere>(vec3(190, 90, 190), 90, GLASS_MF);
+      make_shared<Sphere>(vec3(190, 90, 190), 90, THIN_GLASS);
   objects.addObject(sphere);
 
   std::array<gl::vec3, 4> vertices;
@@ -757,7 +757,7 @@ SceneInfo custom_mesh() {
   LightList lights;
 
   std::shared_ptr<Hittable> mesh =
-      loadOBJMesh("../../assets/bunny.obj", GLASS_MF);
+      loadOBJMesh("../../assets/bunny.obj", THIN_GLASS);
   // mesh = make_shared<Rotate<Axis::X>>(mesh, M_PI_2);
   mesh = make_shared<Rotate<Axis::Y>>(mesh, M_PI_2);
   mesh = make_shared<Scale>(mesh, 60.f);

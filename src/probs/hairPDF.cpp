@@ -6,8 +6,8 @@ HairPDF::HairPDF(const HairMarschner &hair_mat, const OrthoBasis &basis,
     : hair_mat(hair_mat), basis(basis), wo_local(basis.toLocal(wo_world)){};
 
 // expecting a wi_world
-gl::vec3 HairPDF::get() const {
-  // TODO
+gl::vec3 HairPDF::get(float uc, gl::vec2 u) const {
+
   using namespace gl;
   float sinTheta_o = wo_local.x();
   float cosTheta_o = safeSqrt(1 - sinTheta_o * sinTheta_o);
@@ -16,7 +16,6 @@ gl::vec3 HairPDF::get() const {
 
   std::array<float, HairMarschner::pMax + 1> apPDF = hair_mat.ApPDF(cosTheta_o);
 
-  float uc = rand_num();
   int p = sampleDiscrete(std::vector<float>(apPDF.begin(), apPDF.end()), uc,
                          nullptr, nullptr);
 
@@ -44,7 +43,6 @@ gl::vec3 HairPDF::get() const {
   cosThetap_o = std::abs(cosThetap_o);
 
   // sample Mp to compute theta_i
-  vec2 u = gl::vec2(rand_num(), rand_num());
   float cosTheta =
       1 +
       hair_mat.v[p] * std::log(std::max(u[0], (float)1e-5) +
