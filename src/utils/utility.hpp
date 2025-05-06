@@ -15,6 +15,9 @@ template <typename E> constexpr auto to_underlying(E e) noexcept {
 
 // This file defines shader utilities and some math functions
 namespace gl {
+template <typename T, int N> static T maxComponent(const vec<N, T> &v) {
+  return *std::max_element(v.data.begin(), v.data.end());
+}
 
 static inline float attenuate(float distance) {
   return std::min(
@@ -631,6 +634,8 @@ static inline vec3 faceForward(vec3 n, vec3 v) {
   return (dot(n, v) < 0.f) ? -n : n;
 }
 
-bool sameHemisphere(const vec3 &a, const vec3 &b) { return a.z() * b.z() > 0; }
+static inline bool sameHemisphere(const vec3 &a, const vec3 &b) {
+  return a.z() * b.z() > 0;
+}
 }; // namespace pbrt
 }; // namespace gl

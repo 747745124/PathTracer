@@ -25,21 +25,6 @@ bool HairMarschner::scatter(const Ray &ray_in, HitRecord &rec,
   return true;
 };
 
-float HairMarschner::scatter_pdf(const Ray &ray_in, const HitRecord &rec,
-                                 const Ray &scattered, TransportMode mode,
-                                 BxDFReflTransFlags flags) const {
-
-  if (rec.hair_tangent.near_zero()) {
-    throw std::runtime_error(
-        "HairMarschner::scatter_pdf: hair_tangent is not set");
-  }
-
-  gl::vec3 wo_world = -ray_in.getDirection().normalize();
-  OrthoBasis basis(rec.hair_tangent);
-  HairPDF pdf(*this, basis, wo_world);
-  return pdf.at(scattered.getDirection().normalize());
-};
-
 gl::vec3 HairMarschner::evalMarschner(const gl::vec3 &wi,
                                       const gl::vec3 &wo) const {
   // compute wo hair related term

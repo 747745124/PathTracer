@@ -63,7 +63,7 @@ public:
   };
 
   float scatter_pdf(
-      const Ray &ray_in, const HitRecord &rec, const Ray &scattered,
+      const ScatterRecord &srec, const Ray &wi_world,
       TransportMode mode = TransportMode::Radiance,
       BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
     return 0.f;

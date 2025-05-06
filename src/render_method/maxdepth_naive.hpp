@@ -27,8 +27,9 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
 
   ScatterRecord srec;
   auto mat = hit_record.material;
-
-  if (mat->scatter(ray, hit_record, srec)) {
+  float uc = halton_sampler.get1D();
+  vec2 u = halton_sampler.get2D();
+  if (mat->scatter(ray, hit_record, srec, uc, u)) {
 
     bool hasRefl = srec.is_specular_reflection();
     bool hasTran = srec.is_specular_transmission();
@@ -53,7 +54,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
       pdfs.push_back(srec.pdf_ptr);
 
     auto mix_pdf = MixedPDF(pdfs);
-    auto wi = mix_pdf.get().normalize();
+    auto wi = mix_pdf.get(uc, u).normalize();
     auto out_ray = Ray(hit_record.position, wi);
     auto f = mat->f(-ray.getDirection().normalize(), wi, hit_record);
     auto pdf_val = mix_pdf.at(wi);

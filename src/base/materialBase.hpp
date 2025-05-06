@@ -12,7 +12,7 @@ struct ScatterRecord {
   uint32_t sampled_type = BxDFFlags::All;
   float pdf_val = 0.0f;
   gl::vec3 attenuation;
-  std::shared_ptr<PDF> pdf_ptr;
+  std::shared_ptr<PDF> pdf_ptr = nullptr;
 
   bool is_specular() { return this->sampled_type & BxDFFlags::Specular; }
   bool is_specular_reflection() {

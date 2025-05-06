@@ -35,7 +35,7 @@ public:
 
       if (!gl::pbrt::sameHemisphere(wo, wi_local))
 #ifdef BIASED_SAMPLING
-        wi_local.z = -wi_local.z;
+        wi_local.z() = -wi_local.z();
 #elif defined DISCARD
         return {};
 #else
@@ -60,6 +60,7 @@ public:
         return {};
 #else
         do {
+          rejects++;
           using namespace gl;
           // 1) draw m
           vec2 u2 = vec2(rand_num(), rand_num());

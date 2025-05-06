@@ -23,7 +23,7 @@
 #include "../render_method/maxdepth_nee.hpp"
 #elif defined USE_MAXDEPTH_RESERVOIR
 #include "../render_method/max_depth_reservoir_di.hpp"
-#elif defined USE_ROULETTE
+#elif defined USE_ROULETTE_NAIVE
 #include "../render_method/roulette_naive.hpp"
 #endif
 
@@ -112,8 +112,9 @@ struct SceneInfo {
 #elif defined USE_MAXDEPTH_NEE
             color +=
                 getRayColor(ray, objects, bg_color, lights, MAX_RAY_DEPTH, bvh);
-#elif defined USE_ROULETTE
-            color += getRayColor(ray, objects, light_objects, bg_color, bvh);
+#elif defined USE_ROULETTE_NAIVE
+            color += getRayColor(ray, objects, light_objects, bg_color,
+                                 MAX_RAY_DEPTH, bvh);
 #elif defined USE_RESERVOIR
             color +=
                 getRayColor(ray, objects, bg_color, lights, MAX_RAY_DEPTH, bvh);

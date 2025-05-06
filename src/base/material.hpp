@@ -24,14 +24,6 @@ public:
     return false;
   }
 
-  // required for non-delta materials
-  virtual float
-  scatter_pdf(const Ray &ray_in, const HitRecord &rec, const Ray &scattered,
-              TransportMode mode = TransportMode::Radiance,
-              BxDFReflTransFlags flags = BxDFReflTransFlags::All) const {
-    return 0.0f;
-  }
-
   // required for direct light sampling (non-delta materials), pure bxdf
   // evaluations. Note that we conform to the PBRT convention of
   // wo_world = -ray_in.getDirection()
@@ -41,12 +33,14 @@ public:
     return gl::vec3(0.0f);
   };
 
-  float scatter_pdf(const ScatterRecord &srec, const Ray &wi,
-                    TransportMode mode = TransportMode::Radiance,
-                    BxDFReflTransFlags flags = BxDFReflTransFlags::All) const {
+  // required for non-delta materials
+  virtual float
+  scatter_pdf(const ScatterRecord &srec, const Ray &wi_world,
+              TransportMode mode = TransportMode::Radiance,
+              BxDFReflTransFlags flags = BxDFReflTransFlags::All) const {
     if (srec.pdf_ptr != nullptr)
-      return 0;
-    return srec.pdf_ptr->at(wi.getDirection().normalize());
+      return 0.f;
+    return srec.pdf_ptr->at(wi_world.getDirection().normalize());
   }
 
   virtual gl::vec3 emit(const Ray &ray_in, HitRecord &rec) const {
@@ -82,13 +76,14 @@ public:
   }
 
   float scatter_pdf(
-      const Ray &ray_in, const HitRecord &rec, const Ray &scattered,
+      const ScatterRecord &srec, const Ray &wi_world,
       TransportMode mode = TransportMode::Radiance,
       BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
     if (!(flags & BxDFReflTransFlags::Reflection))
       return 0.f;
-    float cosine = dot(rec.normal, scattered.getDirection().normalize());
-    return std::max(cosine / M_PI, 0.0);
+    if (srec.pdf_ptr != nullptr)
+      return 0.f;
+    return srec.pdf_ptr->at(wi_world.getDirection().normalize());
   }
 
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
@@ -128,11 +123,11 @@ public:
   }
 
   float scatter_pdf(
-      const Ray &ray_in, const HitRecord &rec, const Ray &scattered,
+      const ScatterRecord &srec, const Ray &wi_world,
       TransportMode mode = TransportMode::Radiance,
       BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
-    return 0.0f;
-  };
+    return 0.f;
+  }
 
   gl::vec3 albedo;
   float fuzz;
@@ -220,24 +215,6 @@ public:
     }
   }
 
-  // For specular (delta) scattering, it returns 0 since it's handled
-  // deterministically. For diffuse scattering, it returns the cosine-weighted
-  // PDF value.
-  float scatter_pdf(
-      const Ray &ray_in, const HitRecord &rec, const Ray &scattered,
-      TransportMode mode = TransportMode::Radiance,
-      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
-    // Compute specular probability as above.
-    float p = gl::rand_num();
-    if (p < specularProb) {
-      // Specular branch is a delta function, so PDF is zero.
-      return 0.0f;
-    }
-    // For diffuse scattering, use cosine-weighted PDF:
-    float cosine = dot(rec.normal, scattered.getDirection().normalize());
-    return std::max(cosine / M_PI, 0.0);
-  }
-
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
              const HitRecord &rec,
              TransportMode mode = TransportMode::Radiance) const override {
@@ -309,30 +286,6 @@ public:
       srec.sampled_ray = Ray(rec.position, sampledDir);
       return true;
     }
-  }
-
-  // scatter_pdf() returns the probability density for the scattered ray
-  // direction. We combine the PDFs of the specular and diffuse branches using
-  // the same weighting as used in scatter().
-  float scatter_pdf(
-      const Ray &ray_in, const HitRecord &rec, const Ray &scattered,
-      TransportMode mode = TransportMode::Radiance,
-      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
-    float specInt = (specular.x() + specular.y() + specular.z()) / 3.0f;
-    float diffInt = (diffuse.x() + diffuse.y() + diffuse.z()) / 3.0f;
-    float specProb = specInt / (specInt + diffInt);
-    // Compute diffuse PDF: cosine weighted.
-    float cosine = dot(rec.normal, scattered.getDirection().normalize());
-    float diffusePDF = std::max(cosine / M_PI, 0.0);
-    // Compute specular PDF using the Phong lobe. We need the perfect reflection
-    // direction.
-    gl::vec3 R = reflect(ray_in.getDirection().normalize(), rec.normal);
-    float specPDF =
-        (shininess + 1.0f) / (2.0f * M_PI) *
-        pow(std::max(dot(normalize(scattered.getDirection()), R), 0.0f),
-            shininess);
-    // Linear blend (balance heuristic) based on the energy weights.
-    return specProb * specPDF + (1.0f - specProb) * diffusePDF;
   }
 
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,

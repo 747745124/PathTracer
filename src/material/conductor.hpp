@@ -58,10 +58,9 @@ public:
   }
 
   float scatter_pdf(
-      const Ray &ray_in, const HitRecord &rec, const Ray &scattered,
+      const ScatterRecord &srec, const Ray &wi_world,
       TransportMode mode = TransportMode::Radiance,
       BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
-
     if (!(flags & BxDFReflTransFlags::Reflection))
       return 0.0f;
 
@@ -69,11 +68,10 @@ public:
       return 0.0f;
     }
 
-    OrthoBasis basis(rec.normal);
-    MicrofacetPDF mfPdf(mfDistribution, basis,
-                        -ray_in.getDirection().normalize());
-    return mfPdf.at(scattered.getDirection());
-  };
+    if (srec.pdf_ptr != nullptr)
+      return 0.f;
+    return srec.pdf_ptr->at(wi_world.getDirection().normalize());
+  }
 
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
              const HitRecord &rec,

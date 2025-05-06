@@ -4,10 +4,6 @@ project(PathTracer LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-add_compile_definitions(GL_SIMD)
-
-# add_compile_definitions(DISCARD)
-# add_compile_definitions(BIASED_SAMPLING)
 
 # find_package(OpenMP)
 if(OpenMP_FOUND)

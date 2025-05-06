@@ -19,7 +19,7 @@ public:
     // if it went below the surface, just flip
 
     if (!gl::pbrt::sameHemisphere(wo_local, wi_local))
-#ifdef BIASED_FLIP
+#ifdef BIASED_SAMPLING
       wi_local.z() = -wo_local.z();
 #elif defined DISCARD
       return {};

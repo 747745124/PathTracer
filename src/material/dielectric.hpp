@@ -68,13 +68,6 @@ public:
     return false;
   };
 
-  float scatter_pdf(
-      const Ray &ray_in, const HitRecord &rec, const Ray &scattered,
-      TransportMode mode = TransportMode::Radiance,
-      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
-    return 0.f;
-  }
-
   // required for non-delta
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
              const HitRecord &rec,
