@@ -122,9 +122,6 @@ public:
       float denom = square(dot(wi, wm) + dot(wo, wm) / etap);
       float dwm_dwi = std::fabs(dot(wi, wm)) / denom;
       pdf = distrib.PDF(wo, wm) * dwm_dwi * T / (R + T);
-
-      //   if (mode == TransportMode::Importance)
-      //     pdf *= etap * etap;
     }
     return pdf;
   }
