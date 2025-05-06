@@ -123,8 +123,8 @@ public:
       float dwm_dwi = std::fabs(dot(wi, wm)) / denom;
       pdf = distrib.PDF(wo, wm) * dwm_dwi * T / (R + T);
 
-      if (mode == TransportMode::Importance)
-        pdf *= etap * etap;
+      //   if (mode == TransportMode::Importance)
+      //     pdf *= etap * etap;
     }
     return pdf;
   }
