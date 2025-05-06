@@ -63,7 +63,7 @@ public:
       BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
 
     if (!(flags & BxDFReflTransFlags::Reflection))
-      return false;
+      return 0.0f;
 
     if (mfDistribution.effectivelySmooth()) {
       return 0.0f;

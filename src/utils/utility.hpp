@@ -630,5 +630,7 @@ static inline float sinPhi(vec3 w) {
 static inline vec3 faceForward(vec3 n, vec3 v) {
   return (dot(n, v) < 0.f) ? -n : n;
 }
+
+bool sameHemisphere(const vec3 &a, const vec3 &b) { return a.z() * b.z() > 0; }
 }; // namespace pbrt
 }; // namespace gl

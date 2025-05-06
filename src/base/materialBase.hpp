@@ -5,7 +5,7 @@
 #include "./ray.hpp"
 
 class Material;
-
+static int rejects = 0;
 // determine whether the ray is specular
 struct ScatterRecord {
   Ray sampled_ray;

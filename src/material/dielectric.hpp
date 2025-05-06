@@ -1,6 +1,6 @@
 #pragma once
 #include "../base/material.hpp"
-#include "../probs/mfPDF.hpp"
+#include "../probs/mfDielectricPDF.hpp"
 
 class MFDielectric : public Material {
 private:
@@ -21,6 +21,7 @@ public:
                                gl::rand_num()}, // 2D microfacet sample
           TransportMode mode = TransportMode::Radiance,
           BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+
     if (eta == 1 || mfDistrib.effectivelySmooth()) {
       using namespace gl;
 
@@ -62,7 +63,6 @@ public:
           srec.attenuation = 1.0f;
         return true;
       }
-      // rough branch
     }
 
     return false;
@@ -79,6 +79,45 @@ public:
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
              const HitRecord &rec,
              TransportMode mode = TransportMode::Radiance) const override {
-    return gl::vec3(0.f);
+    using namespace gl;
+    if (eta == 1 || mfDistrib.effectivelySmooth())
+      return vec3(0.f);
+
+    OrthoBasis basis(rec.normal);
+    vec3 wo_l = basis.toLocal(wo_world.normalize());
+    vec3 wi_l = basis.toLocal(wi_world.normalize());
+
+    // compute half vector
+    float cosTheta_o = pbrt::cosTheta(wo_l), cosTheta_i = pbrt::cosTheta(wi_l);
+    bool reflect = cosTheta_i * cosTheta_o > 0;
+    float etap = 1;
+    if (!reflect)
+      etap = cosTheta_o > 0 ? eta : (1 / eta);
+    vec3 wm = wi_l * etap + wo_l;
+    if (cosTheta_i == 0 || cosTheta_o == 0 || wm.length() == 0)
+      return vec3(0.f);
+
+    wm = pbrt::faceForward(normalize(wm), vec3(0, 0, 1));
+    // discard backfacing microfacets
+    if (dot(wm, wi_l) * cosTheta_i < 0 || dot(wm, wo_l) * cosTheta_o < 0)
+      return {};
+
+    float F = fresnelDielectric(dot(wo_l, wm), eta);
+    if (reflect) {
+      return vec3(mfDistrib.D(wm) * mfDistrib.G(wo_l, wi_l) * F /
+                  std::abs(4 * cosTheta_i * cosTheta_o));
+
+    } else {
+      float denom = square(dot(wi_l, wm) + dot(wo_l, wm) / etap) * cosTheta_i *
+                    cosTheta_o;
+
+      float ft = mfDistrib.D(wm) * (1 - F) * mfDistrib.G(wo_l, wi_l) *
+                 std::abs(dot(wi_l, wm) * dot(wo_l, wm) / denom);
+
+      if (mode == TransportMode::Radiance)
+        ft /= square(etap);
+
+      return vec3(ft);
+    }
   };
 };

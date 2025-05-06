@@ -1,5 +1,5 @@
 #include "../include/test_header.hpp"
-
+extern int rejects;
 int main() {
 
 #if defined(_OPENMP)
@@ -29,6 +29,6 @@ int main() {
 
   // SceneInfo scene = debug_curve();
   scene.renderWithInfo("../../output.png");
-
+  std::cout << rejects << std::endl;
   return 0;
 };

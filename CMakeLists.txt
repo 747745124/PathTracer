@@ -6,8 +6,10 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_compile_definitions(GL_SIMD)
 
-find_package(OpenMP)
+# add_compile_definitions(DISCARD)
+# add_compile_definitions(BIASED_SAMPLING)
 
+# find_package(OpenMP)
 if(OpenMP_FOUND)
     message(STATUS "✔️ System OpenMP found (C:${OpenMP_C_VERSION}, CXX:${OpenMP_CXX_VERSION})")
     set(USE_OPENMP_SYSTEM TRUE)

@@ -69,6 +69,7 @@ inline BxDFReflTransFlags &operator^=(BxDFReflTransFlags &a,
   return a = a ^ b;
 }
 
+//! f == true, when there's no bit set. !!f == true when there's bit set
 inline constexpr bool operator!(BxDFReflTransFlags f) noexcept {
   return to_int(f) == 0;
 }
