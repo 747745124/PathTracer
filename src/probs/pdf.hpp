@@ -7,7 +7,9 @@
 class PDF {
 public:
   virtual float at(const gl::vec3 &direction) const = 0;
-  virtual gl::vec3 get() const = 0;
+  virtual gl::vec3 get(float uc = gl::rand_num(),
+                       gl::vec2 u = gl::vec2(gl::rand_num(),
+                                             gl::rand_num())) const = 0;
   virtual ~PDF() = default;
 };
 
@@ -21,7 +23,11 @@ public:
     return std::max(cosine, 0.f) / M_PI;
   }
 
-  gl::vec3 get() const override { return onb.at(gl::cosineSampleHemiSphere()); }
+  gl::vec3 get(float uc = gl::rand_num(),
+               gl::vec2 u = gl::vec2(gl::rand_num(),
+                                     gl::rand_num())) const override {
+    return onb.at(gl::cosineSampleHemiSphere());
+  }
 };
 
 class UniformPDF : public PDF {
@@ -32,7 +38,9 @@ public:
     return 1.0f / (4.0f * M_PI);
   }
 
-  gl::vec3 get() const override {
+  gl::vec3 get(float uc = gl::rand_num(),
+               gl::vec2 u = gl::vec2(gl::rand_num(),
+                                     gl::rand_num())) const override {
     return gl::uniformSampleSphere(gl::rand_num(), gl::rand_num());
   }
 };
@@ -51,9 +59,11 @@ public:
   }
 
   // Sample a new direction according to the Phong-lobe distribution.
-  gl::vec3 get() const override {
-    float u1 = gl::rand_num();
-    float u2 = gl::rand_num();
+  gl::vec3 get(float uc = gl::rand_num(),
+               gl::vec2 u = gl::vec2(gl::rand_num(),
+                                     gl::rand_num())) const override {
+    float u1 = u.x();
+    float u2 = u.y();
     // Invert the cumulative distribution for cosine-power:
     float theta = acos(pow(u1, 1.0f / (shininess + 1.0f)));
     float phi = 2.0f * M_PI * u2;

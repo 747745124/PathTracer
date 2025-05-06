@@ -43,11 +43,12 @@ public:
         srec.pdf_ptr = nullptr;
         srec.attenuation = 1.0f;
         srec.pdf_val = R;
+        return true;
       } else {
         vec3 wi_world;
         float etap;
         // TIR
-        bool valid = refract(wo_world, rec.normal, eta, etap, wi_world);
+        bool valid = pbrt::refract(wo_world, rec.normal, eta, etap, wi_world);
         if (!valid)
           return false;
 
@@ -61,9 +62,10 @@ public:
           srec.attenuation = 1.0f;
         return true;
       }
-
-      return false;
+      // rough branch
     }
+
+    return false;
   };
 
   float scatter_pdf(

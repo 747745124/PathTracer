@@ -13,7 +13,7 @@ public:
       weights[i] = 1.f / pdfs.size();
   }
 
-  MixedPDF(std::shared_ptr<PDF> p1, std::shared_ptr<PDF> p2){
+  MixedPDF(std::shared_ptr<PDF> p1, std::shared_ptr<PDF> p2) {
     pdfs.push_back(p1);
     pdfs.push_back(p2);
     weights.push_back(0.5f);
@@ -32,7 +32,9 @@ public:
     return sum;
   }
 
-  gl::vec3 get() const override {
+  gl::vec3 get(float uc = gl::rand_num(),
+               gl::vec2 u = gl::vec2(gl::rand_num(),
+                                     gl::rand_num())) const override {
     float r = gl::rand_num();
     int index = (int)(std::floor((r * pdfs.size()))) % pdfs.size();
     return pdfs[index]->get();

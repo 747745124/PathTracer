@@ -24,6 +24,14 @@ target_link_libraries(test_halton
     ${GTEST_BOTH_LIBRARIES}
     pthread)
 
+add_executable(test_refract test_refract.cpp)
+target_link_libraries(test_refract
+    PRIVATE
+    pathtracer # your main renderer library
+    ${GTEST_BOTH_LIBRARIES}
+    pthread)
+
 add_test(NAME MeshIO COMMAND test_mesh_io)
 add_test(NAME HairPDF COMMAND test_mesh_io)
 add_test(NAME Halton COMMAND test_halton)
+add_test(NAME Refract COMMAND test_refract)

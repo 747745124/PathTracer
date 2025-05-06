@@ -10,7 +10,9 @@ public:
       : distrib(d), onb(basis), wo_local(onb.toLocal(wo_world.normalize())) {}
 
   // sample an outgoing (*wi*) direction in world space
-  gl::vec3 get() const override {
+  gl::vec3 get(float uc = gl::rand_num(),
+               gl::vec2 u = gl::vec2(gl::rand_num(),
+                                     gl::rand_num())) const override {
     // draw u1,u2 in [0,1)
     float u1 = gl::rand_num(), u2 = gl::rand_num();
     // sample half‐vector in local

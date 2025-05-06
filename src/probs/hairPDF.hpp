@@ -11,7 +11,9 @@ public:
           const gl::vec3 &wo_world);
   ~HairPDF() = default;
 
-  gl::vec3 get() const override;
+  gl::vec3 get(float uc = gl::rand_num(),
+               gl::vec2 u = gl::vec2(gl::rand_num(),
+                                     gl::rand_num())) const override;
 
   float at(const gl::vec3 &wi_world) const override;
 

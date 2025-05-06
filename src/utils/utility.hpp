@@ -582,7 +582,7 @@ static inline vec3 reflect(const vec3 &wo, const vec3 &n) {
   return -wo + 2 * dot(wo, n) * n;
 }
 
-static inline bool refract(vec3 wi, vec3 n, float eta, float *etap, vec3 *wt) {
+static inline bool refract(vec3 wi, vec3 n, float eta, float &etap, vec3 &wt) {
   float cosTheta_i = dot(n, wi);
 
   if (cosTheta_i < 0) {
@@ -599,9 +599,9 @@ static inline bool refract(vec3 wi, vec3 n, float eta, float *etap, vec3 *wt) {
 
   float cosTheta_t = safeSqrt(1 - sin2Theta_t);
 
-  *wt = -wi / eta + (cosTheta_i / eta - cosTheta_t) * vec3(n);
-  if (etap)
-    *etap = eta;
+  wt = -wi / eta + (cosTheta_i / eta - cosTheta_t) * vec3(n);
+  wt.normalized();
+  etap = eta;
 
   return true;
 }
