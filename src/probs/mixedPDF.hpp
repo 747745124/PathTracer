@@ -37,6 +37,6 @@ public:
                                      gl::rand_num())) const override {
     float r = gl::rand_num();
     int index = (int)(std::floor((r * pdfs.size()))) % pdfs.size();
-    return pdfs[index]->get();
+    return pdfs[index]->get(uc, u);
   }
 };

@@ -24,4 +24,5 @@
 ## FEATURE LEVEL - Sampler
 * ✅ Halton Sampler
 * ✅ Stratified Sampling
+* Scrambled Halton Sampler
 * Sobol sampler

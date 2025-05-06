@@ -26,7 +26,7 @@ public:
   gl::vec3 get(float uc = gl::rand_num(),
                gl::vec2 u = gl::vec2(gl::rand_num(),
                                      gl::rand_num())) const override {
-    return onb.at(gl::cosineSampleHemiSphere());
+    return onb.at(gl::cosineSampleHemiSphere(u.u(), u.v()));
   }
 };
 
@@ -41,7 +41,7 @@ public:
   gl::vec3 get(float uc = gl::rand_num(),
                gl::vec2 u = gl::vec2(gl::rand_num(),
                                      gl::rand_num())) const override {
-    return gl::uniformSampleSphere(gl::rand_num(), gl::rand_num());
+    return gl::uniformSampleSphere(u.u(), u.v());
   }
 };
 

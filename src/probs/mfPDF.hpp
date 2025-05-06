@@ -13,10 +13,8 @@ public:
   gl::vec3 get(float uc = gl::rand_num(),
                gl::vec2 u = gl::vec2(gl::rand_num(),
                                      gl::rand_num())) const override {
-    // draw u1,u2 in [0,1)
-    float u1 = gl::rand_num(), u2 = gl::rand_num();
     // sample half‐vector in local
-    gl::vec3 m_local = distrib.sample_wm(wo_local, gl::vec2(u1, u2));
+    gl::vec3 m_local = distrib.sample_wm(wo_local, u);
 
     gl::vec3 wi_local = gl::pbrt::reflect(wo_local, m_local);
     // if it went below the surface, just flip
