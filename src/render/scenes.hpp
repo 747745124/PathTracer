@@ -770,7 +770,8 @@ SceneInfo custom_mesh() {
   objects.addObject(make_shared<Sphere>(vec3(0, -1000, 0), 999.5,
                                         make_shared<Lambertian>(noise_text)));
 
-  auto difflight = make_shared<DiffuseEmitter>(gl::DefaultTexture, 3);
+  uint intensity = 3;
+  auto difflight = make_shared<DiffuseEmitter>(gl::DefaultTexture, intensity);
 
   auto left_sphere_light = make_shared<Sphere>(vec3(-8, 4, 5), 2, difflight);
 
@@ -783,9 +784,11 @@ SceneInfo custom_mesh() {
   objects.addObject(left_sphere_light);
   objects.addObject(right_sphere_light);
 
-  lights.addLight(make_shared<QuadLight>(top_light, gl::WHITE, 3));
-  lights.addLight(make_shared<SphereLight>(left_sphere_light, gl::WHITE, 3));
-  lights.addLight(make_shared<SphereLight>(right_sphere_light, gl::WHITE, 3));
+  lights.addLight(make_shared<QuadLight>(top_light, gl::WHITE, intensity));
+  lights.addLight(
+      make_shared<SphereLight>(left_sphere_light, gl::WHITE, intensity));
+  lights.addLight(
+      make_shared<SphereLight>(right_sphere_light, gl::WHITE, intensity));
   // adding a backdrop
   objects.addObject(
       make_shared<AARectangle<Axis::X>>(-12, -40, 40, -40, 40, GOLD_MAT));

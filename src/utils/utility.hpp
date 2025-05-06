@@ -19,6 +19,11 @@ template <typename T, int N> static T maxComponent(const vec<N, T> &v) {
   return *std::max_element(v.data.begin(), v.data.end());
 }
 
+template <typename T, int N>
+static T absDot(const vec<N, T> &v1, const vec<N, T> &v2) {
+  return std::abs(dot(v1, v2));
+}
+
 static inline float attenuate(float distance) {
   return std::min(
       1.f, 1.f / (0.25f + 0.1f * distance + 0.01f * distance * distance));
