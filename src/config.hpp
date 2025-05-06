@@ -3,9 +3,9 @@
 
 #define LIGHT_SAMPLE_X 2
 #define LIGHT_SAMPLE_Y 2
-#define MAX_RAY_DEPTH 10
-#define SPP_X 6
-#define SPP_Y 6
+#define MAX_RAY_DEPTH 15
+#define SPP_X 5
+#define SPP_Y 5
 #define GAMMA 2.0
 #define WIDTH 500
 #define HEIGHT 500
@@ -15,6 +15,8 @@
 #define USE_MAXDEPTH_NEE
 // #define USE_MAXDEPTH_NAIVE
 // #define USE_ROULETTE_NAIVE
+// #define USE_MAXDEPTH_RESERVOIR
 #define OVERRIDE_LOCAL_RENDER_VAL TRUE
 #define NUM_THREADS 10
+#define MODE TransportMode::Importance
 const int LIGHT_SAMPLE_NUM = LIGHT_SAMPLE_X * LIGHT_SAMPLE_Y;

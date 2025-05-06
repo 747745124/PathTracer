@@ -65,7 +65,34 @@ public:
       }
     }
 
-    return false;
+    // –– rough dielectric: use MFDielectricPDF ––
+    {
+      using namespace gl;
+      vec3 wo_world = -ray_in.getDirection().normalize();
+      // build ONB from the shading normal
+      OrthoBasis onb(rec.normal);
+      // create PDF object
+      auto pdf = std::make_shared<MFDielectricPDF>(mfDistrib, onb, wo_world,
+                                                   eta, flags, mode);
+      // sample a world-space direction
+      vec3 wi_world = pdf->get(uc, u);
+      if (wi_world == vec3(0.0f)) // our PDF signals “no sample”
+        return false;
+
+      // fill scatter record
+      srec.sampled_ray = Ray(rec.position, wi_world);
+      // determine specular/unfolded type from hemisphere test
+      bool isRefl = dot(onb.toLocal(wi_world), onb.toLocal(wo_world)) > 0;
+      srec.sampled_type =
+          isRefl ? BxDFFlags::GlossyReflection : BxDFFlags::GlossyTransmission;
+
+      // attenuation = the BRDF value
+      srec.attenuation = f(wo_world, wi_world, rec, mode);
+      // store PDF
+      srec.pdf_ptr = pdf;
+      srec.pdf_val = pdf->at(wi_world);
+      return true;
+    }
   };
 
   // required for non-delta

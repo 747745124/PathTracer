@@ -29,7 +29,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   auto mat = hit_record.material;
   float uc = halton_sampler.get1D();
   vec2 u = halton_sampler.get2D();
-  if (mat->scatter(ray, hit_record, srec, uc, u)) {
+  if (mat->scatter(ray, hit_record, srec, uc, u, MODE)) {
 
     bool hasRefl = srec.is_specular_reflection();
     bool hasTran = srec.is_specular_transmission();

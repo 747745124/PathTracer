@@ -56,8 +56,11 @@ static std::shared_ptr<Material> ROUGH_SILVER_MAT = std::make_shared<Conductor>(
     /* alpha_x = */ 0.1f,
     /* alpha_y = */ 0.1f);
 
-static std::shared_ptr<Material> GLASS_MF =
+static std::shared_ptr<Material> GLASS_MAT =
     std::make_shared<MFDielectric>(1.5f, 0.0001f, 0.0001f);
+
+static std::shared_ptr<Material> ROUGH_GLASS_MAT =
+    std::make_shared<MFDielectric>(1.2f, 0.01f, 0.01f);
 
 static std::shared_ptr<ConstantTexture> DefaultTexture =
     std::make_shared<ConstantTexture>(gl::vec3(1.0f));

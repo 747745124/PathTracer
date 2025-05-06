@@ -68,7 +68,6 @@ public:
 
           // 2) refract
           float etaScale;
-          vec3 wi_local;
           bool valid = pbrt::refract(wo, m, eta, etaScale, wi_local);
           // 3) break if it’s valid
           if (valid && !pbrt::sameHemisphere(wo, wi_local)) {
@@ -123,6 +122,9 @@ public:
       float denom = square(dot(wi, wm) + dot(wo, wm) / etap);
       float dwm_dwi = std::fabs(dot(wi, wm)) / denom;
       pdf = distrib.PDF(wo, wm) * dwm_dwi * T / (R + T);
+
+      if (mode == TransportMode::Importance)
+        pdf *= etap * etap;
     }
     return pdf;
   }

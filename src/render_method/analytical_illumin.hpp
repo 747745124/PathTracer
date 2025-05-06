@@ -1,9 +1,9 @@
 #pragma once
 #include "../base/lightList.hpp"
 #include "../base/objectList.hpp"
+#include "../config.hpp"
 #include "../sampler/sampler.hpp"
 #include "../utils/bvh.hpp"
-
 static inline gl::vec3
 getIrradianceVector(const std::vector<gl::vec3> &vertices,
                     const HitRecord &hit_record) {
@@ -58,7 +58,9 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   ScatterRecord srec;
   float pdf = 0.f;
   auto mat = hit_record.material;
-  if (mat->scatter(ray, hit_record, srec)) {
+  float uc = halton_sampler.get1D();
+  vec2 u = halton_sampler.get2D();
+  if (mat->scatter(ray, hit_record, srec, uc, u, MODE)) {
     auto light = light_info.uniform_get();
     if (light->type == LightType::SPHERE_LIGHT)
       throw std::runtime_error(

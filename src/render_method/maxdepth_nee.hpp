@@ -29,7 +29,9 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   auto mat = hit_record.material;
   float uc = halton_sampler.get1D();
   vec2 u = halton_sampler.get2D();
-  if (mat->scatter(ray, hit_record, srec, uc, u)) {
+  uc = rand_num();
+  u = vec2(rand_num(), rand_num());
+  if (mat->scatter(ray, hit_record, srec, uc, u, MODE)) {
 
     // ray splitting, if it has both specular
     bool hasRefl = srec.is_specular_reflection();
@@ -105,7 +107,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
       auto V = is_shadow_hit ? 0.0f : 1.0f;
 
       auto wi_world = shadow_ray.getDirection().normalize();
-      auto f = mat->f(wo_world, wi_world, hit_record);
+      auto f = mat->f(wo_world, wi_world, hit_record, MODE);
 
       auto direct_term =
           f * light_sample->intensity * light_sample->color * G * V / light_pdf;

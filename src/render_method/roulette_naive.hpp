@@ -29,7 +29,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   auto mat = hit_record.material;
   float uc = halton_sampler.get1D();
   vec2 u = halton_sampler.get2D();
-  if (mat->scatter(ray, hit_record, srec, uc, u)) {
+  if (mat->scatter(ray, hit_record, srec, uc, u, MODE)) {
     float q = clamp(maxComponent(srec.attenuation), 0.5f, 1.0f);
     if (rand_num() > q)
       return 0.f;

@@ -12,7 +12,7 @@ file(GLOB_RECURSE SRC_CPP
 add_compile_definitions(GL_SIMD)
 
 # add_compile_definitions(DISCARD)
-add_compile_definitions(BIASED_SAMPLING)
+# add_compile_definitions(BIASED_SAMPLING)
 add_library(pathtracer STATIC ${SRC_CPP})
 target_include_directories(pathtracer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 

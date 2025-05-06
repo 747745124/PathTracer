@@ -29,7 +29,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   auto mat = hit_record.material;
   float uc = halton_sampler.get1D();
   vec2 u = halton_sampler.get2D();
-  if (mat->scatter(ray, hit_record, srec, uc, u)) {
+  if (mat->scatter(ray, hit_record, srec, uc, u, MODE)) {
 
     bool hasRefl = srec.is_specular_reflection();
     bool hasTran = srec.is_specular_transmission();
@@ -41,7 +41,9 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                        ? srec.pdf_ptr
                        : std::make_shared<CosinePDF>(hit_record.normal);
 
-    auto f = srec.attenuation;
+    auto wo_world = -ray.getDirection().normalize();
+    auto wi_world = srec.sampled_ray.getDirection().normalize();
+
     auto out_ray = Ray(hit_record.position, pdf_ptr->get(uc, u).normalize());
     float cos_theta = dot(hit_record.normal, out_ray.getDirection());
     cos_theta = std::max(cos_theta, 0.0f);
@@ -78,6 +80,8 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
       auto G = NoL * NoI / (dot(light_dir, light_dir));
       auto hit_light = false;
       auto V = is_shadow_hit ? 0.0f : 1.0f;
+      auto wi_world = shadow_ray.getDirection().normalize();
+      auto f = mat->f(wo_world, wi_world, hit_record, MODE);
 
       gl::vec3 candidate_contrib = f * light_sample->intensity *
                                    light_sample->color *
@@ -107,10 +111,10 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
       is_next_hit = bvh->intersect(out_ray, next_hit_record);
 
     // next-event estimation,avoid double counting
-    if (is_next_hit && (!next_hit_record.material->scatter(
-                           out_ray, next_hit_record, next_scatter_record)))
+    if (is_next_hit && next_hit_record.material->is_emitter())
       return 0.f;
 
+    auto f = srec.attenuation;
     // direct light sampling + indirect light
     return mat->emit(ray, hit_record) + di_term +
            f *
