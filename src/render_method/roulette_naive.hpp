@@ -62,7 +62,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     auto out_ray = Ray(hit_record.position, wi);
     auto f = mat->f(-ray.getDirection().normalize(), wi, hit_record) / q;
     auto pdf_val = mix_pdf.at(wi);
-    float cos_theta = std::max(dot(hit_record.normal, wi), 0.0f);
+    float cos_theta = absDot(hit_record.normal, wi);
 
     return mat->emit(ray, hit_record) +
            (f *

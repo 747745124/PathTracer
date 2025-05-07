@@ -69,8 +69,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
 
     auto wo_world = -ray.getDirection().normalize();
     auto wi_world = srec.sampled_ray.getDirection().normalize();
-    float cos_theta = dot(hit_record.normal, wi_world);
-    cos_theta = std::max(cos_theta, 0.0f);
+    float cos_theta = absDot(hit_record.normal, wi_world);
     auto pdf_val = srec.pdf_val;
 
     // note that below are sample from light,i.e. DI
