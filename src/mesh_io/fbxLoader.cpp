@@ -1,4 +1,6 @@
 #include "mesh_io/fbxLoader.hpp"
+
+#ifdef HAS_FBX_SDK
 #include <fbxsdk.h>
 #include <iostream>
 #include <stdexcept>
@@ -134,18 +136,22 @@ void processFBXMesh(FbxNode *node, MeshData &data) {
 
     // Add normal indices if available
     if (normalElement) {
-      int n1 = mesh->GetPolygonVertexNormal(i, 0);
-      int n2 = mesh->GetPolygonVertexNormal(i, 1);
-      int n3 = mesh->GetPolygonVertexNormal(i, 2);
-      data.normalIndices.push_back({n1, n2, n3});
+      FbxVector4 n1, n2, n3;
+      mesh->GetPolygonVertexNormal(i, 0, n1);
+      mesh->GetPolygonVertexNormal(i, 1, n2);
+      mesh->GetPolygonVertexNormal(i, 2, n3);
+      data.normalIndices.push_back({v1, v2, v3}); // Use vertex indices for now
     }
 
     // Add UV indices if available
     if (uvElement) {
-      int uv1 = mesh->GetPolygonVertexUV(i, 0);
-      int uv2 = mesh->GetPolygonVertexUV(i, 1);
-      int uv3 = mesh->GetPolygonVertexUV(i, 2);
-      data.uvIndices.push_back({uv1, uv2, uv3});
+      FbxVector2 uv1, uv2, uv3;
+      bool unmapped;
+      mesh->GetPolygonVertexUV(i, 0, uvElement->GetName(), uv1, unmapped);
+      mesh->GetPolygonVertexUV(i, 1, uvElement->GetName(), uv2, unmapped);
+      mesh->GetPolygonVertexUV(i, 2, uvElement->GetName(), uv3, unmapped);
+      data.uvIndices.push_back({v1, v2, v3}); // Use vertex indices for now
     }
   }
 }
+#endif

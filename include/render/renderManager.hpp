@@ -6,6 +6,7 @@
 #include "base/primitive.hpp"
 #include "config.hpp"
 #include "material/material.hpp"
+#include "mesh_io/fbxLoader.hpp"
 #include "mesh_io/meshLoader.hpp"
 #include "primitives/box.hpp"
 #include "primitives/bvh.hpp"

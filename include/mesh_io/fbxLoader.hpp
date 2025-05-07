@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#ifdef HAS_FBX_SDK
 // Forward declarations for FBX SDK
 namespace fbxsdk {
 class FbxManager;
@@ -18,3 +19,11 @@ std::shared_ptr<TriangleMesh> loadFBXMesh(const std::string &path,
 // Helper functions
 void processFBXNode(fbxsdk::FbxNode *node, MeshData &data);
 void processFBXMesh(fbxsdk::FbxNode *node, MeshData &data);
+#else
+// Stub function that throws when FBX SDK is not available
+inline std::shared_ptr<TriangleMesh>
+loadFBXMesh(const std::string &path, std::shared_ptr<Material> mat) {
+  throw std::runtime_error(
+      "FBX support is not enabled. Please rebuild with FBX SDK.");
+}
+#endif

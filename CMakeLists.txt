@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Add cmake modules directory
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 # find_package(OpenMP)
 if(OpenMP_FOUND)
     message(STATUS "✔️ System OpenMP found (C:${OpenMP_C_VERSION}, CXX:${OpenMP_CXX_VERSION})")
