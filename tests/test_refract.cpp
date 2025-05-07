@@ -1,9 +1,7 @@
 // test_refract.cpp
+#include "utils/utility.hpp"
 #include <cmath>
 #include <gtest/gtest.h>
-
-// Replace this with whatever header actually declares your refract(...) wrapper
-#include "../src/utils/utility.hpp"
 
 using namespace gl; // if vec3 lives in namespace gl
 

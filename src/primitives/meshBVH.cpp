@@ -1,6 +1,6 @@
 // MeshBVHNode.cpp
-#include "./meshBVH.hpp"
-#include "../utils/utility.hpp"
+#include "primitives/meshBVH.hpp"
+#include "utils/utility.hpp"
 #include <algorithm>
 
 MeshBVHNode::MeshBVHNode(const std::vector<gl::vec3> &verts,

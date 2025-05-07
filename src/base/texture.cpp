@@ -1,5 +1,5 @@
-#include "./texture.hpp"
-#include "../external/stb_image.h"
+#include "base/texture.hpp"
+#include "external/stb_image.h"
 ImageTexture::ImageTexture(const std::string &filename, bool flip_y) {
   // read the texture file using stbimage
   int width, height, channels = 3;

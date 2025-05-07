@@ -1,7 +1,7 @@
 // MeshLoader.cpp
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "./meshLoader.hpp"
-#include "../external/tiny_obj_loader.h"
+#include "mesh_io/meshLoader.hpp"
+#include "external/tiny_obj_loader.h"
 #include <stdexcept>
 
 std::shared_ptr<TriangleMesh> loadOBJMesh(const std::string &path,

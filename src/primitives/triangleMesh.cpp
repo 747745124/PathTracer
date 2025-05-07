@@ -1,4 +1,4 @@
-#include "./triangleMesh.hpp"
+#include "primitives/triangleMesh.hpp"
 #include <limits>
 #include <numeric>
 

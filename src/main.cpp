@@ -1,4 +1,4 @@
-#include "../include/test_header.hpp"
+#include "header.hpp"
 extern int rejects;
 int main() {
 

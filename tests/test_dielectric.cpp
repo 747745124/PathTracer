@@ -1,12 +1,11 @@
 // MFDielectricPDF_test.cpp
+#include "material/dielectric.hpp"
+#include "utils/orthoBasis.hpp"
 #include <cmath>
 #include <gtest/gtest.h>
+#include <limits>
 #include <random>
 
-#include "../src/material/dielectric.hpp"
-#include "../src/utils/orthoBasis.hpp"
-
-#include <limits>
 using namespace gl;
 
 class MFDielectricTest : public ::testing::Test {

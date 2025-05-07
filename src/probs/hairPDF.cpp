@@ -1,5 +1,5 @@
-#include "./hairPDF.hpp"
-#include "../material/hairMarsch.hpp"
+#include "probs/hairPDF.hpp"
+#include "material/hairMarsch.hpp"
 
 HairPDF::HairPDF(const HairMarschner &hair_mat, const OrthoBasis &basis,
                  const gl::vec3 &wo_world)

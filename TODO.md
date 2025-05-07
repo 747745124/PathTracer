@@ -5,10 +5,11 @@
 
 ## TEST LEVEL
 * ✅ Verify obj lodader correctness
+* 
 
 ## FEATURE LEVEL - Material
 * ✅ Interface extension
-* Rough dielectric
+* ✅ Rough dielectric
 * Adding detailed dieletric interface
    * Per channel refract (i.e. dispersion)
 * Add Kajiya-Kay Material
@@ -24,5 +25,5 @@
 ## FEATURE LEVEL - Sampler
 * ✅ Halton Sampler
 * ✅ Stratified Sampling
-* Scrambled Halton Sampler
+* ✅ Scrambled Halton Sampler
 * Sobol sampler

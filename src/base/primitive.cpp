@@ -1,4 +1,4 @@
-#include "./primitive.hpp"
+#include "base/primitive.hpp"
 namespace gl {
 uint64_t hit_count = 0;
 }

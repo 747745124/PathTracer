@@ -1,4 +1,4 @@
-#include "../src/sampler/sampler.hpp"
+#include "sampler/sampler.hpp"
 #include <gtest/gtest.h>
 
 // Verify the first few values of the 1D Halton (base-2) sequence

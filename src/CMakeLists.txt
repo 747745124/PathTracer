@@ -14,7 +14,13 @@ add_compile_definitions(GL_SIMD)
 # add_compile_definitions(DISCARD)
 add_compile_definitions(BIASED_SAMPLING)
 add_library(pathtracer STATIC ${SRC_CPP})
-target_include_directories(pathtracer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+# Set up include directories
+target_include_directories(pathtracer
+    PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/include
+)
 
 if(USE_OPENMP)
     target_link_libraries(pathtracer PRIVATE ${OPENMP_LIB})

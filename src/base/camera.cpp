@@ -1,4 +1,4 @@
-#include "./camera.hpp"
+#include "base/camera.hpp"
 
 gl::mat4 Camera::getViewMat() const {
   return gl::getViewMat(position, position + getFront(), getUp());

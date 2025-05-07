@@ -1,6 +1,6 @@
 // tests/test_mesh_io.cpp
-#include "../src/mesh_io/meshLoader.hpp"
-#include "../src/primitives/triangleMesh.hpp"
+#include "mesh_io/meshLoader.hpp"
+#include "primitives/triangleMesh.hpp"
 #include <gtest/gtest.h>
 
 TEST(MeshLoader, SimpleTriangle) {

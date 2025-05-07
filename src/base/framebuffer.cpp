@@ -1,8 +1,10 @@
-#include "./framebuffer.hpp"
+#include "base/framebuffer.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "../external/stb_image.h"
-#include "../external/stb_image_write.h"
+#include "external/stb_image.h"
+#include "external/stb_image_write.h"
+#include <iostream>
+#include <stdexcept>
 
 FrameBuffer::FrameBuffer(uint width, uint height, uint spp_x, uint spp_y,
                          uint channels) {
@@ -31,7 +33,7 @@ void FrameBuffer::writeToFile(const std::string &file_path, float gamma) const {
       for (uint k = 0; k < this->channels; k++) {
         // nan handling and gamma correction
         auto color = this->_pixel_color[i][j][k];
-        if(color != color)
+        if (color != color)
           color = 0.0f;
         else
           color = pow(color, 1.0f / gamma);
@@ -43,8 +45,9 @@ void FrameBuffer::writeToFile(const std::string &file_path, float gamma) const {
   }
 
   stbi_flip_vertically_on_write(1);
-  auto res = stbi_write_png(file_path.c_str(), this->width, this->height, this->channels,
-                 data.data(), this->width * this->channels);
+  auto res =
+      stbi_write_png(file_path.c_str(), this->width, this->height,
+                     this->channels, data.data(), this->width * this->channels);
 
   std::cout << "write to file: " << file_path << std::endl;
   if (res == 0) {
@@ -52,7 +55,6 @@ void FrameBuffer::writeToFile(const std::string &file_path, float gamma) const {
   } else {
     std::cout << "write to file success" << std::endl;
   }
-  
 };
 
 void FrameBuffer::gaussianBlur(int kernel, float sigma) {

@@ -1,4 +1,4 @@
-#include "../include/test_header.hpp"
+#include "header.hpp"
 #include <gtest/gtest.h>
 
 using namespace gl;
