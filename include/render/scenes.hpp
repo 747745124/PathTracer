@@ -757,7 +757,7 @@ SceneInfo custom_mesh() {
   LightList lights;
 
   std::shared_ptr<Hittable> mesh =
-      loadOBJMesh("../../assets/bunny.obj", MARSCH_HAIR);
+      loadOBJMesh("../../assets/bunny.obj", ROUGH_GLASS_MAT);
   // mesh = make_shared<Rotate<Axis::X>>(mesh, M_PI_2);
   mesh = make_shared<Rotate<Axis::Y>>(mesh, M_PI_2);
   mesh = make_shared<Scale>(mesh, 60.f);

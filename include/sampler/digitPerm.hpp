@@ -105,16 +105,16 @@ inline double owenScrambledRadicalInverse(int baseIndex, std::uint64_t a,
   std::uint64_t reversedDigits = 0;
   int digitIndex = 0;
 
-  // Same termination criterion as PBRT: keep going while the contribution
-  // we could still add is ≥ the smallest representable float increment.
-  while (1.0 - invBaseM < 1.0) {
+  // Fixed termination condition to match other methods
+  while (1.0 - (base - 1) * invBaseM < 1.0) {
     std::uint64_t next = a / base;
     int digitValue = static_cast<int>(a - next * base);
 
-    // Owen scrambling for this digit: mix the running hash with the
-    // already‑reversed prefix, then permute the digit within [0, base).
+    // Improved hash mixing for Owen scrambling
     std::uint32_t digitHash =
-        pbrt::mixBits(hash ^ static_cast<std::uint32_t>(reversedDigits));
+        gl::pbrt::mixBits(hash ^ static_cast<std::uint32_t>(reversedDigits) ^
+                          (static_cast<std::uint32_t>(digitIndex) << 16));
+
     digitValue = static_cast<int>(
         gl::permutationElement(static_cast<std::uint32_t>(digitValue),
                                static_cast<std::uint32_t>(base), digitHash));
@@ -127,7 +127,7 @@ inline double owenScrambledRadicalInverse(int baseIndex, std::uint64_t a,
     a = next;
   }
 
-  // Clamp so we never return 1 exactly.
+  // Clamp so we never return 1 exactly
   const double oneMinusEps = std::nextafter(1.0, 0.0);
   return std::min(invBaseM * static_cast<double>(reversedDigits), oneMinusEps);
 }

@@ -19,9 +19,14 @@ public:
                          RandomStrategy strat = RandomStrategy::Owen)
       : strategy(strat), seed_(seed) {
     if (strategy == RandomStrategy::PermuteDigits) {
-      // Precompute the digit permutations once.
+      // Precompute the digit permutations once and ensure we have enough
+      // dimensions
       digitPerms_ = std::make_shared<std::vector<DigitPermutation>>(
           gl::computeRadicalInversePermutations(seed_));
+      // Ensure we have enough permutations for all dimensions
+      while (digitPerms_->size() < static_cast<size_t>(gl::PrimeCount)) {
+        digitPerms_->emplace_back(gl::Primes[digitPerms_->size()], seed_);
+      }
     }
   }
 
@@ -52,6 +57,10 @@ private:
       return static_cast<float>(gl::radicalInverse(dim, sampleIndex_));
 
     case RandomStrategy::PermuteDigits:
+      if (!digitPerms_ || dim >= static_cast<int>(digitPerms_->size())) {
+        // Fallback to unscrambled if out of bounds
+        return static_cast<float>(gl::radicalInverse(dim, sampleIndex_));
+      }
       return static_cast<float>(
           gl::scrambledRadicalInverse(dim, sampleIndex_, (*digitPerms_)[dim]));
 
