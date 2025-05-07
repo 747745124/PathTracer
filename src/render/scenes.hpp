@@ -757,7 +757,7 @@ SceneInfo custom_mesh() {
   LightList lights;
 
   std::shared_ptr<Hittable> mesh =
-      loadOBJMesh("./assets/bunny.obj", ROUGH_GLASS_MAT);
+      loadOBJMesh("../../assets/bunny.obj", ROUGH_GLASS_MAT);
   // mesh = make_shared<Rotate<Axis::X>>(mesh, M_PI_2);
   mesh = make_shared<Rotate<Axis::Y>>(mesh, M_PI_2);
   mesh = make_shared<Scale>(mesh, 60.f);
@@ -778,7 +778,9 @@ SceneInfo custom_mesh() {
   auto top_light =
       make_shared<AARectangle<Axis::Y>>(14, -2, 6, -3, 5, difflight);
 
-  auto right_sphere_light = make_shared<Sphere>(vec3(-6, 0, -5), 2, difflight);
+  auto difflight_high = make_shared<DiffuseEmitter>(gl::DefaultTexture, 10);
+  auto right_sphere_light =
+      make_shared<Sphere>(vec3(-6, 0, -5), 2, difflight_high);
 
   objects.addObject(top_light);
   objects.addObject(left_sphere_light);
@@ -787,8 +789,7 @@ SceneInfo custom_mesh() {
   lights.addLight(make_shared<QuadLight>(top_light, gl::WHITE, intensity));
   lights.addLight(
       make_shared<SphereLight>(left_sphere_light, gl::WHITE, intensity));
-  lights.addLight(
-      make_shared<SphereLight>(right_sphere_light, gl::WHITE, intensity));
+  lights.addLight(make_shared<SphereLight>(right_sphere_light, gl::WHITE, 10));
   // adding a backdrop
   objects.addObject(
       make_shared<AARectangle<Axis::X>>(-12, -40, 40, -40, 40, GOLD_MAT));

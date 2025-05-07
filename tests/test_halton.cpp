@@ -3,7 +3,7 @@
 
 // Verify the first few values of the 1D Halton (base-2) sequence
 TEST(HaltonSampler, Get1DFirstValues) {
-  HaltonSampler sampler;
+  HaltonSampler sampler(0, RandomStrategy::None);
   // Sample 1: index = 1 → radicalInverse(base2,1) = 0.5
   sampler.startSample();
   EXPECT_NEAR(sampler.get1D(), 0.5f, 1e-6f);
@@ -20,7 +20,7 @@ TEST(HaltonSampler, Get1DFirstValues) {
 
 // Verify the first few values of the 2D Halton (bases 2,3) sequence
 TEST(HaltonSampler, Get2DFirstValues) {
-  HaltonSampler sampler;
+  HaltonSampler sampler(0, RandomStrategy::None);
   // Sample 1: index = 1 → (base2:0.5, base3:1/3)
   sampler.startSample();
   auto v1 = sampler.get2D();
@@ -35,7 +35,7 @@ TEST(HaltonSampler, Get2DFirstValues) {
 
 // Ensure that startSample() resets the dimension counter
 TEST(HaltonSampler, StartSampleResetsDimension) {
-  HaltonSampler sampler;
+  HaltonSampler sampler(0, RandomStrategy::None);
   // First sample: advance to index=1, dimension→0
   sampler.startSample();
   float a = sampler.get1D(); // dim=0 → 0.5
@@ -47,7 +47,7 @@ TEST(HaltonSampler, StartSampleResetsDimension) {
 
 // Check basic statistics over many 1D samples: mean≈0.5, var≈1/12
 TEST(HaltonSampler, BasicStatistics) {
-  HaltonSampler sampler;
+  HaltonSampler sampler(0, RandomStrategy::Owen);
   const int N = 1024;
   double sum = 0.0;
   double sumSq = 0.0;

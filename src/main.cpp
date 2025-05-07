@@ -28,7 +28,7 @@ int main() {
   //  SceneInfo scene = night();
 
   // SceneInfo scene = debug_curve();
-  scene.renderWithInfo("./output.png");
+  scene.renderWithInfo("../../output.png");
   std::cout << rejects << std::endl;
   return 0;
 };
