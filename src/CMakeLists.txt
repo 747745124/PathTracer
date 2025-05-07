@@ -17,7 +17,7 @@ set(SRC_CPP
 
 add_compile_definitions(GL_SIMD)
 
-# add_compile_definitions(DISCARD)
+# add_compile_definitions(DISCARD_SAMPLING)
 add_compile_definitions(BIASED_SAMPLING)
 
 # FBX SDK configuration (optional)

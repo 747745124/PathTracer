@@ -21,7 +21,7 @@ public:
     if (!gl::pbrt::sameHemisphere(wo_local, wi_local))
 #ifdef BIASED_SAMPLING
       wi_local.z() = -wo_local.z();
-#elif defined DISCARD
+#elif defined DISCARD_SAMPLING
       return gl::vec3(0.f);
 #else
       do {

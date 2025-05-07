@@ -36,7 +36,7 @@ public:
       if (!gl::pbrt::sameHemisphere(wo, wi_local))
 #ifdef BIASED_SAMPLING
         wi_local.z() = -wi_local.z();
-#elif defined DISCARD
+#elif defined DISCARD_SAMPLING
         return {};
 #else
         do {
@@ -56,7 +56,7 @@ public:
       if (!valid || gl::pbrt::sameHemisphere(wo, wi_local))
 #ifdef BIASED_SAMPLING
         wi_local = gl::pbrt::reflect(wo, m);
-#elif defined DISCARD
+#elif defined DISCARD_SAMPLING
         return {};
 #else
         do {
