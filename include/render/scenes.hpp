@@ -447,7 +447,7 @@ SceneInfo cornell_box_modified() {
       make_shared<AARectangle<Axis::Z>>(555, 0, 555, 0, 555, white));
 
   shared_ptr<Hittable> box_left =
-      make_shared<Box>(vec3(0.f), vec3(165, 330, 165), LAMBERTIAN_RED);
+      make_shared<Box>(vec3(0.f), vec3(165, 330, 165), ROUGH_GOLD_MAT);
   box_left = make_shared<Rotate<Axis::Y>>(box_left, gl::to_radian(15.f));
   box_left = make_shared<Translate>(box_left, vec3(265, 0, 295));
   objects.addObject(box_left);
@@ -748,7 +748,7 @@ SceneInfo debug_curve() {
   return scene;
 };
 
-SceneInfo custom_mesh() {
+SceneInfo bunny() {
   using namespace std;
   using namespace gl;
 
@@ -762,6 +762,67 @@ SceneInfo custom_mesh() {
   mesh = make_shared<Rotate<Axis::Y>>(mesh, M_PI_2);
   mesh = make_shared<Scale>(mesh, 60.f);
   mesh = make_shared<Translate>(mesh, 4.f * vec3(26.f, -18.f, 8.f).normalize());
+
+  objects.addObject(mesh);
+
+  auto noise_text = make_shared<ConstantTexture>(gl::vec3(1.0, 1.0, 1.0));
+
+  objects.addObject(make_shared<Sphere>(vec3(0, -1000, 0), 999.5,
+                                        make_shared<Lambertian>(noise_text)));
+
+  uint intensity = 3;
+  auto difflight = make_shared<DiffuseEmitter>(gl::DefaultTexture, intensity);
+
+  auto left_sphere_light = make_shared<Sphere>(vec3(-8, 4, 5), 2, difflight);
+
+  auto top_light =
+      make_shared<AARectangle<Axis::Y>>(14, -2, 6, -3, 5, difflight);
+
+  auto difflight_high = make_shared<DiffuseEmitter>(gl::DefaultTexture, 10);
+  auto right_sphere_light =
+      make_shared<Sphere>(vec3(-6, 0, -5), 2, difflight_high);
+
+  objects.addObject(top_light);
+  objects.addObject(left_sphere_light);
+  objects.addObject(right_sphere_light);
+
+  lights.addLight(make_shared<QuadLight>(top_light, gl::WHITE, intensity));
+  lights.addLight(
+      make_shared<SphereLight>(left_sphere_light, gl::WHITE, intensity));
+  lights.addLight(make_shared<SphereLight>(right_sphere_light, gl::WHITE, 10));
+  // adding a backdrop
+  objects.addObject(
+      make_shared<AARectangle<Axis::X>>(-12, -40, 40, -40, 40, GOLD_MAT));
+
+  // second back drop
+  objects.addObject(
+      make_shared<AARectangle<Axis::Z>>(-8, -40, 40, -40, 40, ROUGH_GOLD_MAT));
+
+  scene.camera = make_shared<PerspectiveCamera>(
+      gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
+      1000.f, vec3(0, 1, 0), vec3(-26.f, 0.f, -8.f).normalize(),
+      vec3(22.f, 3.f, 8.f));
+
+  scene.objects = objects;
+  scene.lights = lights;
+
+  return scene;
+};
+
+SceneInfo diamond() {
+  using namespace std;
+  using namespace gl;
+
+  SceneInfo scene;
+  ObjectList objects;
+  LightList lights;
+
+  std::shared_ptr<Hittable> mesh =
+      loadOBJMesh("../../assets/diamond.obj", DISPERSION_MAT);
+  // mesh = make_shared<Rotate<Axis::X>>(mesh, M_PI_2);
+  //   mesh = make_shared<Rotate<Axis::Y>>(mesh, M_PI_2);
+  mesh = make_shared<Scale>(mesh, 0.05f);
+  mesh = make_shared<Translate>(mesh, 4.f * vec3(26.f, 0.f, 8.f).normalize());
 
   objects.addObject(mesh);
 

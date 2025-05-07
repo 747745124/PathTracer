@@ -3,7 +3,7 @@
 #include "material/conductor.hpp"
 #include "material/dielectric.hpp"
 #include "material/hairMarsch.hpp"
-#include "material/simpleDispersion.hpp"
+#include "material/raySplitDispersion.hpp"
 #include "material/thinDielectric.hpp"
 namespace gl {
 static std::shared_ptr<Material> GLASS = std::make_shared<Dielectric>(1.5f);
@@ -60,6 +60,9 @@ static std::shared_ptr<Material> GLASS_MAT =
 
 static std::shared_ptr<Material> ROUGH_GLASS_MAT =
     std::make_shared<MFDielectric>(1.5f, 0.3f, 0.3f);
+
+static std::shared_ptr<RaySplitDispersion> DISPERSION_MAT =
+    std::make_shared<RaySplitDispersion>(2.407f, 2.417f, 2.452f);
 
 static std::shared_ptr<ConstantTexture> DefaultTexture =
     std::make_shared<ConstantTexture>(gl::vec3(1.0f));

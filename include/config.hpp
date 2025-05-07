@@ -4,12 +4,12 @@
 
 #define LIGHT_SAMPLE_X 2
 #define LIGHT_SAMPLE_Y 2
-#define MAX_RAY_DEPTH 15
-#define SPP_X 2
-#define SPP_Y 2
+#define MAX_RAY_DEPTH 10
+#define SPP_X 3
+#define SPP_Y 3
 #define GAMMA 2.0
-#define WIDTH 600
-#define HEIGHT 600
+#define WIDTH 400
+#define HEIGHT 400
 #define BG_COLOR gl::vec3(0.0f, 0.0f, 0.0f)
 #define useBVH true
 // #define USE_MAXDEPTH_MIS
@@ -17,6 +17,7 @@
 // #define USE_MAXDEPTH_NAIVE
 // #define USE_ROULETTE_NAIVE
 // #define USE_MAXDEPTH_RESERVOIR
+#define USE_RAY_SPLIT_DISPERSION
 #define OVERRIDE_LOCAL_RENDER_VAL TRUE
 #define NUM_THREADS 10
 #define MODE TransportMode::Importance

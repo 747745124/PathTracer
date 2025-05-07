@@ -5,7 +5,10 @@
 
 ## TEST LEVEL
 * ✅ Verify obj lodader correctness
-* 
+
+## IO LEVEL
+* ✅ Obj Loader
+* FBX Loader bug fixes
 
 ## FEATURE LEVEL - Material
 * ✅ Interface extension

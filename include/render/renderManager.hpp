@@ -26,6 +26,8 @@
 #include "render_method/maxdepth_reservoir_di.hpp"
 #elif defined USE_ROULETTE_NAIVE
 #include "render_method/roulette_naive.hpp"
+#elif defined USE_RAY_SPLIT_DISPERSION
+#include "render_method/ray_split_dispersion.hpp"
 #endif
 
 static std::vector<gl::vec3> light_vertices = {
@@ -123,6 +125,9 @@ struct SceneInfo {
             color += getRayColor(ray, objects, light_objects, bg_color,
                                  MAX_RAY_DEPTH, bvh);
 #elif defined USE_MAXDEPTH_MIS
+            color +=
+                getRayColor(ray, objects, bg_color, lights, MAX_RAY_DEPTH, bvh);
+#elif defined USE_RAY_SPLIT_DISPERSION
             color +=
                 getRayColor(ray, objects, bg_color, lights, MAX_RAY_DEPTH, bvh);
 #else

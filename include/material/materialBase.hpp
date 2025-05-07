@@ -3,6 +3,7 @@
 #include "materialFlags.hpp"
 #include "probs/pdf.hpp"
 #include "utils/random.hpp"
+#include <vector>
 
 class Material;
 static int rejects = 0;
@@ -14,6 +15,11 @@ struct ScatterRecord {
   gl::vec3 attenuation;
   std::shared_ptr<PDF> pdf_ptr = nullptr;
 
+  // Ray-splitting support
+  std::vector<Ray> split_rays;
+  std::vector<gl::vec3> split_attenuations;
+  std::vector<bool> split_valid;
+
   bool is_specular() { return this->sampled_type & BxDFFlags::Specular; }
   bool is_specular_reflection() {
     return (this->sampled_type & BxDFFlags::SpecularReflection) ==
@@ -23,6 +29,7 @@ struct ScatterRecord {
     return (this->sampled_type & BxDFFlags::SpecularTransmission) ==
            BxDFFlags::SpecularTransmission;
   }
+  bool is_ray_split() { return !split_rays.empty(); }
 };
 
 struct HitRecord {
