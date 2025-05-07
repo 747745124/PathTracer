@@ -8,9 +8,9 @@ An NEE + MIS sampled path tracer, supports Marschner Hair / Phong / Dielectric /
 
 
 
-![image](images/bunny.png)
+![image](images/dielectric.png)
 
-> Glass bunny (Approximated dielectric) with Microfacet Conductor background
+> Rough glass bunny with Microfacet Conductor background 
 
 
 

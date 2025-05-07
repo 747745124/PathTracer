@@ -1,7 +1,7 @@
 # TODO
 
 ## CODE LEVEL
-*  Refactor code for dependency management
+* ✅ Refactor code for dependency management
 
 ## TEST LEVEL
 * ✅ Verify obj lodader correctness
@@ -10,7 +10,7 @@
 ## FEATURE LEVEL - Material
 * ✅ Interface extension
 * ✅ Rough dielectric
-* Adding detailed dieletric interface
+* ✅ Adding detailed dieletric interface
    * Per channel refract (i.e. dispersion)
 * Add Kajiya-Kay Material
 
