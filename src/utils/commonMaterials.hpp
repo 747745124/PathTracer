@@ -60,7 +60,7 @@ static std::shared_ptr<Material> GLASS_MAT =
     std::make_shared<MFDielectric>(1.5f, 0.0001f, 0.0001f);
 
 static std::shared_ptr<Material> ROUGH_GLASS_MAT =
-    std::make_shared<MFDielectric>(1.5f, 0.002f, 0.002f);
+    std::make_shared<MFDielectric>(1.5f, 0.1f, 0.1f);
 
 static std::shared_ptr<ConstantTexture> DefaultTexture =
     std::make_shared<ConstantTexture>(gl::vec3(1.0f));

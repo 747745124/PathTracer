@@ -29,8 +29,6 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   auto mat = hit_record.material;
   float uc = halton_sampler.get1D();
   vec2 u = halton_sampler.get2D();
-  uc = rand_num();
-  u = vec2(rand_num(), rand_num());
   if (mat->scatter(ray, hit_record, srec, uc, u, MODE)) {
 
     // ray splitting, if it has both specular

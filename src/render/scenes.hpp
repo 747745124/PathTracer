@@ -447,7 +447,7 @@ SceneInfo cornell_box_modified() {
       make_shared<AARectangle<Axis::Z>>(555, 0, 555, 0, 555, white));
 
   shared_ptr<Hittable> box_left =
-      make_shared<Box>(vec3(0.f), vec3(165, 330, 165), ROUGH_GOLD_MAT);
+      make_shared<Box>(vec3(0.f), vec3(165, 330, 165), LAMBERTIAN_RED);
   box_left = make_shared<Rotate<Axis::Y>>(box_left, gl::to_radian(15.f));
   box_left = make_shared<Translate>(box_left, vec3(265, 0, 295));
   objects.addObject(box_left);
@@ -757,7 +757,7 @@ SceneInfo custom_mesh() {
   LightList lights;
 
   std::shared_ptr<Hittable> mesh =
-      loadOBJMesh("../../assets/bunny.obj", ROUGH_GLASS_MAT);
+      loadOBJMesh("./assets/bunny.obj", ROUGH_GLASS_MAT);
   // mesh = make_shared<Rotate<Axis::X>>(mesh, M_PI_2);
   mesh = make_shared<Rotate<Axis::Y>>(mesh, M_PI_2);
   mesh = make_shared<Scale>(mesh, 60.f);

@@ -341,6 +341,16 @@ static float radicalInverse(int baseIndex, uint64_t a) {
   return std::min(reversedDigits * invBaseM, OneMinusEpsilon);
 };
 
+static uint64_t InverseRadicalInverse(uint64_t inverse, int base, int nDigits) {
+  uint64_t index = 0;
+  for (int i = 0; i < nDigits; ++i) {
+    uint64_t digit = inverse % base;
+    inverse /= base;
+    index = index * base + digit;
+  }
+  return index;
+}
+
 static inline float VanDerCorput(uint bits) {
   bits = (bits << 16u) | (bits >> 16u);
   bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);

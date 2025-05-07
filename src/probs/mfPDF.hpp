@@ -22,7 +22,7 @@ public:
 #ifdef BIASED_SAMPLING
       wi_local.z() = -wo_local.z();
 #elif defined DISCARD
-      return {};
+      return gl::vec3(0.f);
 #else
       do {
         rejects++;

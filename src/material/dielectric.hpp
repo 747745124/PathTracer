@@ -65,90 +65,30 @@ public:
       }
     }
 
-    // // –– rough dielectric: use MFDielectricPDF ––
-    {
-      using namespace gl;
-      vec3 wo_world = -ray_in.getDirection().normalize();
-      // build ONB from the shading normal
-      OrthoBasis onb(rec.normal);
-
-      vec3 wo = onb.toLocal(wo_world);
-
-      vec3 wm = mfDistrib.sample_wm(wo, u);
-      float R = fresnelDielectric(dot(wo, wm), eta);
-      float T = 1 - R;
-      float pr = R, pt = T;
-      if (!(flags & BxDFReflTransFlags::Reflection))
-        pr = 0;
-      if (!(flags & BxDFReflTransFlags::Transmission))
-        pt = 0;
-      if (pr == 0 && pt == 0)
-        return false;
-
-      float pdf;
-      if (uc < pr / (pr + pt)) {
-        vec3 wi = pbrt::reflect(wo, wm);
-        if (!pbrt::sameHemisphere(wo, wi))
-          return false;
-        srec.pdf_val =
-            mfDistrib.PDF(wo, wm) / (4 * absDot(wo, wm)) * pr / (pr + pt);
-        srec.sampled_ray = Ray(rec.position, onb.toWorld(wi));
-        srec.pdf_ptr = nullptr;
-        srec.sampled_type = BxDFFlags::GlossyReflection;
-        srec.attenuation = mfDistrib.D(wm) * mfDistrib.G(wo, wi) * R /
-                           (4 * pbrt::cosTheta(wi) * pbrt::cosTheta(wo));
-        return true;
-      } else {
-        float etap;
-        vec3 wi;
-        bool tir = !pbrt::refract(wo, wm, eta, etap, wi);
-        if (pbrt::sameHemisphere(wo, wi) || wi.z() == 0.f || tir)
-          return false;
-
-        float denom = square(dot(wi, wm) + dot(wo, wm) / etap);
-        float dwm_dwi = absDot(wi, wm) / denom;
-        pdf = mfDistrib.PDF(wo, wm) * dwm_dwi * pt / (pr + pt);
-
-        vec3 f = T * mfDistrib.D(wm) * mfDistrib.G(wo, wi) *
-                 abs(dot(wi, wm) * dot(wo, wm) /
-                     (pbrt::cosTheta(wi) * pbrt::cosTheta(wo) * denom));
-        if (mode == TransportMode::Radiance)
-          f /= square(etap);
-
-        srec.sampled_type = BxDFFlags::GlossyTransmission;
-        srec.attenuation = f;
-        srec.sampled_ray = Ray(rec.position, onb.toWorld(wi));
-        srec.pdf_ptr = nullptr;
-        srec.pdf_val = pdf;
-        return true;
-      }
-    };
     // create PDF object
-    // using namespace gl;
-    // vec3 wo_world = -ray_in.getDirection().normalize();
-    // OrthoBasis onb(rec.normal);
-    // auto pdf = std::make_shared<MFDielectricPDF>(mfDistrib, onb, wo_world,
-    // eta,
-    //                                              flags, mode);
-    // // sample a world-space direction
-    // vec3 wi_world = pdf->get(uc, u);
-    // if (wi_world == vec3(0.0f)) // our PDF signals “no sample”
-    //   return false;
+    using namespace gl;
+    vec3 wo_world = -ray_in.getDirection().normalize();
+    OrthoBasis onb(rec.normal);
+    auto pdf = std::make_shared<MFDielectricPDF>(mfDistrib, onb, wo_world, eta,
+                                                 flags, mode);
+    // sample a world-space direction
+    vec3 wi_world = pdf->get(uc, u);
+    if (wi_world.xyz().near_zero()) // our PDF signals “no sample”
+      return false;
 
-    // // fill scatter record
-    // srec.sampled_ray = Ray(rec.position, wi_world);
-    // // determine specular/unfolded type from hemisphere test
-    // bool isRefl = dot(onb.toLocal(wi_world), onb.toLocal(wo_world)) > 0;
-    // srec.sampled_type =
-    //     isRefl ? BxDFFlags::GlossyReflection :
-    //     BxDFFlags::GlossyTransmission;
+    // fill scatter record
+    srec.sampled_ray = Ray(rec.position, wi_world);
+    // determine specular/unfolded type from hemisphere test
+    bool isRefl = dot(onb.toLocal(wi_world), onb.toLocal(wo_world)) > 0;
+    srec.sampled_type =
+        isRefl ? BxDFFlags::GlossyReflection : BxDFFlags::GlossyTransmission;
 
-    // // attenuation = the BRDF value
-    // srec.attenuation = f(wo_world, wi_world, rec, mode);
-    // // store PDF
-    // srec.pdf_ptr = pdf;
-    // srec.pdf_val = pdf->at(wi_world);
-    // return true;
+    // attenuation = the BRDF value
+    srec.attenuation = f(wo_world, wi_world, rec, mode);
+    // store PDF
+    srec.pdf_ptr = pdf;
+    srec.pdf_val = pdf->at(wi_world);
+    return true;
   };
 
   // required for non-delta

@@ -44,6 +44,8 @@ public:
 
     // 2) sample an incoming direction `wi`
     vec3 wi = pdf_ptr->get(uc, u).normalize();
+    if (wi.xyz().near_zero()) // our PDF signals “no sample”
+      return false;
     // 3) reject if it’s below the geometric normal
     if (dot(rec.normal, wi) <= 0)
       return false;
