@@ -1,7 +1,8 @@
 #pragma once
 #include "material/material.hpp"
 #include "probs/mfPDF.hpp"
-class Conductor : public Material {
+class Conductor : public Material
+{
 public:
   Conductor(const gl::vec3 &eta, const gl::vec3 &k, float alpha_x,
             float alpha_y)
@@ -13,7 +14,8 @@ public:
           const gl::vec2 &u = {gl::rand_num(),
                                gl::rand_num()}, // 2D microfacet sample
           TransportMode mode = TransportMode::Radiance,
-          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
 
     using namespace gl;
     if (!(flags & BxDFReflTransFlags::Reflection))
@@ -21,7 +23,8 @@ public:
 
     vec3 wo = -ray_in.getDirection().normalize();
 
-    if (mfDistribution.effectivelySmooth()) {
+    if (mfDistribution.effectivelySmooth())
+    {
 
       gl::vec3 wi = gl::pbrt::reflect(wo, rec.normal).normalize();
       if (dot(rec.normal, wi) <= 0)
@@ -62,11 +65,13 @@ public:
   float scatter_pdf(
       const ScatterRecord &srec, const Ray &wi_world,
       TransportMode mode = TransportMode::Radiance,
-      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
     if (!(flags & BxDFReflTransFlags::Reflection))
       return 0.0f;
 
-    if (mfDistribution.effectivelySmooth()) {
+    if (mfDistribution.effectivelySmooth())
+    {
       return 0.0f;
     }
 
@@ -77,18 +82,21 @@ public:
 
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
              const HitRecord &rec,
-             TransportMode mode = TransportMode::Radiance) const override {
+             TransportMode mode = TransportMode::Radiance) const override
+  {
 
     using namespace gl;
     OrthoBasis basis(rec.normal);
     vec3 wo_l = basis.toLocal(wo_world.normalize());
     vec3 wi_l = basis.toLocal(wi_world.normalize());
     // 2) below‐surface => zero
-    if (wi_l.z() <= 0 || wo_l.z() <= 0) {
+    if (wi_l.z() <= 0 || wo_l.z() <= 0)
+    {
       return vec3(0.f);
     }
     // 3) handle delta case
-    if (mfDistribution.effectivelySmooth()) {
+    if (mfDistribution.effectivelySmooth())
+    {
       return vec3(0.f);
     }
     // 4) microfacet half-vector

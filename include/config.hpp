@@ -4,12 +4,12 @@
 
 #define LIGHT_SAMPLE_X 2
 #define LIGHT_SAMPLE_Y 2
-#define MAX_RAY_DEPTH 15
-#define SPP_X 5
-#define SPP_Y 5
+#define MAX_RAY_DEPTH 10
+#define SPP_X 3
+#define SPP_Y 3
 #define GAMMA 2.0
-#define WIDTH 600
-#define HEIGHT 600
+#define WIDTH 500
+#define HEIGHT 500
 #define BG_COLOR gl::vec3(0.0f, 0.0f, 0.0f)
 #define useBVH true
 // #define USE_MAXDEPTH_MIS

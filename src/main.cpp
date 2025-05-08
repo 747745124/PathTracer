@@ -1,6 +1,7 @@
 #include "header.hpp"
 extern int rejects;
-int main() {
+int main()
+{
 
 #if defined(_OPENMP)
   std::cout << "✅ OpenMP is enabled (version " << _OPENMP << ")\n"
@@ -14,15 +15,16 @@ int main() {
 
   // night_time();
   // SceneInfo scene = cornell_box();
+  SceneInfo scene = cornell_box_disneydiffuse();
   //  SceneInfo scene = checkpoint_diffuse();
   // SceneInfo scene = cornell_box_modified();
-  SceneInfo scene = custom_mesh();
-//   SceneInfo scene;
-// #ifdef HAS_FBX_SDK
-//   scene = fbx_mesh();
-// #else
-//   scene = cornell_box();
-// #endif
+  // SceneInfo scene = custom_mesh();
+  //   SceneInfo scene;
+  // #ifdef HAS_FBX_SDK
+  //   scene = fbx_mesh();
+  // #else
+  //   scene = cornell_box();
+  // #endif
   // two_lights();
   //  SceneInfo scene = simple_light();
   // SceneInfo scene = diffuse_diffuse();
