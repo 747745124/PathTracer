@@ -101,6 +101,10 @@ namespace gl
 
 class TrowbridgeReitzDistribution
 {
+
+private:
+  float alpha_x, alpha_y;
+
 public:
   TrowbridgeReitzDistribution(float alpha_x, float alpha_y)
       : alpha_x(alpha_x), alpha_y(alpha_y) {}
@@ -199,8 +203,77 @@ public:
       alpha_x = std::clamp(2 * alpha_x, 0.1f, 0.3f);
     if (alpha_y < 0.3f)
       alpha_y = std::clamp(2 * alpha_y, 0.1f, 0.3f);
+  };
+};
+
+class ClearcoatTRD
+{
+private:
+  float alpha;
+
+public:
+  ClearcoatTRD(float alpha) : alpha(alpha) {};
+
+  static ClearcoatTRD fromClearcoatGloss(float clearcoat_gloss)
+  {
+    float alpha = (1.f - clearcoat_gloss) * 0.1f + clearcoat_gloss * 0.001f;
+    return ClearcoatTRD(alpha);
   }
 
-private:
-  float alpha_x, alpha_y;
+  float D(gl::vec3 h) const
+  {
+    float upper = alpha * alpha - 1;
+    if (alpha <= 0.f)
+      throw std::runtime_error("alpha is too small");
+    float lower = M_PI * log(gl::square(alpha));
+    float term = 1 + (gl::square(alpha) - 1) * gl::square(h.z());
+    return upper / (lower * term);
+  }
+
+  gl::vec3 F(float abs_h_dot_wi) const
+  {
+    float R0 = etaToR0(1.5f);
+    return gl::fresnelSchlick(abs_h_dot_wi, R0);
+  }
+
+  float G(gl::vec3 wo, gl::vec3 wi) const
+  {
+    return 1.f / (1.f + lambda(wo) + lambda(wi));
+  }
+
+  float lambda(gl::vec3 w) const
+  {
+    using namespace gl;
+    float _tan2Theta = pbrt::tan2Theta(w);
+    if (isInf(_tan2Theta))
+      return 0;
+    float alpha2 =
+        square(pbrt::cosPhi(w) * 0.25) + square(pbrt::sinPhi(w) * 0.25);
+    return (std::sqrt(1 + alpha2 * _tan2Theta) - 1) / 2;
+  }
+
+  float etaToR0(float eta) const
+  {
+    float upper = eta - 1;
+    float lower = eta + 1;
+    return gl::square(upper / lower);
+  }
+
+  gl::vec3 sample_h(gl::vec2 u) const
+  {
+    using namespace gl;
+
+    float upper = 1 - pow(square(alpha), 1 - u.x());
+    float lower = 1 - square(alpha);
+    float cos_h_elevation = safeSqrt(upper / lower);
+    float sin_h_elevation = safeSqrt(1 - square(cos_h_elevation));
+    float h_azimuth = 2 * M_PI * u.y();
+
+    vec3 h_l;
+    h_l.x() = sin_h_elevation * cos(h_azimuth);
+    h_l.y() = sin_h_elevation * sin(h_azimuth);
+    h_l.z() = cos_h_elevation;
+
+    return h_l;
+  };
 };

@@ -15,7 +15,10 @@ int main()
 
   // night_time();
   // SceneInfo scene = cornell_box();
-  SceneInfo scene = cornell_box_disneydiffuse();
+
+  // SceneInfo scene = cornell_box_disneyDiffuse();
+  // SceneInfo scene = cornell_box_disneyMetal();
+  SceneInfo scene = cornell_box_disneyClearcoat();
   //  SceneInfo scene = checkpoint_diffuse();
   // SceneInfo scene = cornell_box_modified();
   // SceneInfo scene = custom_mesh();

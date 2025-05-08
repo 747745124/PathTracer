@@ -5,9 +5,10 @@
 #include "utils/random.hpp"
 
 class Material;
-static int rejects = 0;
+extern int rejects;
 // determine whether the ray is specular
-struct ScatterRecord {
+struct ScatterRecord
+{
   Ray sampled_ray;
   uint32_t sampled_type = BxDFFlags::All;
   float pdf_val = 0.0f;
@@ -15,17 +16,20 @@ struct ScatterRecord {
   std::shared_ptr<PDF> pdf_ptr = nullptr;
 
   bool is_specular() { return this->sampled_type & BxDFFlags::Specular; }
-  bool is_specular_reflection() {
+  bool is_specular_reflection()
+  {
     return (this->sampled_type & BxDFFlags::SpecularReflection) ==
            BxDFFlags::SpecularReflection;
   }
-  bool is_specular_transmission() {
+  bool is_specular_transmission()
+  {
     return (this->sampled_type & BxDFFlags::SpecularTransmission) ==
            BxDFFlags::SpecularTransmission;
   }
 };
 
-struct HitRecord {
+struct HitRecord
+{
 public:
   float t;
   gl::vec3 normal;
@@ -39,7 +43,8 @@ public:
   // This is used to determine whether the ray is inside or outside the object
   // As we want have the normal always point against the ray
   bool is_inside;
-  void set_normal(const Ray &ray, const gl::vec3 &n) {
+  void set_normal(const Ray &ray, const gl::vec3 &n)
+  {
     this->is_inside = dot(ray.getDirection(), n) < 0;
     this->normal = this->is_inside ? n : -n;
   }

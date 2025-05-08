@@ -3,7 +3,8 @@
 #include "probs/pdf.hpp"
 #include "utils/orthoBasis.hpp"
 extern int rejects;
-class MicrofacetPDF : public PDF {
+class MicrofacetPDF : public PDF
+{
 public:
   MicrofacetPDF(const TrowbridgeReitzDistribution &d, const OrthoBasis &basis,
                 const gl::vec3 &wo_world)
@@ -12,7 +13,8 @@ public:
   // sample an outgoing (*wi*) direction in world space
   gl::vec3 get(float uc = gl::rand_num(),
                gl::vec2 u = gl::vec2(gl::rand_num(),
-                                     gl::rand_num())) const override {
+                                     gl::rand_num())) const override
+  {
     // sample half‐vector in local
     gl::vec3 m_local = distrib.sample_wm(wo_local, u);
     gl::vec3 wi_local = gl::pbrt::reflect(wo_local, m_local);
@@ -24,7 +26,8 @@ public:
 #elif defined DISCARD_SAMPLING
       return gl::vec3(0.f);
 #else
-      do {
+      do
+      {
         rejects++;
         using namespace gl;
         vec2 u2 = vec2(rand_num(), rand_num());
@@ -37,7 +40,8 @@ public:
   }
 
   // PDF for a given outgoing direction
-  float at(const gl::vec3 &wi_world) const override {
+  float at(const gl::vec3 &wi_world) const override
+  {
     gl::vec3 wi = onb.toLocal(wi_world.normalize());
     if (wi.z() <= 0)
       return 0.f;
