@@ -4,7 +4,8 @@
 #include "utils/orthoBasis.hpp"
 
 extern int rejects;
-class MFDielectricPDF : public PDF {
+class MFDielectricPDF : public PDF
+{
 public:
   MFDielectricPDF(const TrowbridgeReitzDistribution &d, const OrthoBasis &basis,
                   const gl::vec3 &wo_world, float eta,
@@ -15,7 +16,8 @@ public:
   // Sample a direction (wi) given randoms uc (for R/T) and u (for microfacet m)
   gl::vec3 get(float uc = gl::rand_num(),
                gl::vec2 u = gl::vec2(gl::rand_num(),
-                                     gl::rand_num())) const override {
+                                     gl::rand_num())) const override
+  {
     // 1) sample half‐vector in local space
     gl::vec3 m = distrib.sample_wm(wo, u);
     // 2) Fresnel
@@ -28,7 +30,8 @@ public:
 
     // 3) pick R vs T
     bool doRefl = uc < pr / (pr + pt);
-    if (doRefl) {
+    if (doRefl)
+    {
       // reflect
       gl::vec3 wi_local = gl::pbrt::reflect(wo, m);
       // if below hemisphere, discard
@@ -39,7 +42,8 @@ public:
 #elif defined DISCARD_SAMPLING
         return {};
 #else
-        do {
+        do
+        {
           rejects++;
           using namespace gl;
           vec2 u2 = vec2(rand_num(), rand_num());
@@ -48,7 +52,9 @@ public:
         } while (wi_local.z() <= 0);
 #endif
       return onb.toWorld(wi_local);
-    } else {
+    }
+    else
+    {
       // refract
       gl::vec3 wi_local;
       float etaScale;
@@ -59,7 +65,8 @@ public:
 #elif defined DISCARD_SAMPLING
         return {};
 #else
-        do {
+        do
+        {
           rejects++;
           using namespace gl;
           // 1) draw m
@@ -71,7 +78,8 @@ public:
           bool valid = pbrt::refract(wo, m, eta, etaScale, wi_local);
           // 3) break if it's valid
           // 3) break if it’s valid
-          if (valid && !pbrt::sameHemisphere(wo, wi_local)) {
+          if (valid && !pbrt::sameHemisphere(wo, wi_local))
+          {
             break;
           }
           // otherwise loop (waste one draw, but keep your SPP budget)
@@ -82,7 +90,8 @@ public:
   }
 
   // Evaluate the PDF for a given direction wi_world
-  float at(const gl::vec3 &wi_world) const override {
+  float at(const gl::vec3 &wi_world) const override
+  {
 
     using namespace gl;
     // delta or same ior
@@ -119,7 +128,8 @@ public:
     float pdf = 0.f;
     if (reflect)
       pdf = distrib.PDF(wo, wm) / (4.f * std::fabs(dot(wo, wm))) * R / (R + T);
-    else {
+    else
+    {
       float denom = square(dot(wi, wm) + dot(wo, wm) / etap);
       float dwm_dwi = std::fabs(dot(wi, wm)) / denom;
       pdf = distrib.PDF(wo, wm) * dwm_dwi * T / (R + T);

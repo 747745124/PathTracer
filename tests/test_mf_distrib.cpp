@@ -18,7 +18,7 @@ TEST(AnyPDFNormalization, ClearcoatPDFTest)
 
     // 2. Call the generic test function
     // The first argument is a lambda that calls the .at() method of your PDF object.
-    PDFNormalizationTestResult result = test_directional_pdf_normalization(
+    PDFNormalizationTestResult result = test_sphere_pdf_normalization(
         [&](const gl::vec3 &sampled_wi_world)
         {
             return pdf_to_test.at(sampled_wi_world);
@@ -49,32 +49,22 @@ TEST(AnyPDFNormalization, MicrofacetPDFTest)
     using namespace gl; // Or your specific namespace for vec3 etc.
 
     // 1. Set up your PDF object to be tested
-    vec3 wo_world(0.0f, 1.0f, 0.0f); // Example outgoing direction
-    wo_world = normalize(wo_world);  // Ensure it's normalized
+    vec3 wo_world(0.2f);            // Example outgoing direction
+    wo_world = normalize(wo_world); // Ensure it's normalized
 
-    TrowbridgeReitzDistribution distrib(0.5f, 0.5f);
+    TrowbridgeReitzDistribution distrib(0.05f, 0.05f);
     OrthoBasis basis(vec3(0.0f, 0.0f, 1.0f)); // Example basis, surface normal along Z
     MicrofacetPDF pdf_to_test(distrib, basis, wo_world);
 
     // 2. Call the generic test function
     // The first argument is a lambda that calls the .at() method of your PDF object.
-    PDFNormalizationTestResult result = test_directional_pdf_normalization(
-        [&](const gl::vec3 &sampled_wi_world)
-        {
-            return pdf_to_test.at(sampled_wi_world);
-        },
-        200000, // Number of samples
-        1.0,    // Expected integral value
-        0.02    // Tolerance
-    );
 
-    // 3. Use Google Test assertions to check the results
+    auto result = test_microfacet_area(pdf_to_test, 1000000);
+    EXPECT_EQ(result.negative_pdf_count, 0);
+    EXPECT_NEAR(result.integral_estimate, 2.0 * M_PI, result.tolerance);
+
     EXPECT_EQ(result.negative_pdf_count, 0)
         << "Encountered " << result.negative_pdf_count << " negative PDF values.";
-
-    EXPECT_NEAR(result.integral_estimate, 0.5, result.tolerance)
-        << "PDF Normalization failed: integral estimate is " << result.integral_estimate
-        << " (expected ~1.0). Tested with " << result.num_samples << " samples.";
 
     // Optional: Print success message if using this outside of a simple pass/fail test
     if (result.passed_negative_check && result.passed_integral_check)
