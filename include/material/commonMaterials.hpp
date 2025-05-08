@@ -6,6 +6,7 @@
 #include "material/simpleDispersion.hpp"
 #include "material/thinDielectric.hpp"
 #include "material/disneyDiffuse.hpp"
+#include "material/disneyMetal.hpp"
 namespace gl
 {
     static std::shared_ptr<Material> GLASS = std::make_shared<Dielectric>(1.5f);
@@ -74,5 +75,8 @@ namespace gl
 
     static std::shared_ptr<DisneyDiffuse> DisneyDiffuseRed =
         std::make_shared<DisneyDiffuse>(RED, 0.5f, 0.5f);
+
+    static std::shared_ptr<DisneyMetal> DisneyMetalRed =
+        std::make_shared<DisneyMetal>(RED, 0.5f, 0.01f);
 
 }; // namespace gl

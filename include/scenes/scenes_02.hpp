@@ -38,23 +38,23 @@ SceneInfo cornell_box_disneydiffuse()
 
     shared_ptr<Hittable> sphere_00 =
         make_shared<Sphere>(vec3(80, 250, 190), 50,
-                            make_shared<DisneyDiffuse>(vec3(0.65, 0.05, 0.05), 0.2f, 0.2f));
+                            make_shared<DisneyMetal>(vec3(0.65, 0.05, 0.05), 0.f, 0.8f));
 
     shared_ptr<Sphere> sphere_01 =
         make_shared<Sphere>(vec3(180, 250, 190), 50,
-                            make_shared<DisneyDiffuse>(vec3(0.65, 0.05, 0.05), 0.4f, 0.4f));
+                            make_shared<DisneyMetal>(vec3(0.65, 0.05, 0.05), 0.2f, 0.8f));
 
     shared_ptr<Hittable> sphere_02 =
         make_shared<Sphere>(vec3(280, 250, 190), 50,
-                            make_shared<DisneyDiffuse>(vec3(0.65, 0.05, 0.05), 0.6f, 0.6f));
+                            make_shared<DisneyMetal>(vec3(0.65, 0.05, 0.05), 0.4f, 0.8f));
 
     shared_ptr<Hittable> sphere_03 =
         make_shared<Sphere>(vec3(380, 250, 190), 50,
-                            make_shared<DisneyDiffuse>(vec3(0.65, 0.05, 0.05), 0.8f, 0.8f));
+                            make_shared<DisneyMetal>(vec3(0.65, 0.05, 0.05), 0.6f, 0.8f));
 
     shared_ptr<Hittable> sphere_04 =
         make_shared<Sphere>(vec3(480, 250, 190), 50,
-                            make_shared<DisneyDiffuse>(vec3(0.65, 0.05, 0.05), 1.0f, 1.0f));
+                            make_shared<DisneyMetal>(vec3(0.65, 0.05, 0.05), 0.8f, 0.8f));
 
     objects.addObject(sphere_00);
     objects.addObject(sphere_01);

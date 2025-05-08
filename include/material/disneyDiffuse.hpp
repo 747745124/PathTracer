@@ -44,18 +44,18 @@ public:
         OrthoBasis onb(rec.normal);
         vec3 wo = onb.toLocal(wo_world);
         vec3 wi = onb.toLocal(wi_world);
-        float cos_theta_wi = pbrt::cosTheta(wi);
-        float cos_theta_wo = pbrt::cosTheta(wo);
+        float abs_cos_theta_wi = fabs(pbrt::cosTheta(wi));
+        float abs_cos_theta_wo = fabs(pbrt::cosTheta(wo));
         vec3 baseColor = albedo->getTexelColor(rec.texCoords);
         // compute diffuse term
         float Fd90 = computeFd90(wo, wi, roughness);
         vec3 baseDiff = baseColor * (1.f / M_PI);
-        baseDiff *= diffuseFresnelSchlick(cos_theta_wi, Fd90) * diffuseFresnelSchlick(cos_theta_wo, Fd90);
+        baseDiff *= hackedSchlick(abs_cos_theta_wi, Fd90) * hackedSchlick(abs_cos_theta_wo, Fd90);
 
         // compute ss term
         float fss90 = computeFss90(wo, wi, roughness);
         vec3 baseSubsurface = 1.25 * baseColor * (1.f / M_PI);
-        baseSubsurface *= (ssFresnelSchlick(cos_theta_wi, fss90) * ssFresnelSchlick(cos_theta_wo, fss90) * (1.f / (cos_theta_wi + cos_theta_wo) - 0.5f) + 0.5f);
+        baseSubsurface *= (hackedSchlick(abs_cos_theta_wi, fss90) * hackedSchlick(abs_cos_theta_wo, fss90) * (1.f / (abs_cos_theta_wi + abs_cos_theta_wo) - 0.5f) + 0.5f);
         return (1.f - this->subsurface) * baseDiff + baseSubsurface * this->subsurface;
     };
 

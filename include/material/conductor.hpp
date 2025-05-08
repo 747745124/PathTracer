@@ -21,12 +21,12 @@ public:
     if (!(flags & BxDFReflTransFlags::Reflection))
       return false;
 
-    vec3 wo = -ray_in.getDirection().normalize();
+    vec3 wo_world = -ray_in.getDirection().normalize();
 
     if (mfDistribution.effectivelySmooth())
     {
 
-      gl::vec3 wi = gl::pbrt::reflect(wo, rec.normal).normalize();
+      gl::vec3 wi = gl::pbrt::reflect(wo_world, rec.normal).normalize();
       if (dot(rec.normal, wi) <= 0)
         return false;
 
@@ -43,22 +43,22 @@ public:
 
     // --- rough (microfacet) case ---
     OrthoBasis basis(rec.normal);
-    auto pdf_ptr = std::make_shared<MicrofacetPDF>(mfDistribution, basis, wo);
+    auto pdf_ptr = std::make_shared<MicrofacetPDF>(mfDistribution, basis, wo_world);
 
     // 2) sample an incoming direction `wi`
-    vec3 wi = pdf_ptr->get(uc, u).normalize();
-    if (wi.xyz().near_zero()) // our PDF signals "no sample"
+    vec3 wi_world = pdf_ptr->get(uc, u).normalize();
+    if (wi_world.xyz().near_zero()) // our PDF signals "no sample"
       return false;
     // 3) reject if it's below the geometric normal
-    if (dot(rec.normal, wi) <= 0)
+    if (dot(rec.normal, wi_world) <= 0)
       return false;
 
-    srec.sampled_ray = Ray(rec.position, wi);
+    srec.sampled_ray = Ray(rec.position, wi_world);
     srec.sampled_type = BxDFFlags::GlossyReflection;
-    srec.attenuation = f(wo, wi, rec);
+    srec.attenuation = f(wo_world, wi_world, rec, mode);
     srec.pdf_ptr = pdf_ptr;
     // 4) compute the PDF value
-    srec.pdf_val = pdf_ptr->at(wi);
+    srec.pdf_val = pdf_ptr->at(wi_world);
     return true;
   }
 

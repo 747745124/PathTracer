@@ -52,14 +52,14 @@ namespace gl
     return result;
   }
 
-  static inline vec3 fresnelSchlick(float cos_theta, vec3 F0)
+  static inline vec3 fresnelSchlick(float abs_cos_theta, vec3 F0)
   {
-    return F0 + (vec3(1.0) - F0) * pow(1.0 - cos_theta, 5.0);
+    return F0 + (vec3(1.0) - F0) * pow(1.0 - abs_cos_theta, 5.0);
   };
 
-  static inline float diffuseFresnelSchlick(float cos_theta, float Fd90)
+  static inline float hackedSchlick(float abs_cos_theta, float F90)
   {
-    return 1.f + (Fd90 - 1.f) * pow(1.f - cos_theta, 5.f);
+    return 1.f + (F90 - 1.f) * pow(1.f - abs_cos_theta, 5.f);
   };
 
   static inline float computeFd90(const gl::vec3 &wo, const gl::vec3 &wi, const float roughness)
@@ -67,11 +67,6 @@ namespace gl
     vec3 wh = (wo + wi).normalize();
     float wh_wi = dot(wh, wi);
     return 0.5f + 2.f * roughness * pow(fabs(wh_wi), 2.f);
-  }
-
-  static inline float ssFresnelSchlick(float cos_theta, float Fss90)
-  {
-    return 1.f + (Fss90 - 1.f) * pow(1.f - cos_theta, 5.f);
   }
 
   static inline float computeFss90(const gl::vec3 &wo, const gl::vec3 &wi, const float roughness)
@@ -109,6 +104,21 @@ class TrowbridgeReitzDistribution
 public:
   TrowbridgeReitzDistribution(float alpha_x, float alpha_y)
       : alpha_x(alpha_x), alpha_y(alpha_y) {}
+
+  static TrowbridgeReitzDistribution fromRoughnessAnisotropic(float roughness, float anisotropic)
+  {
+    // Ensure anisotropic is clamped to prevent sqrt of negative if not handled by safeSqrt
+    anisotropic = std::max(0.0f, std::min(anisotropic, 1.0f / 0.9f - 0.00001f)); // Example clamping
+    float aspect = gl::safeSqrt(1.0f - 0.9f * anisotropic);
+
+    // Prevent division by zero if aspect can be zero
+    if (aspect == 0.0f)
+      aspect = 0.0001f; // Or handle error appropriately
+
+    float calculated_alpha_x = std::max(0.0001f, gl::square(roughness) / aspect);
+    float calculated_alpha_y = std::max(0.0001f, gl::square(roughness) * aspect);
+    return TrowbridgeReitzDistribution(calculated_alpha_x, calculated_alpha_y);
+  }
 
   float D(gl::vec3 wm) const
   {
@@ -178,7 +188,7 @@ public:
         .normalize();
   }
 
-  static float roughnessToAlpha(float roughness)
+  static float roughnessToAlphaPBRT(float roughness)
   {
     return std::sqrt(roughness);
   }
