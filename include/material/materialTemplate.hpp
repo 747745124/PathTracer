@@ -27,7 +27,7 @@ public:
                       TransportMode mode = TransportMode::Radiance,
                       BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
     {
-        if (srec.pdf_ptr != nullptr)
+        if (srec.pdf_ptr == nullptr)
             return 0.f;
         return srec.pdf_ptr->at(wi_world.getDirection().normalize());
     }

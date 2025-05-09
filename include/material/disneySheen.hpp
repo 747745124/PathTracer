@@ -57,4 +57,16 @@ public:
         vec3 f = Csheen * pow((1 - abs_dot_wh_wi), 5.f);
         return f;
     };
+
+    float scatter_pdf(const gl::vec3 &wo_world, const gl::vec3 &wi_world, const HitRecord &rec,
+                      TransportMode mode = TransportMode::Radiance,
+                      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+    {
+        using namespace gl;
+        if (!(flags & BxDFReflTransFlags::Reflection))
+            return 0.f;
+
+        std::shared_ptr<CosinePDF> pdf = std::make_shared<CosinePDF>(rec.normal);
+        return pdf->at(wi_world);
+    };
 };

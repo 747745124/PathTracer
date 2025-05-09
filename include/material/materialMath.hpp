@@ -76,6 +76,13 @@ namespace gl
     return roughness * pow(fabs(wh_wi), 2.f);
   }
 
+  static inline float etaToR0(float eta)
+  {
+    float upper = eta - 1;
+    float lower = eta + 1;
+    return gl::square(upper / lower);
+  }
+
   static inline float geometrySchlickGGX(float NdotV, float roughness)
   {
     float a = roughness;
@@ -232,7 +239,7 @@ public:
 
   gl::vec3 F(float abs_h_dot_wi) const
   {
-    float R0 = etaToR0(1.5f);
+    float R0 = gl::etaToR0(1.5f);
     return gl::fresnelSchlick(abs_h_dot_wi, R0);
   }
 
@@ -250,13 +257,6 @@ public:
     float alpha2 =
         square(pbrt::cosPhi(w) * 0.25) + square(pbrt::sinPhi(w) * 0.25);
     return (std::sqrt(1 + alpha2 * _tan2Theta) - 1) / 2;
-  }
-
-  float etaToR0(float eta) const
-  {
-    float upper = eta - 1;
-    float lower = eta + 1;
-    return gl::square(upper / lower);
   }
 
   gl::vec3 sample_h(gl::vec2 u) const

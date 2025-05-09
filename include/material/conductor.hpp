@@ -75,7 +75,7 @@ public:
       return 0.0f;
     }
 
-    if (srec.pdf_ptr != nullptr)
+    if (srec.pdf_ptr == nullptr)
       return 0.f;
     return srec.pdf_ptr->at(wi_world.getDirection().normalize());
   }

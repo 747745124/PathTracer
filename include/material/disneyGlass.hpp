@@ -5,17 +5,19 @@
 class DisneyGlass : public Material
 {
 private:
+    std::shared_ptr<Texture2D> baseColor;
+    TrowbridgeReitzDistribution distribution;
     float eta;
-    TrowbridgeReitzDistribution mfDistrib;
 
 public:
-    DisneyGlass(float eta, TrowbridgeReitzDistribution mfDistrib)
-        : eta(eta), mfDistrib(mfDistrib) {};
+    DisneyGlass(std::shared_ptr<Texture2D> baseColor, float roughness, float anisotropic, float eta = 1.5)
+        : baseColor(baseColor), distribution(TrowbridgeReitzDistribution::fromRoughnessAnisotropic(roughness, anisotropic)), eta(eta) {};
 
-    DisneyGlass(float eta, float alpha_x, float alpha_y)
-        : eta(eta), mfDistrib(alpha_x, alpha_y) {};
+    DisneyGlass(const gl::vec3 &baseColor, float roughness, float anisotropic, float eta = 1.5)
+        : baseColor(std::make_shared<ConstantTexture>(baseColor)), distribution(TrowbridgeReitzDistribution::fromRoughnessAnisotropic(roughness, anisotropic)), eta(eta) {};
 
-    bool effectivelySmooth() const { return mfDistrib.effectivelySmooth(); }
+    bool effectivelySmooth() const { return distribution.effectivelySmooth(); }
+
     bool
     scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
             float uc = gl::rand_num(), // coin-flip sample
@@ -25,7 +27,7 @@ public:
             BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
     {
 
-        if (eta == 1 || mfDistrib.effectivelySmooth())
+        if (eta == 1 || distribution.effectivelySmooth())
         {
             using namespace gl;
 
@@ -75,7 +77,7 @@ public:
         using namespace gl;
         vec3 wo_world = -ray_in.getDirection().normalize();
         OrthoBasis onb(rec.normal);
-        auto pdf = std::make_shared<MFDielectricPDF>(mfDistrib, onb, wo_world, eta,
+        auto pdf = std::make_shared<MFDielectricPDF>(distribution, onb, wo_world, eta,
                                                      flags, mode);
         // sample a world-space direction
         vec3 wi_world = pdf->get(uc, u);
@@ -103,7 +105,7 @@ public:
                TransportMode mode = TransportMode::Radiance) const override
     {
         using namespace gl;
-        if (eta == 1 || mfDistrib.effectivelySmooth())
+        if (eta == 1 || distribution.effectivelySmooth())
             return vec3(0.f);
 
         OrthoBasis basis(rec.normal);
@@ -128,21 +130,39 @@ public:
         float F = fresnelDielectric(dot(wo_l, wm), eta);
         if (reflect)
         {
-            return vec3(mfDistrib.D(wm) * mfDistrib.G(wo_l, wi_l) * F /
-                        std::abs(4 * cosTheta_i * cosTheta_o));
+            vec3 color = baseColor->getTexelColor(rec.texCoords);
+            return color * vec3(distribution.D(wm) * distribution.G(wo_l, wi_l) * F /
+                                std::abs(4 * cosTheta_i * cosTheta_o));
         }
         else
         {
+            vec3 color = baseColor->getTexelColor(rec.texCoords);
             float denom = square(dot(wi_l, wm) + dot(wo_l, wm) / etap) * cosTheta_i *
                           cosTheta_o;
 
-            float ft = mfDistrib.D(wm) * (1 - F) * mfDistrib.G(wo_l, wi_l) *
-                       std::abs(dot(wi_l, wm) * dot(wo_l, wm) / denom);
+            vec3 ft = safeSqrt(color) * distribution.D(wm) * (1 - F) * distribution.G(wo_l, wi_l) *
+                      std::abs(dot(wi_l, wm) * dot(wo_l, wm) / denom);
 
             if (mode == TransportMode::Radiance)
                 ft /= square(etap);
 
             return vec3(ft);
         }
+    };
+
+    float scatter_pdf(const gl::vec3 &wo_world, const gl::vec3 &wi_world, const HitRecord &rec,
+                      TransportMode mode = TransportMode::Radiance,
+                      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+    {
+        using namespace gl;
+        if (eta == 1 || distribution.effectivelySmooth())
+            return 0.f;
+
+        OrthoBasis basis(rec.normal);
+        vec3 wo = basis.toLocal(wo_world.normalize());
+        vec3 wi = basis.toLocal(wi_world.normalize());
+        auto pdf = std::make_shared<MFDielectricPDF>(distribution, basis, wo_world, eta,
+                                                     flags, mode);
+        return pdf->at(wi_world);
     };
 };

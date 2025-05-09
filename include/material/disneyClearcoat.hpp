@@ -63,4 +63,17 @@ public:
         vec3 f = Fc * Dc * Gc / fabs(4.f * cos_theta_wi * cos_theta_wo);
         return f;
     };
+
+    float scatter_pdf(const gl::vec3 &wo_world, const gl::vec3 &wi_world, const HitRecord &rec,
+                      TransportMode mode = TransportMode::Radiance,
+                      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+    {
+        using namespace gl;
+        if (!(flags & BxDFReflTransFlags::Reflection))
+            return 0.f;
+
+        OrthoBasis basis(rec.normal);
+        auto pdf = std::make_shared<ClearcoatPDF>(distribution, basis, wo_world);
+        return pdf->at(wi_world);
+    };
 };

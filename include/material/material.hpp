@@ -12,7 +12,8 @@ class Dielectric;
 class Phong;
 class PhongLike;
 
-class Material {
+class Material
+{
 public:
   virtual bool
   scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
@@ -20,7 +21,8 @@ public:
           const gl::vec2 &u = {gl::rand_num(),
                                gl::rand_num()}, // 2D microfacet sample
           TransportMode mode = TransportMode::Radiance,
-          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const {
+          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const
+  {
     return false;
   }
 
@@ -29,33 +31,50 @@ public:
   // wo_world = -ray_in.getDirection()
   virtual gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
                      const HitRecord &rec,
-                     TransportMode mode = TransportMode::Radiance) const {
+                     TransportMode mode = TransportMode::Radiance) const
+  {
     return gl::vec3(0.0f);
   };
 
-  // required for non-delta materials
+  // required for non-delta materials, this assume the pdf_ptr must be provided
+  // optional to override
   virtual float
   scatter_pdf(const ScatterRecord &srec, const Ray &wi_world,
               TransportMode mode = TransportMode::Radiance,
-              BxDFReflTransFlags flags = BxDFReflTransFlags::All) const {
-    if (srec.pdf_ptr != nullptr)
+              BxDFReflTransFlags flags = BxDFReflTransFlags::All) const
+  {
+    // if the pdf_ptr is not provided, and the scattering is not specular,
+    if (srec.pdf_ptr == nullptr && (!srec.is_specular()))
+      throw std::runtime_error("pdf_ptr is not provided, and the scattering is not specular");
+    if (srec.pdf_ptr == nullptr)
       return 0.f;
     return srec.pdf_ptr->at(wi_world.getDirection().normalize());
   }
 
-  virtual gl::vec3 emit(const Ray &ray_in, HitRecord &rec) const {
+  // optional to override,usually required multiple lobe materials
+  virtual float
+  scatter_pdf(const gl::vec3 &wo_world, const gl::vec3 &wi_world, const HitRecord &rec,
+              TransportMode mode = TransportMode::Radiance,
+              BxDFReflTransFlags flags = BxDFReflTransFlags::All) const
+  {
+    return 0.f;
+  }
+
+  virtual gl::vec3 emit(const Ray &ray_in, HitRecord &rec) const
+  {
     return gl::vec3(0.0f);
   }
 
   virtual bool is_emitter() const { return false; }
 };
 
-class Lambertian : public Material {
+class Lambertian : public Material
+{
 
 public:
-  Lambertian(std::shared_ptr<Texture2D> a) : albedo(a){};
+  Lambertian(std::shared_ptr<Texture2D> a) : albedo(a) {};
   Lambertian(const gl::vec3 &a)
-      : albedo(std::make_shared<ConstantTexture>(a)){};
+      : albedo(std::make_shared<ConstantTexture>(a)) {};
   // scatter the ray with lambertian reflection
   bool
   scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
@@ -63,7 +82,8 @@ public:
           const gl::vec2 &u = {gl::rand_num(),
                                gl::rand_num()}, // 2D microfacet sample
           TransportMode mode = TransportMode::Radiance,
-          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
     if (!(flags & BxDFReflTransFlags::Reflection))
       return false;
 
@@ -78,24 +98,27 @@ public:
   float scatter_pdf(
       const ScatterRecord &srec, const Ray &wi_world,
       TransportMode mode = TransportMode::Radiance,
-      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
     if (!(flags & BxDFReflTransFlags::Reflection))
       return 0.f;
-    if (srec.pdf_ptr != nullptr)
+    if (srec.pdf_ptr == nullptr)
       return 0.f;
     return srec.pdf_ptr->at(wi_world.getDirection().normalize());
   }
 
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
              const HitRecord &rec,
-             TransportMode mode = TransportMode::Radiance) const override {
+             TransportMode mode = TransportMode::Radiance) const override
+  {
     return albedo->getTexelColor(rec.texCoords) * (1.0f / M_PI);
   }
 
   std::shared_ptr<Texture2D> albedo;
 };
 
-class Mirror : public Material {
+class Mirror : public Material
+{
 public:
   Mirror(const gl::vec3 &a, float f = 0.f) : albedo(a) { fuzz = f < 1 ? f : 1; }
   // it's hard to use a delta functinon as BRDF,
@@ -107,7 +130,8 @@ public:
           const gl::vec2 &u = {gl::rand_num(),
                                gl::rand_num()}, // 2D microfacet sample
           TransportMode mode = TransportMode::Radiance,
-          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
     if (!(flags & BxDFReflTransFlags::Reflection))
       return false;
 
@@ -125,7 +149,8 @@ public:
   float scatter_pdf(
       const ScatterRecord &srec, const Ray &wi_world,
       TransportMode mode = TransportMode::Radiance,
-      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
     return 0.f;
   }
 
@@ -133,10 +158,11 @@ public:
   float fuzz;
 };
 
-class Dielectric : public Material {
+class Dielectric : public Material
+{
 public:
   float ior;
-  Dielectric(float ior) : ior(ior){};
+  Dielectric(float ior) : ior(ior) {};
 
   bool
   scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
@@ -144,7 +170,8 @@ public:
           const gl::vec2 &u = {gl::rand_num(),
                                gl::rand_num()}, // 2D microfacet sample
           TransportMode mode = TransportMode::Radiance,
-          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
     srec.pdf_ptr = nullptr;
     srec.attenuation = gl::vec3(1.0f);
     float ri_ro = rec.is_inside ? 1.0f / ior : ior;
@@ -159,14 +186,17 @@ public:
   };
 };
 
-class PhongLike : public Material {
+class PhongLike : public Material
+{
 public:
   PhongLike(const gl::vec3 &diffuse, const gl::vec3 &specular,
             const gl::vec3 &ambient, float shininess = 0.5f, float fuzz = 0.2f)
       : diffuse(diffuse), specular(specular), ambient(ambient),
         specularProb(shininess) // shininess is used as a probability threshold
         ,
-        fuzz(fuzz) {}
+        fuzz(fuzz)
+  {
+  }
 
   gl::vec3 diffuse;   // Diffuse reflectance color
   gl::vec3 specular;  // Specular reflectance color
@@ -182,10 +212,12 @@ public:
           const gl::vec2 &u = {gl::rand_num(),
                                gl::rand_num()}, // 2D microfacet sample
           TransportMode mode = TransportMode::Radiance,
-          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
 
     float p = gl::rand_num();
-    if (p < specularProb) {
+    if (p < specularProb)
+    {
       // Specular scattering branch:
       srec.sampled_type = BxDFFlags::SpecularReflection;
       // Compute the perfect reflection direction.
@@ -201,7 +233,9 @@ public:
       srec.pdf_ptr = nullptr; // Delta distribution; no PDF used.
       srec.pdf_val = 0.0f;    // Delta function, so PDF is zero.
       return true;
-    } else {
+    }
+    else
+    {
       srec.attenuation = diffuse + ambient;
       // Use a cosine-weighted PDF for diffuse scattering.
       srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
@@ -217,9 +251,11 @@ public:
 
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
              const HitRecord &rec,
-             TransportMode mode = TransportMode::Radiance) const override {
+             TransportMode mode = TransportMode::Radiance) const override
+  {
     float p = gl::rand_num();
-    if (p < specularProb) {
+    if (p < specularProb)
+    {
       return gl::vec3(0.0f);
     }
     // f = rho/pi
@@ -227,7 +263,8 @@ public:
   }
 };
 
-class Phong : public Material {
+class Phong : public Material
+{
 public:
   // Constructor: diffuse - diffuse color, specular - specular color,
   // ambient - ambient component, shininess - exponent for the specular lobe.
@@ -251,7 +288,8 @@ public:
           const gl::vec2 &u = {gl::rand_num(),
                                gl::rand_num()}, // 2D microfacet sample
           TransportMode mode = TransportMode::Radiance,
-          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
     // Compute average intensity for specular and diffuse components.
     float specInt = (specular.x() + specular.y() + specular.z()) / 3.0f;
     float diffInt = (diffuse.x() + diffuse.y() + diffuse.z()) / 3.0f;
@@ -259,7 +297,8 @@ public:
     float specProb = specInt / (specInt + diffInt);
 
     float r = gl::rand_num();
-    if (r < specProb) {
+    if (r < specProb)
+    {
       // Specular (glossy) branch (non-delta, with a finite Phong lobe).
       srec.sampled_type = BxDFFlags::GlossyReflection;
       // Compute the perfect reflection direction.
@@ -276,7 +315,9 @@ public:
       srec.pdf_val = srec.pdf_ptr->at(sampledDir);
       // Note: The PDF value is not used in this case, but it's good practice
       return true;
-    } else {
+    }
+    else
+    {
       // Diffuse branch.
       srec.sampled_type = BxDFFlags::DiffuseReflection;
       srec.attenuation = diffuse;
@@ -290,7 +331,8 @@ public:
 
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
              const HitRecord &rec,
-             TransportMode mode = TransportMode::Radiance) const override {
+             TransportMode mode = TransportMode::Radiance) const override
+  {
     using namespace gl;
 
     vec3 wo = wo_world.normalize(); // toward camera
@@ -298,7 +340,8 @@ public:
 
     // 2) Reject below‐surface
     float cosThetaI = dot(rec.normal, wi);
-    if (cosThetaI <= 0) {
+    if (cosThetaI <= 0)
+    {
       return vec3(0.f);
     }
 
@@ -333,12 +376,13 @@ public:
   }
 };
 
-class DiffuseEmitter : public Material {
+class DiffuseEmitter : public Material
+{
 public:
   DiffuseEmitter(std::shared_ptr<Texture2D> a, float intensity = 1.0f)
-      : _text(a), _intensity(intensity){};
+      : _text(a), _intensity(intensity) {};
   DiffuseEmitter(const gl::vec3 &a, float intensity = 1.0f)
-      : _text(std::make_shared<ConstantTexture>(a)), _intensity(intensity){};
+      : _text(std::make_shared<ConstantTexture>(a)), _intensity(intensity) {};
 
   bool
   scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
@@ -346,11 +390,13 @@ public:
           const gl::vec2 &u = {gl::rand_num(),
                                gl::rand_num()}, // 2D microfacet sample
           TransportMode mode = TransportMode::Radiance,
-          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
     return false;
   }
 
-  gl::vec3 emit(const Ray &ray_in, HitRecord &rec) const override {
+  gl::vec3 emit(const Ray &ray_in, HitRecord &rec) const override
+  {
 
     // use unidirectional light or not
     //  if (rec.is_inside)
@@ -365,7 +411,8 @@ private:
   float _intensity;
 };
 
-class DebugTangentMaterial : public Material {
+class DebugTangentMaterial : public Material
+{
 public:
   DebugTangentMaterial() = default;
 
@@ -375,12 +422,14 @@ public:
           const gl::vec2 &u = {gl::rand_num(),
                                gl::rand_num()}, // 2D microfacet sample
           TransportMode mode = TransportMode::Radiance,
-          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
     // no scattering—just treat this as an emitter so we see it directly
     return false;
   }
 
-  gl::vec3 emit(const Ray &ray, HitRecord &rec) const override {
+  gl::vec3 emit(const Ray &ray, HitRecord &rec) const override
+  {
     auto t = rec.hair_tangent;
     return gl::abs(t);
   }
@@ -388,7 +437,8 @@ public:
   bool is_emitter() const override { return true; }
 };
 
-class DebugNormalMaterial : public Material {
+class DebugNormalMaterial : public Material
+{
 public:
   DebugNormalMaterial() = default;
 
@@ -398,12 +448,14 @@ public:
           const gl::vec2 &u = {gl::rand_num(),
                                gl::rand_num()}, // 2D microfacet sample
           TransportMode mode = TransportMode::Radiance,
-          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
     // no scattering—just treat this as an emitter so we see it directly
     return false;
   }
 
-  gl::vec3 emit(const Ray &ray, HitRecord &rec) const override {
+  gl::vec3 emit(const Ray &ray, HitRecord &rec) const override
+  {
     return rec.normal * 0.5f + 0.5f;
     // return rec.normal;
   }
@@ -411,10 +463,11 @@ public:
   bool is_emitter() const override { return true; }
 };
 
-class Isotropic : public Material {
+class Isotropic : public Material
+{
 public:
-  Isotropic(std::shared_ptr<Texture2D> a) : _text(a){};
-  Isotropic(const gl::vec3 &a) : _text(std::make_shared<ConstantTexture>(a)){};
+  Isotropic(std::shared_ptr<Texture2D> a) : _text(a) {};
+  Isotropic(const gl::vec3 &a) : _text(std::make_shared<ConstantTexture>(a)) {};
 
   bool
   scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
@@ -422,7 +475,8 @@ public:
           const gl::vec2 &u = {gl::rand_num(),
                                gl::rand_num()}, // 2D microfacet sample
           TransportMode mode = TransportMode::Radiance,
-          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
     // scatter the ray with lambertian reflection
     // any direction scatter with equal probability
     // ray_scattered = Ray(rec.position, gl::sphere_random_vec());

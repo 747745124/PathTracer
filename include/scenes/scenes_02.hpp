@@ -206,4 +206,78 @@ SceneInfo cornell_box_disneyGlass()
 {
     using namespace std;
     using namespace gl;
+
+    SceneInfo scene = cornell_box_base();
+
+    shared_ptr<Hittable> sphere_00 =
+        make_shared<Sphere>(vec3(80, 250, 190), 50,
+                            make_shared<DisneyGlass>(vec3(1.00, 1.00, 1.00), 0.2f, 0.8f, 1.5f));
+
+    scene.objects.addObject(sphere_00);
+
+    shared_ptr<Hittable> sphere_01 =
+        make_shared<Sphere>(vec3(180, 250, 190), 50,
+                            make_shared<DisneyGlass>(vec3(1.00, 1.00, 1.00), 0.4f, 0.8f, 1.5f));
+
+    scene.objects.addObject(sphere_01);
+
+    shared_ptr<Hittable> sphere_02 =
+        make_shared<Sphere>(vec3(280, 250, 190), 50,
+                            make_shared<DisneyGlass>(vec3(1.00, 1.00, 1.00), 0.6f, 0.8f, 1.5f));
+
+    scene.objects.addObject(sphere_02);
+
+    shared_ptr<Hittable> sphere_03 =
+        make_shared<Sphere>(vec3(380, 250, 190), 50,
+                            make_shared<DisneyGlass>(vec3(1.00, 1.00, 1.00), 0.8f, 0.8f, 1.5f));
+
+    scene.objects.addObject(sphere_03);
+
+    shared_ptr<Hittable> sphere_04 =
+        make_shared<Sphere>(vec3(480, 250, 190), 50,
+                            make_shared<DisneyGlass>(vec3(1.00, 1.00, 1.00), 1.0f, 0.8f, 1.5f));
+
+    scene.objects.addObject(sphere_04);
+
+    return scene;
+}
+
+SceneInfo cornell_box_mfDielectric()
+{
+    using namespace std;
+    using namespace gl;
+
+    SceneInfo scene = cornell_box_base();
+
+    shared_ptr<Hittable> sphere_00 =
+        make_shared<Sphere>(vec3(80, 250, 190), 50,
+                            make_shared<MFDielectric>(1.5f, 0.001f, 0.001f));
+
+    scene.objects.addObject(sphere_00);
+
+    shared_ptr<Hittable> sphere_01 =
+        make_shared<Sphere>(vec3(180, 250, 190), 50,
+                            make_shared<MFDielectric>(1.5f, 0.1f, 0.1f));
+
+    scene.objects.addObject(sphere_01);
+
+    shared_ptr<Hittable> sphere_02 =
+        make_shared<Sphere>(vec3(280, 250, 190), 50,
+                            make_shared<MFDielectric>(1.5f, 0.3f, 0.3f));
+
+    scene.objects.addObject(sphere_02);
+
+    shared_ptr<Hittable> sphere_03 =
+        make_shared<Sphere>(vec3(380, 250, 190), 50,
+                            make_shared<MFDielectric>(1.5f, 0.5f, 0.5f));
+
+    scene.objects.addObject(sphere_03);
+
+    shared_ptr<Hittable> sphere_04 =
+        make_shared<Sphere>(vec3(480, 250, 190), 50,
+                            make_shared<MFDielectric>(1.5f, 0.8f, 0.8f));
+
+    scene.objects.addObject(sphere_04);
+
+    return scene;
 }

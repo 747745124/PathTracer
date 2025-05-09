@@ -65,8 +65,20 @@ public:
                 TransportMode mode = TransportMode::Radiance,
                 BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
     {
-        if (srec.pdf_ptr != nullptr)
+        if (srec.pdf_ptr == nullptr)
             return 0.f;
         return srec.pdf_ptr->at(wi_world.getDirection().normalize());
     }
+
+    float scatter_pdf(const gl::vec3 &wo_world, const gl::vec3 &wi_world, const HitRecord &rec,
+                      TransportMode mode = TransportMode::Radiance,
+                      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+    {
+        using namespace gl;
+        if (!(flags & BxDFReflTransFlags::Reflection))
+            return 0.f;
+
+        std::shared_ptr<CosinePDF> pdf = std::make_shared<CosinePDF>(rec.normal);
+        return pdf->at(wi_world);
+    };
 };

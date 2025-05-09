@@ -9,6 +9,7 @@
 #include "material/disneyMetal.hpp"
 #include "material/disneyClearcoat.hpp"
 #include "material/disneySheen.hpp"
+#include "material/disneyGlass.hpp"
 namespace gl
 {
     static std::shared_ptr<Material> GLASS = std::make_shared<Dielectric>(1.5f);

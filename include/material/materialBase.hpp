@@ -15,13 +15,13 @@ struct ScatterRecord
   gl::vec3 attenuation;
   std::shared_ptr<PDF> pdf_ptr = nullptr;
 
-  bool is_specular() { return this->sampled_type & BxDFFlags::Specular; }
-  bool is_specular_reflection()
+  bool is_specular() const { return this->sampled_type & BxDFFlags::Specular; }
+  bool is_specular_reflection() const
   {
     return (this->sampled_type & BxDFFlags::SpecularReflection) ==
            BxDFFlags::SpecularReflection;
   }
-  bool is_specular_transmission()
+  bool is_specular_transmission() const
   {
     return (this->sampled_type & BxDFFlags::SpecularTransmission) ==
            BxDFFlags::SpecularTransmission;

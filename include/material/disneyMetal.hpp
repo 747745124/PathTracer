@@ -15,6 +15,7 @@ public:
     DisneyMetal(const gl::vec3 &a, float roughness, float anisotropic)
         : albedo(std::make_shared<ConstantTexture>(a)), distribution(TrowbridgeReitzDistribution::fromRoughnessAnisotropic(roughness, anisotropic)) {};
 
+    bool effectivelySmooth() const { return distribution.effectivelySmooth(); }
     bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
                  float uc = gl::rand_num(), // coin-flip sample
                  const gl::vec2 &u = {gl::rand_num(),
@@ -86,5 +87,48 @@ public:
         vec3 Gm = distribution.G(wo, wi);
         vec3 f = Fm * Dm * Gm / fabs(4.f * cos_theta_wi * cos_theta_wo);
         return f;
+    };
+
+    gl::vec3 f_variant(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
+                       const HitRecord &rec,
+                       TransportMode mode = TransportMode::Radiance, float specular_tint = 0.5f, float eta = 1.0f, float specular = 0.5f, float metallic = 0.5f) const
+    {
+        using namespace gl;
+        OrthoBasis onb(rec.normal);
+        vec3 wo = onb.toLocal(wo_world);
+        vec3 wi = onb.toLocal(wi_world);
+        vec3 wh = (wo + wi).normalize();
+
+        if (wi.z() <= 0 || wo.z() <= 0 || distribution.effectivelySmooth())
+            return vec3(0.f);
+
+        float cos_theta_wi = pbrt::cosTheta(wi);
+        float cos_theta_wo = pbrt::cosTheta(wo);
+        float dot_wh_wi = fabs(dot(wh, wi));
+        vec3 baseColor = albedo->getTexelColor(rec.texCoords);
+
+        vec3 Ks = (1 - specular_tint) + specular_tint * baseColor;
+        vec3 R0 = etaToR0(eta);
+        vec3 C0 = specular * R0 * (1 - metallic) * Ks + metallic * baseColor;
+        vec3 Fm = fresnelSchlick(dot_wh_wi, C0);
+        vec3 Dm = distribution.D(wh);
+        vec3 Gm = distribution.G(wo, wi);
+        vec3 f = Fm * Dm * Gm / fabs(4.f * cos_theta_wi * cos_theta_wo);
+        return f;
+    };
+
+    float scatter_pdf(const gl::vec3 &wo_world, const gl::vec3 &wi_world, const HitRecord &rec,
+                      TransportMode mode = TransportMode::Radiance,
+                      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+    {
+        using namespace gl;
+        if (!(flags & BxDFReflTransFlags::Reflection))
+            return 0.f;
+        if (distribution.effectivelySmooth())
+            return 0.f;
+
+        OrthoBasis basis(rec.normal);
+        auto pdf = std::make_shared<MicrofacetPDF>(distribution, basis, wo_world);
+        return pdf->at(wi_world);
     };
 };
