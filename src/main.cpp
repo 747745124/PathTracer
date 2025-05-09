@@ -17,7 +17,8 @@ int main()
   // SceneInfo scene = cornell_box();
 
   // SceneInfo scene = cornell_box_disneyDiffuse();
-  SceneInfo scene = cornell_box_disneyMetal();
+  // SceneInfo scene = cornell_box_disneyMetal();
+  SceneInfo scene = cornell_box_disneySheen();
   // SceneInfo scene = cornell_box_disneyClearcoat();
   //  SceneInfo scene = checkpoint_diffuse();
   // SceneInfo scene = cornell_box_modified();
