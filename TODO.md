@@ -20,7 +20,7 @@
 * Possibly medium / volume scattering
 
 ## FEATURE LEVEL - Rendering Method
-* NEE+MIS
+* NEE+MIS+Power Heuristic
 * BDPT
 
 ## FEATURE LEVEL - Sampler

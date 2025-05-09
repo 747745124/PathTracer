@@ -1,24 +1,20 @@
 # Path Tracer
 
-An NEE + MIS sampled path tracer, supports Marschner Hair / Phong / Dielectric / Conductor material and various Monte Carlo effects. 
+An NEE + MIS sampled path tracer, supports Disney Principled BSDF / Marschner Hair / Phong / Dielectric / Conductor material and various Monte Carlo effects. 
 
-![image](images/sample.png)
-
-> Left: Rough gold material, Right: Marschner Hair material
-
-
-
-![image](images/dielectric.png)
+<img src="images/dielectric.png" alt="image" style="zoom: 67%;" />
 
 > Rough glass bunny with Microfacet Conductor background 
 
 
 
-<img src="images/bunny_split.png" alt="image" style="zoom:63%;" />
+<img src="https://s2.loli.net/2025/05/09/iXeMfBgGxCU1t6r.png" alt="output" style="zoom:67%;" />
 
->  Thin dielectric bunny with Microfacet Conductor background, using split ray for noise reduction
+>  Disney Principled Bunny with Microfacet Conductor background
 
+![image](images/sample.png)
 
+> Left: Rough gold material, Right: Marschner Hair material
 
 ## Build Instructions:
 
