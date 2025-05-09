@@ -7,6 +7,7 @@ set(SRC_CPP
     sampler/sampler.cpp
     external/scene_io.cpp
     material/hairMarsch.cpp
+    material/disneyPrincipledBSDF.cpp
     base/camera.cpp
     base/framebuffer.cpp
     base/texture.cpp

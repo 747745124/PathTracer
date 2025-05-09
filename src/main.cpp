@@ -18,7 +18,8 @@ int main()
 
   // SceneInfo scene = cornell_box_disneyDiffuse();
   // SceneInfo scene = cornell_box_disneyMetal();
-  SceneInfo scene = cornell_box_disneyGlass();
+  // SceneInfo scene = cornell_box_disneyGlass();
+  SceneInfo scene = cornell_box_DisneyPrincipledBSDF();
   // SceneInfo scene = cornell_box_mfDielectric();
   // SceneInfo scene = cornell_box_disneySheen();
   // SceneInfo scene = cornell_box_disneyClearcoat();

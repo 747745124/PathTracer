@@ -5,11 +5,7 @@
 #include "material/hairMarsch.hpp"
 #include "material/simpleDispersion.hpp"
 #include "material/thinDielectric.hpp"
-#include "material/disneyDiffuse.hpp"
-#include "material/disneyMetal.hpp"
-#include "material/disneyClearcoat.hpp"
-#include "material/disneySheen.hpp"
-#include "material/disneyGlass.hpp"
+#include "material/disneyPrincipledBSDF.hpp"
 namespace gl
 {
     static std::shared_ptr<Material> GLASS = std::make_shared<Dielectric>(1.5f);
@@ -34,6 +30,7 @@ namespace gl
         std::make_shared<Lambertian>(RED);
     static std::shared_ptr<Material> LAMBERTIAN_GREEN =
         std::make_shared<Lambertian>(GREEN);
+
     static std::shared_ptr<Material> MARSCH_HAIR = std::make_shared<HairMarschner>(
         vec3(0.419f, 0.697f, 1.37f), 0.f, 1.55f, 0.7f, 0.5f, to_radian(2.f));
 
@@ -76,13 +73,100 @@ namespace gl
     static std::shared_ptr<DebugNormalMaterial> debugNormalMaterial =
         std::make_shared<DebugNormalMaterial>();
 
-    static std::shared_ptr<DisneyDiffuse> DisneyDiffuseRed =
-        std::make_shared<DisneyDiffuse>(RED, 0.5f, 0.5f);
+    namespace DisneyBSDF
+    {
+        static std::shared_ptr<DisneyDiffuse> DisneyDiffuseRed =
+            std::make_shared<DisneyDiffuse>(RED, 0.5f, 0.5f);
 
-    static std::shared_ptr<DisneyMetal> DisneyMetalRed =
-        std::make_shared<DisneyMetal>(RED, 0.5f, 0.01f);
+        static std::shared_ptr<DisneyMetal> DisneyMetalRed =
+            std::make_shared<DisneyMetal>(RED, 0.5f, 0.01f);
 
-    static std::shared_ptr<DisneyClearcoat> Disneycoat =
-        std::make_shared<DisneyClearcoat>(0.5f);
+        static std::shared_ptr<DisneyClearcoat> Disneycoat =
+            std::make_shared<DisneyClearcoat>(0.5f);
 
+        static std::shared_ptr<DisneyPrincipledBSDF> MatteRedPlastic =
+            std::make_shared<DisneyPrincipledBSDF>(
+                gl::vec3(0.8f, 0.1f, 0.1f), // baseColor
+                0.0f,                       // specular_transmission
+                0.0f,                       // metallic
+                0.0f,                       // subsurface
+                0.5f,                       // specular
+                0.6f,                       // roughness
+                0.0f,                       // specular_tint
+                0.0f,                       // anisotropic
+                0.0f,                       // sheen
+                0.0f,                       // sheen_tint
+                0.0f,                       // clearcoat
+                0.0f,                       // clearcoat_gloss
+                1.460f                      // eta
+            );
+
+        static std::shared_ptr<DisneyPrincipledBSDF> GlossyBluePlastic =
+            std::make_shared<DisneyPrincipledBSDF>(
+                gl::vec3(0.1f, 0.2f, 0.8f), // baseColor
+                0.0f,                       // specular_transmission
+                0.0f,                       // metallic
+                0.0f,                       // subsurface
+                0.5f,                       // specular
+                0.1f,                       // roughness
+                0.0f,                       // specular_tint
+                0.0f,                       // anisotropic
+                0.0f,                       // sheen
+                0.0f,                       // sheen_tint
+                0.0f,                       // clearcoat
+                0.0f,                       // clearcoat_gloss
+                1.5f                        // eta
+            );
+
+        static std::shared_ptr<DisneyPrincipledBSDF> ClearGlass =
+            std::make_shared<DisneyPrincipledBSDF>(
+                gl::vec3(1.0f, 1.0f, 1.0f), // baseColor (often less important for pure glass)
+                1.0f,                       // specular_transmission
+                0.0f,                       // metallic
+                0.0f,                       // subsurface
+                0.5f,                       // specular
+                0.0f,                       // roughness
+                0.0f,                       // specular_tint
+                0.0f,                       // anisotropic
+                0.0f,                       // sheen
+                0.0f,                       // sheen_tint
+                0.0f,                       // clearcoat
+                0.0f,                       // clearcoat_gloss
+                1.52f                       // eta
+            );
+
+        static std::shared_ptr<DisneyPrincipledBSDF> Gold =
+            std::make_shared<DisneyPrincipledBSDF>(
+                gl::vec3(1.0f, 0.766f, 0.336f), // baseColor (defines reflection color for metals)
+                0.0f,                           // specular_transmission
+                1.0f,                           // metallic
+                0.0f,                           // subsurface
+                1.0f,                           // specular (intensity, baseColor provides tint)
+                0.2f,                           // roughness
+                0.0f,                           // specular_tint (not used for metals as baseColor is the tint)
+                0.0f,                           // anisotropic
+                0.0f,                           // sheen
+                0.0f,                           // sheen_tint
+                0.0f,                           // clearcoat
+                0.0f,                           // clearcoat_gloss
+                0.47f                           // eta (real part of IOR for gold, role depends on metallic path)
+            );
+
+        static std::shared_ptr<DisneyPrincipledBSDF> MetallicRedCarPaint =
+            std::make_shared<DisneyPrincipledBSDF>(
+                gl::vec3(0.7f, 0.05f, 0.05f), // baseColor for metallic flakes
+                0.0f,                         // specular_transmission
+                0.75f,                        // metallic (for the flake layer)
+                0.0f,                         // subsurface
+                0.6f,                         // specular for base
+                0.3f,                         // roughness for metallic flake layer
+                0.9f,                         // specular_tint for base if metallic < 1
+                0.0f,                         // anisotropic
+                0.0f,                         // sheen
+                0.0f,                         // sheen_tint
+                1.0f,                         // clearcoat strength
+                0.95f,                        // clearcoat_gloss (high gloss)
+                1.5f                          // eta (for base paint layer, clearcoat often assumes ~1.5)
+            );
+    };
 }; // namespace gl

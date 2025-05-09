@@ -6,6 +6,14 @@
 extern int rejects;
 class MFDielectricPDF : public PDF
 {
+private:
+  const TrowbridgeReitzDistribution &distrib;
+  const OrthoBasis onb;
+  const gl::vec3 wo;
+  const float eta;
+  const BxDFReflTransFlags flags;
+  const TransportMode mode;
+
 public:
   MFDielectricPDF(const TrowbridgeReitzDistribution &d, const OrthoBasis &basis,
                   const gl::vec3 &wo_world, float eta,
@@ -136,12 +144,4 @@ public:
     }
     return pdf;
   }
-
-private:
-  const TrowbridgeReitzDistribution &distrib;
-  const OrthoBasis onb;
-  const gl::vec3 wo;
-  const float eta;
-  const BxDFReflTransFlags flags;
-  const TransportMode mode;
 };

@@ -5,6 +5,11 @@
 extern int rejects;
 class MicrofacetPDF : public PDF
 {
+private:
+  const TrowbridgeReitzDistribution &distrib;
+  OrthoBasis onb;
+  gl::vec3 wo_local;
+
 public:
   MicrofacetPDF(const TrowbridgeReitzDistribution &d, const OrthoBasis &basis,
                 const gl::vec3 &wo_world)
@@ -54,9 +59,4 @@ public:
     // microfacet PDF = D(m) / (4 * |dot(wi,m)|)
     return distrib.PDF(wo_local, m) / denominator;
   }
-
-private:
-  const TrowbridgeReitzDistribution &distrib;
-  OrthoBasis onb;
-  gl::vec3 wo_local;
 };

@@ -281,3 +281,43 @@ SceneInfo cornell_box_mfDielectric()
 
     return scene;
 }
+
+SceneInfo cornell_box_DisneyPrincipledBSDF()
+{
+    using namespace std;
+    using namespace gl;
+
+    SceneInfo scene = cornell_box_base();
+
+    shared_ptr<Hittable> sphere_00 =
+        make_shared<Sphere>(vec3(80, 250, 190), 50,
+                            DisneyBSDF::ClearGlass);
+
+    scene.objects.addObject(sphere_00);
+
+    shared_ptr<Hittable> sphere_01 =
+        make_shared<Sphere>(vec3(180, 250, 190), 50,
+                            DisneyBSDF::GlossyBluePlastic);
+
+    scene.objects.addObject(sphere_01);
+
+    shared_ptr<Hittable> sphere_02 =
+        make_shared<Sphere>(vec3(280, 250, 190), 50,
+                            DisneyBSDF::MetallicRedCarPaint);
+
+    scene.objects.addObject(sphere_02);
+
+    shared_ptr<Hittable> sphere_03 =
+        make_shared<Sphere>(vec3(380, 250, 190), 50,
+                            DisneyBSDF::MatteRedPlastic);
+
+    scene.objects.addObject(sphere_03);
+
+    shared_ptr<Hittable> sphere_04 =
+        make_shared<Sphere>(vec3(480, 250, 190), 50,
+                            DisneyBSDF::Gold);
+
+    scene.objects.addObject(sphere_04);
+
+    return scene;
+}
