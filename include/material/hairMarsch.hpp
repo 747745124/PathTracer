@@ -1,11 +1,13 @@
 #pragma once
 #include "material/material.hpp"
-class HairMarschner : public Material {
+class HairMarschner : public Material
+{
 public:
   // assume alpha given in radian
   HairMarschner(const gl::vec3 &sigma_a, float h, float eta, float beta_m,
                 float beta_n, float alpha)
-      : sigma_a(sigma_a), h(h), eta(eta), beta_m(beta_m), beta_n(beta_n) {
+      : sigma_a(sigma_a), h(h), eta(eta), beta_m(beta_m), beta_n(beta_n)
+  {
 
     // initialize v mapping
     this->v[0] = gl::square(0.726f * beta_m + 0.812f * gl::square(beta_m) +
@@ -23,7 +25,8 @@ public:
     // initialize sin2kAlpha and cos2kAlpha
     sin2kAlpha[0] = std::sin(alpha);
     cos2kAlpha[0] = gl::safeSqrt(1 - gl::square(sin2kAlpha[0]));
-    for (int i = 1; i < pMax; ++i) {
+    for (int i = 1; i < pMax; ++i)
+    {
       sin2kAlpha[i] = 2 * cos2kAlpha[i - 1] * sin2kAlpha[i - 1];
       cos2kAlpha[i] =
           gl::square(cos2kAlpha[i - 1]) - gl::square(sin2kAlpha[i - 1]);
@@ -40,7 +43,8 @@ public:
 
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
              const HitRecord &rec,
-             TransportMode mode = TransportMode::Radiance) const override {
+             TransportMode mode = TransportMode::Radiance) const override
+  {
     using namespace gl;
     OrthoBasis basis(rec.normal);
     vec3 wo_l = basis.toLocal(wo_world.normalize());
@@ -48,6 +52,11 @@ public:
 
     return evalMarschner(wi_l, wo_l);
   }
+
+  float scatter_pdf(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
+                    const HitRecord &rec,
+                    TransportMode mode = TransportMode::Radiance,
+                    BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override;
 
 private:
   // grant access to HairPDF
@@ -68,7 +77,8 @@ private:
 
   // longitudinal scattering, complex, ignore the details
   float Mp(float cosTheta_i, float cosTheta_o, float sinTheta_i,
-           float sinTheta_o, float v) const {
+           float sinTheta_o, float v) const
+  {
     float a = cosTheta_i * cosTheta_o / v, b = sinTheta_i * sinTheta_o / v;
     float mp =
         (v <= .1) ? (gl::fastExp(gl::logI0f(a) - b - 1 / v + 0.6931f +
@@ -77,12 +87,14 @@ private:
     return mp;
   }
 
-  float Phi(int p, float gamma_o, float gamma_t) const {
+  float Phi(int p, float gamma_o, float gamma_t) const
+  {
     return 2 * p * gamma_t - 2 * gamma_o + p * M_PI;
   }
   // Absorption
   std::array<gl::vec3, pMax + 1> Ap(float cosTheta_o, float eta, float h,
-                                    gl::vec3 T) const {
+                                    gl::vec3 T) const
+  {
     using namespace gl;
     std::array<gl::vec3, pMax + 1> ap;
     float cosGamma_o = safeSqrt(1 - square(h));
@@ -100,7 +112,8 @@ private:
   }
 
   // azimuthal scattering
-  float Np(float phi, int p, float s, float gamma_o, float gamma_t) const {
+  float Np(float phi, int p, float s, float gamma_o, float gamma_t) const
+  {
     float dphi = phi - Phi(p, gamma_o, gamma_t);
     while (dphi > M_PI)
       dphi -= 2 * M_PI;
@@ -111,7 +124,8 @@ private:
   }
 
 public:
-  std::array<float, pMax + 1> ApPDF(float cosTheta_o) const {
+  std::array<float, pMax + 1> ApPDF(float cosTheta_o) const
+  {
     using namespace gl;
     float sinTheta_o = safeSqrt(1 - square(cosTheta_o));
 
@@ -129,11 +143,13 @@ public:
     std::array<float, pMax + 1> apPdf;
     float sumY = 0.f;
 
-    for (const auto &v : ap) {
+    for (const auto &v : ap)
+    {
       sumY += v.average();
     }
 
-    for (int i = 0; i < pMax + 1; ++i) {
+    for (int i = 0; i < pMax + 1; ++i)
+    {
       apPdf[i] = ap[i].average() / sumY;
     }
 

@@ -12,6 +12,7 @@
 * ✅ Rough dielectric
 * ✅ Adding detailed dieletric interface
    * Per channel refract (i.e. dispersion)
+* ✅ Disney Principled BSDF 2012 / 2015 Ver.
 * Add Kajiya-Kay Material
 
 ## FEATURE LEVEL - Interface

@@ -20,6 +20,14 @@ public:
         return gl::vec3(0.0f);
     };
 
+    float scatter_pdf(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
+                      const HitRecord &rec,
+                      TransportMode mode = TransportMode::Radiance,
+                      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+    {
+        return 0.f;
+    }
+
     //===============================================================
     // Below are usually not needed to be overridden
     //===============================================================

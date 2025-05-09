@@ -798,11 +798,11 @@ SceneInfo custom_mesh()
     LightList lights;
 
     std::shared_ptr<Hittable> mesh =
-        loadOBJMesh("../../assets/bunny.obj", ROUGH_GLASS_MAT);
+        loadOBJMesh("../../assets/bunny_high.obj", DisneyBSDF::DisneyMaterial_Shell10);
     // mesh = make_shared<Rotate<Axis::X>>(mesh, M_PI_2);
     mesh = make_shared<Rotate<Axis::Y>>(mesh, M_PI_2);
-    mesh = make_shared<Scale>(mesh, 60.f);
-    mesh = make_shared<Translate>(mesh, 4.f * vec3(26.f, -18.f, 8.f).normalize());
+    mesh = make_shared<Scale>(mesh, 2.8f);
+    mesh = make_shared<Translate>(mesh, 4.f * vec3(26.f, 2.f, 8.f).normalize());
 
     objects.addObject(mesh);
 

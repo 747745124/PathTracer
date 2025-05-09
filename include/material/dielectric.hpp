@@ -2,17 +2,18 @@
 #include "material/material.hpp"
 #include "probs/mfDielectricPDF.hpp"
 
-class MFDielectric : public Material {
+class MFDielectric : public Material
+{
 private:
   float eta;
   TrowbridgeReitzDistribution mfDistrib;
 
 public:
   MFDielectric(float eta, TrowbridgeReitzDistribution mfDistrib)
-      : eta(eta), mfDistrib(mfDistrib){};
+      : eta(eta), mfDistrib(mfDistrib) {};
 
   MFDielectric(float eta, float alpha_x, float alpha_y)
-      : eta(eta), mfDistrib(alpha_x, alpha_y){};
+      : eta(eta), mfDistrib(alpha_x, alpha_y) {};
 
   bool effectivelySmooth() const { return mfDistrib.effectivelySmooth(); }
   bool
@@ -21,9 +22,11 @@ public:
           const gl::vec2 &u = {gl::rand_num(),
                                gl::rand_num()}, // 2D microfacet sample
           TransportMode mode = TransportMode::Radiance,
-          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override {
+          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
 
-    if (eta == 1 || mfDistrib.effectivelySmooth()) {
+    if (eta == 1 || mfDistrib.effectivelySmooth())
+    {
       using namespace gl;
 
       vec3 wo_world = -ray_in.getDirection().normalize();
@@ -37,7 +40,8 @@ public:
       if (pr == 0 && pt == 0)
         return false;
 
-      if (uc < pr / (pr + pt)) {
+      if (uc < pr / (pr + pt))
+      {
         vec3 wi_world = pbrt::reflect(wo_world, rec.normal).normalize();
         srec.sampled_ray = Ray(rec.position, wi_world);
         srec.sampled_type = BxDFFlags::SpecularReflection;
@@ -45,7 +49,9 @@ public:
         srec.attenuation = 1.0f;
         srec.pdf_val = R;
         return true;
-      } else {
+      }
+      else
+      {
         vec3 wi_world;
         float etap;
         // TIR
@@ -91,10 +97,30 @@ public:
     return true;
   };
 
+  float scatter_pdf(
+      const gl::vec3 &wo_world, const gl::vec3 &wi_world,
+      const HitRecord &rec,
+      TransportMode mode = TransportMode::Radiance,
+      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
+    using namespace gl;
+    if (eta == 1 || mfDistrib.effectivelySmooth())
+      return 0.0f;
+
+    OrthoBasis basis(rec.normal);
+    vec3 wo_l = basis.toLocal(wo_world.normalize());
+    vec3 wi_l = basis.toLocal(wi_world.normalize());
+
+    auto pdf = std::make_shared<MFDielectricPDF>(mfDistrib, basis, wo_world, eta,
+                                                 flags, mode);
+    return pdf->at(wi_world);
+  }
+
   // required for non-delta
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
              const HitRecord &rec,
-             TransportMode mode = TransportMode::Radiance) const override {
+             TransportMode mode = TransportMode::Radiance) const override
+  {
     using namespace gl;
     if (eta == 1 || mfDistrib.effectivelySmooth())
       return vec3(0.f);
@@ -119,11 +145,13 @@ public:
       return {};
 
     float F = fresnelDielectric(dot(wo_l, wm), eta);
-    if (reflect) {
+    if (reflect)
+    {
       return vec3(mfDistrib.D(wm) * mfDistrib.G(wo_l, wi_l) * F /
                   std::abs(4 * cosTheta_i * cosTheta_o));
-
-    } else {
+    }
+    else
+    {
       float denom = square(dot(wi_l, wm) + dot(wo_l, wm) / etap) * cosTheta_i *
                     cosTheta_o;
 

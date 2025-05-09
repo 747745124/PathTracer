@@ -5,11 +5,13 @@ bool HairMarschner::scatter(const Ray &ray_in, HitRecord &rec,
                             ScatterRecord &srec, float uc,
                             const gl::vec2 &u, // 2D microfacet sample
                             TransportMode mode,
-                            BxDFReflTransFlags flags) const {
+                            BxDFReflTransFlags flags) const
+{
   gl::vec3 wo_world = -ray_in.getDirection().normalize();
 
   // if hair_tangent is not set, use normal
-  if (rec.hair_tangent.near_zero()) {
+  if (rec.hair_tangent.near_zero())
+  {
     rec.hair_tangent = rec.normal;
   }
 
@@ -26,7 +28,8 @@ bool HairMarschner::scatter(const Ray &ray_in, HitRecord &rec,
 };
 
 gl::vec3 HairMarschner::evalMarschner(const gl::vec3 &wi,
-                                      const gl::vec3 &wo) const {
+                                      const gl::vec3 &wo) const
+{
   // compute wo hair related term
   using namespace gl;
   float sinTheta_o = wo.x();
@@ -58,20 +61,28 @@ gl::vec3 HairMarschner::evalMarschner(const gl::vec3 &wi,
   float phi = phi_i - phi_o;
   std::array<vec3, pMax + 1> ap = Ap(cosTheta_o, eta, h, T);
   vec3 bsdf(0.f);
-  for (int p = 0; p < pMax; ++p) {
+  for (int p = 0; p < pMax; ++p)
+  {
 
     // scale adjusting
     float sinThetap_o, cosThetap_o;
-    if (p == 0) {
+    if (p == 0)
+    {
       sinThetap_o = sinTheta_o * cos2kAlpha[1] - cosTheta_o * sin2kAlpha[1];
       cosThetap_o = cosTheta_o * cos2kAlpha[1] + sinTheta_o * sin2kAlpha[1];
-    } else if (p == 1) {
+    }
+    else if (p == 1)
+    {
       sinThetap_o = sinTheta_o * cos2kAlpha[0] + cosTheta_o * sin2kAlpha[0];
       cosThetap_o = cosTheta_o * cos2kAlpha[0] - sinTheta_o * sin2kAlpha[0];
-    } else if (p == 2) {
+    }
+    else if (p == 2)
+    {
       sinThetap_o = sinTheta_o * cos2kAlpha[2] + cosTheta_o * sin2kAlpha[2];
       cosThetap_o = cosTheta_o * cos2kAlpha[2] - sinTheta_o * sin2kAlpha[2];
-    } else {
+    }
+    else
+    {
       sinThetap_o = sinTheta_o;
       cosThetap_o = cosTheta_o;
     }
@@ -90,4 +101,17 @@ gl::vec3 HairMarschner::evalMarschner(const gl::vec3 &wi,
     bsdf /= std::abs(wi.z());
 
   return bsdf;
+}
+
+float HairMarschner::scatter_pdf(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
+                                 const HitRecord &rec,
+                                 TransportMode mode,
+                                 BxDFReflTransFlags flags) const
+{
+  using namespace gl;
+  if (!(flags & BxDFReflTransFlags::Reflection))
+    return 0.f;
+
+  auto pdf = std::make_shared<HairPDF>(*this, OrthoBasis(rec.normal), wo_world);
+  return pdf->at(wi_world);
 }

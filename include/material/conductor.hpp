@@ -80,6 +80,32 @@ public:
     return srec.pdf_ptr->at(wi_world.getDirection().normalize());
   }
 
+  float scatter_pdf(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
+                    const HitRecord &rec,
+                    TransportMode mode = TransportMode::Radiance,
+                    BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
+    using namespace gl;
+    if (!(flags & BxDFReflTransFlags::Reflection))
+      return 0.0f;
+
+    if (mfDistribution.effectivelySmooth())
+    {
+      return 0.0f;
+    }
+
+    OrthoBasis basis(rec.normal);
+    vec3 wo_l = basis.toLocal(wo_world.normalize());
+    vec3 wi_l = basis.toLocal(wi_world.normalize());
+
+    auto pdf_ptr = std::make_shared<MicrofacetPDF>(mfDistribution, basis, wo_world);
+
+    if (dot(rec.normal, wi_world) <= 0)
+      return 0.0f;
+
+    return pdf_ptr->at(wi_world);
+  }
+
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
              const HitRecord &rec,
              TransportMode mode = TransportMode::Radiance) const override

@@ -87,7 +87,7 @@ public:
     if (!(flags & BxDFReflTransFlags::Reflection))
       return false;
 
-    srec.sampled_type = BxDFFlags::Diffuse;
+    srec.sampled_type = BxDFFlags::DiffuseReflection;
     srec.attenuation = albedo->getTexelColor(rec.texCoords) * (1.0f / M_PI);
     srec.pdf_ptr = std::make_shared<CosinePDF>(rec.normal);
     srec.sampled_ray = Ray(rec.position, srec.pdf_ptr->get(uc, u).normalize());
@@ -105,6 +105,16 @@ public:
     if (srec.pdf_ptr == nullptr)
       return 0.f;
     return srec.pdf_ptr->at(wi_world.getDirection().normalize());
+  }
+
+  float scatter_pdf(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
+                    const HitRecord &rec,
+                    TransportMode mode = TransportMode::Radiance,
+                    BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
+    if (!(flags & BxDFReflTransFlags::Reflection))
+      return 0.f;
+    return std::make_shared<CosinePDF>(rec.normal)->at(wi_world);
   }
 
   gl::vec3 f(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
@@ -144,14 +154,6 @@ public:
     srec.pdf_ptr = nullptr;
     srec.pdf_val = 0.0f; // delta function
     return true;
-  }
-
-  float scatter_pdf(
-      const ScatterRecord &srec, const Ray &wi_world,
-      TransportMode mode = TransportMode::Radiance,
-      BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
-  {
-    return 0.f;
   }
 
   gl::vec3 albedo;
@@ -215,8 +217,7 @@ public:
           BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
   {
 
-    float p = gl::rand_num();
-    if (p < specularProb)
+    if (uc < specularProb)
     {
       // Specular scattering branch:
       srec.sampled_type = BxDFFlags::SpecularReflection;
@@ -260,6 +261,33 @@ public:
     }
     // f = rho/pi
     return diffuse + ambient;
+  }
+
+  float scatter_pdf(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
+                    const HitRecord &rec,
+                    TransportMode mode = TransportMode::Radiance,
+                    BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
+    using namespace gl;
+    if (!(flags & BxDFReflTransFlags::Reflection)) // PhongLike is purely reflective
+      return 0.f;
+
+    float prob_diffuse = 1.0f - specularProb; // Probability of choosing the diffuse path
+
+    // If diffuse is chosen, the PDF is a CosinePDF.
+    // We need to evaluate this CosinePDF for the given wi_world.
+    // Ensure wi_world is normalized.
+    vec3 wi_world_norm = wi_world.normalize();
+    float cos_theta_i = dot(wi_world_norm, rec.normal.normalize());
+
+    if (cos_theta_i <= 0) // Diffuse reflection must be in the hemisphere of the normal
+      return 0.f;
+
+    float pdf_diffuse_lobe = cos_theta_i / M_PI;
+
+    // The overall PDF is P(choosing diffuse) * PDF_diffuse(wi | wo)
+    // Since PDF_diffuse is independent of wo for Lambertian:
+    return prob_diffuse * pdf_diffuse_lobe;
   }
 };
 
@@ -373,6 +401,57 @@ public:
     float diffPDF = cosThetaI / M_PI;
 
     return f_val;
+  }
+
+  // In class Phong
+  float scatter_pdf(const gl::vec3 &wo_world, const gl::vec3 &wi_world,
+                    const HitRecord &rec,
+                    TransportMode mode = TransportMode::Radiance,
+                    BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+  {
+    using namespace gl;
+    if (!(flags & BxDFReflTransFlags::Reflection)) // Phong is purely reflective
+      return 0.f;
+
+    // Normalize input directions
+    vec3 wo_world_norm = wo_world.normalize();
+    vec3 wi_world_norm = wi_world.normalize();
+
+    // Compute energy-based probability for choosing specular sampling (same as in scatter)
+    float specInt = (specular.x() + specular.y() + specular.z()) / 3.0f;
+    float diffInt = (diffuse.x() + diffuse.y() + diffuse.z()) / 3.0f;
+    float totalInt = specInt + diffInt;
+    if (totalInt == 0.f)
+      return 0.f; // Avoid division by zero if both are black
+
+    float prob_specular_choice = specInt / totalInt;
+    float prob_diffuse_choice = diffInt / totalInt; // Or 1.0f - prob_specular_choice
+
+    // PDF from the specular (Phong lobe) branch
+    float pdf_specular_lobe = 0.f;
+    if (prob_specular_choice > 0)
+    {
+      vec3 R_perfect = reflect(-wo_world_norm, rec.normal.normalize()); // ray_in.direction = -wo_world
+      // The PhongLobePDF is centered around R_perfect.
+      // Its 'at' method computes (shininess+1)/(2*PI) * cos^shininess(angle between wi and R)
+      PhongLobePDF phong_pdf_obj(R_perfect, shininess);
+      pdf_specular_lobe = phong_pdf_obj.at(wi_world_norm);
+    }
+
+    // PDF from the diffuse (Cosine lobe) branch
+    float pdf_diffuse_lobe = 0.f;
+    if (prob_diffuse_choice > 0)
+    {
+      float cos_theta_i = dot(wi_world_norm, rec.normal.normalize());
+      if (cos_theta_i > 0)
+      { // Diffuse reflection must be in the hemisphere of the normal
+        pdf_diffuse_lobe = cos_theta_i / M_PI;
+      }
+    }
+
+    // The overall PDF is the weighted sum of the individual lobe PDFs
+    // PDF_overall = P(choose specular) * PDF_specular(wi | wo) + P(choose diffuse) * PDF_diffuse(wi | wo)
+    return prob_specular_choice * pdf_specular_lobe + prob_diffuse_choice * pdf_diffuse_lobe;
   }
 };
 
