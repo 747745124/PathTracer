@@ -13,18 +13,20 @@ enum class IntersectionMode
 {
   DEFAULT
 };
+
 enum class Axis
 {
   X = 0,
   Y = 1,
   Z = 2
 };
+
 namespace gl
 {
   extern uint64_t hit_count;
 }
 
-class Hittable : public Object3D
+class Hittable : public Object3D, public std::enable_shared_from_this<Hittable>
 {
 public:
   virtual bool intersect(const Ray &ray, HitRecord &record, float tmin,
@@ -47,6 +49,22 @@ public:
   virtual gl::vec3 get_sample(const gl::vec3 &origin) const
   {
     return gl::vec3(1.f, 0.f, 0.f);
+  }
+
+  virtual std::shared_ptr<Material> get_material() const
+  {
+    return nullptr;
+  }
+
+  /**
+   * @brief Returns a pointer to the underlying geometric shape, bypassing decorators.
+   * Base geometric shapes (Sphere, AARectangle, TriangleMesh) will return shared_from_this().
+   * Decorator classes (FlipFace, Translate, Rotate) will override this to return
+   * the result of calling get_underlying_shape() on their wrapped object.
+   */
+  virtual std::shared_ptr<Hittable> get_underlying_shape()
+  {
+    return std::enable_shared_from_this<Hittable>::shared_from_this();
   }
 
   ObjType objtype;
@@ -155,6 +173,11 @@ public:
     OrthoBasis onb(direction.normalize());
     return onb.at(gl::randomToSphere(this->radius, distance_squared));
   };
+
+  std::shared_ptr<Material> get_material() const override
+  {
+    return this->material;
+  }
 };
 
 template <Axis axis>
@@ -201,6 +224,11 @@ public:
   }
 
   gl::vec3 get_sample(const gl::vec3 &origin) const override;
+
+  std::shared_ptr<Material> get_material() const override
+  {
+    return this->material;
+  }
 };
 
 using XYRectangle = AARectangle<Axis::Z>;

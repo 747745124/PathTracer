@@ -19,13 +19,13 @@ int main()
   // SceneInfo scene = cornell_box_disneyDiffuse();
   // SceneInfo scene = cornell_box_disneyMetal();
   // SceneInfo scene = cornell_box_disneyGlass();
-  // SceneInfo scene = cornell_box_DisneyPrincipledBSDF();
+  SceneInfo scene = cornell_box_DisneyPrincipledBSDF();
   // SceneInfo scene = cornell_box_mfDielectric();
   // SceneInfo scene = cornell_box_disneySheen();
   // SceneInfo scene = cornell_box_disneyClearcoat();
   //  SceneInfo scene = checkpoint_diffuse();
   // SceneInfo scene = cornell_box_modified();
-  SceneInfo scene = custom_mesh();
+  // SceneInfo scene = custom_mesh();
   //   SceneInfo scene;
   // #ifdef HAS_FBX_SDK
   //   scene = fbx_mesh();
@@ -33,7 +33,7 @@ int main()
   //   scene = cornell_box();
   // #endif
   // two_lights();
-  //  SceneInfo scene = simple_light();
+  // SceneInfo scene = simple_light();
   // SceneInfo scene = diffuse_diffuse();
 
   // night();

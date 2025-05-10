@@ -9,8 +9,6 @@ SceneInfo cornell_box_base()
 
     SceneInfo scene;
     ObjectList objects;
-    // used for shadowray
-    LightList lights;
 
     auto red_disneydiffuse = make_shared<DisneyDiffuse>(vec3(0.65, 0.05, 0.05), 0.5f, 0.5f);
     auto red_lambertian = make_shared<Lambertian>(vec3(0.65, 0.05, 0.05));
@@ -22,7 +20,6 @@ SceneInfo cornell_box_base()
     vertices[1] = {400, 554, 100};
     vertices[2] = {400, 554, 400};
     vertices[3] = {150, 554, 400};
-    lights.addLight(make_shared<QuadLight>(vertices, vec3(1.0f), 10));
 
     objects.addObject(make_shared<FlipFace>(
         make_shared<AARectangle<Axis::Y>>(554, 150, 400, 100, 400, light)));
@@ -47,7 +44,6 @@ SceneInfo cornell_box_base()
         vec3(278.f, 278.f, -800.f));
     scene.objects = objects;
     scene.bg_color = vec3(0.f);
-    scene.lights = lights;
     return scene;
 };
 SceneInfo cornell_box_disneyDiffuse()

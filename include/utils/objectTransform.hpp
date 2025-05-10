@@ -2,15 +2,19 @@
 #include "base/objectList.hpp"
 #include "base/primitive.hpp"
 
-class FlipFace : public Hittable {
+class FlipFace : public Hittable
+{
 public:
-  FlipFace(std::shared_ptr<Hittable> object) : object(object) {
+  FlipFace(std::shared_ptr<Hittable> object) : object(object)
+  {
     this->objtype = object->objtype;
   };
 
   bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0001,
-                 float tmax = 10000.f) const override {
-    if (!object->intersect(ray, hit_record, tmin, tmax)) {
+                 float tmax = 10000.f) const override
+  {
+    if (!object->intersect(ray, hit_record, tmin, tmax))
+    {
       return false;
     }
 
@@ -18,23 +22,37 @@ public:
     return true;
   };
 
-  AABB getAABB(float t0, float t1) override { return object->getAABB(t0, t1); };
+  std::shared_ptr<Material> get_material() const override
+  {
 
+    return object ? object->get_material() : nullptr; // Current safe version
+  }
+
+  std::shared_ptr<Hittable> get_underlying_shape() override
+  {
+    return object ? object->get_underlying_shape() : nullptr; // Current safe version
+  }
+
+  AABB getAABB(float t0, float t1) override { return object->getAABB(t0, t1); };
   std::shared_ptr<Hittable> object;
 };
 
-class Translate : public Hittable {
+class Translate : public Hittable
+{
 public:
   Translate(std::shared_ptr<Hittable> object, const gl::vec3 &offset)
-      : object(object), offset(offset) {
+      : object(object), offset(offset)
+  {
     this->objtype = object->objtype;
   };
 
   bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0001,
-                 float tmax = 10000.f) const override {
+                 float tmax = 10000.f) const override
+  {
 
     Ray new_ray(ray.getOrigin() - offset, ray.getDirection());
-    if (!object->intersect(new_ray, hit_record, tmin, tmax)) {
+    if (!object->intersect(new_ray, hit_record, tmin, tmax))
+    {
       return false;
     }
 
@@ -43,19 +61,34 @@ public:
     return true;
   };
 
-  AABB getAABB(float t0, float t1) override {
+  AABB getAABB(float t0, float t1) override
+  {
     AABB box = object->getAABB(t0, t1);
     return AABB(box.get_min() + offset, box.get_max() + offset);
   };
+
+  std::shared_ptr<Material> get_material() const override
+  {
+
+    return object ? object->get_material() : nullptr; // Current safe version
+  }
+
+  std::shared_ptr<Hittable> get_underlying_shape() override
+  {
+    return object ? object->get_underlying_shape() : nullptr; // Current safe version
+  }
 
   std::shared_ptr<Hittable> object;
   gl::vec3 offset;
 };
 
-template <Axis axis> class Rotate : public Hittable {
+template <Axis axis>
+class Rotate : public Hittable
+{
 public:
   Rotate(std::shared_ptr<Hittable> object, float angle)
-      : object(object), angle(angle) {
+      : object(object), angle(angle)
+  {
     this->objtype = object->objtype;
     this->sin_theta = std::sin(angle);
     this->cos_theta = std::cos(angle);
@@ -69,16 +102,31 @@ public:
   float angle;
   float sin_theta;
   float cos_theta;
+
+  std::shared_ptr<Material> get_material() const override
+  {
+
+    return object ? object->get_material() : nullptr; // Current safe version
+  }
+
+  std::shared_ptr<Hittable> get_underlying_shape() override
+  {
+    return object ? object->get_underlying_shape() : nullptr; // Current safe version
+  }
 };
-class Scale : public Hittable {
+
+class Scale : public Hittable
+{
 public:
   Scale(std::shared_ptr<Hittable> obj, float s)
-      : object(obj), scale(s), inv_scale(1.0f / s) {
+      : object(obj), scale(s), inv_scale(1.0f / s)
+  {
     objtype = object->objtype;
   }
 
   bool intersect(const Ray &ray, HitRecord &rec, float tmin = 0.0001f,
-                 float tmax = FLT_MAX) const override {
+                 float tmax = FLT_MAX) const override
+  {
 
     using namespace gl;
     // 1) only shrink the origin into object-space
@@ -109,10 +157,22 @@ public:
     return true;
   }
 
-  AABB getAABB(float t0, float t1) override {
+  AABB getAABB(float t0, float t1) override
+  {
     // scale each corner of the child's AABB
     auto box = object->getAABB(t0, t1);
     return AABB(box.get_min() * scale, box.get_max() * scale);
+  }
+
+  std::shared_ptr<Material> get_material() const override
+  {
+
+    return object ? object->get_material() : nullptr; // Current safe version
+  }
+
+  std::shared_ptr<Hittable> get_underlying_shape() override
+  {
+    return object ? object->get_underlying_shape() : nullptr; // Current safe version
   }
 
 private:

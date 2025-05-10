@@ -9,7 +9,8 @@
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                             gl::vec3 bg_color, const LightList &lights,
                             uint max_depth = 40,
-                            std::shared_ptr<BVHNode> bvh = nullptr) {
+                            std::shared_ptr<BVHNode> bvh = nullptr)
+{
   using namespace gl;
 
   if (max_depth == 0)
@@ -29,7 +30,8 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   auto mat = hit_record.material;
   float uc = halton_sampler.get1D();
   vec2 u = halton_sampler.get2D();
-  if (mat->scatter(ray, hit_record, srec, uc, u, MODE)) {
+  if (mat->scatter(ray, hit_record, srec, uc, u, MODE))
+  {
 
     bool hasRefl = srec.is_specular_reflection();
     bool hasTran = srec.is_specular_transmission();
@@ -52,7 +54,8 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     gl::vec3 reservoir_sample = gl::vec3(0.f);
     float W = 0.0f;
     auto offsets = getOffsets(LIGHT_SAMPLE_X, LIGHT_SAMPLE_Y);
-    for (int i = 0; i < LIGHT_SAMPLE_NUM; i++) {
+    for (int i = 0; i < LIGHT_SAMPLE_NUM; i++)
+    {
       auto light_sample = lights.uniform_get();
       auto light_p = light_sample->get_sample(offsets[i][0], offsets[i][1]);
       auto light_dir = light_p - hit_record.position;
@@ -83,13 +86,14 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
       auto f = mat->f(wo_world, wi_world, hit_record, MODE);
 
       gl::vec3 candidate_contrib = f * light_sample->intensity *
-                                   light_sample->color *
+                                   light_sample->color->getTexelColor(offsets[i]) *
                                    light_sample->get_area() * G * V;
 
       float w = candidate_contrib.length();
       W += w;
 
-      if (rand_num() < w / W) {
+      if (rand_num() < w / W)
+      {
         reservoir_sample = candidate_contrib;
       }
     }

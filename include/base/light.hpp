@@ -1,106 +1,89 @@
 #pragma once
-#include "./object3D.hpp"
-#include "./primitive.hpp"
+#include "object3D.hpp"
+#include "primitive.hpp"
 #include "external/scene_io.hpp"
 #include "utils/utility.hpp"
 #include <iostream>
 #include <memory>
-struct PolyLightInfo {
+struct PolyLightInfo
+{
   std::vector<gl::vec3> vertices;
   gl::vec3 color;
   float intensity;
 };
 
-class Light : public Object3D {
+class Light : public Object3D
+{
 public:
-  Light() {
+  Light()
+  {
     position = gl::vec3(0.f, 0.f, 0.0f);
-    color = gl::vec3(1.0f, 1.0f, 1.0f);
+    color = std::make_shared<ConstantTexture>(gl::vec3(1.0f, 1.0f, 1.0f));
     intensity = 1.0f;
   };
 
-  Light(const gl::vec3 &position, const gl::vec3 &color, float intensity) {
-    this->color = {1.0f, 1.0f, 1.0f};
+  Light(const gl::vec3 &position, const gl::vec3 &color, float intensity)
+  {
+    this->color = std::make_shared<ConstantTexture>(color);
     this->intensity = 1.0f;
+  }
+
+  Light(const gl::vec3 &position, std::shared_ptr<Texture2D> color,
+        float intensity)
+  {
+    this->position = position;
+    this->color = color;
+    this->intensity = intensity;
   }
 
   virtual gl::vec3 uniform_sample() const = 0;
   virtual gl::vec3 get_sample(float u, float v) const = 0;
   virtual float get_area() const { return 1.f; }
   virtual gl::vec3 get_normal_at(const gl::vec3 &p) const = 0;
-  virtual float pdf_value(const gl::vec3 &origin, const gl::vec3 &dir) const {
+  virtual float pdf_value(const gl::vec3 &origin, const gl::vec3 &dir) const
+  {
     return 0.f;
   }
 
   ~Light() = default;
 
   float intensity = 1.0f;
-  gl::vec3 color = {1.0f, 1.0f, 1.0f};
+  std::shared_ptr<Texture2D> color = nullptr;
   LightType type = LightType::POINT_LIGHT;
 };
 
-class PointLight : public Light {
-public:
-  PointLight(const gl::vec3 &position, const gl::vec3 &color,
-             float intensity = 1.0f) {
-    this->type = LightType::POINT_LIGHT;
-    this->position = position;
-    this->color = color;
-    this->intensity = intensity;
-  };
-
-  ~PointLight() = default;
-};
-
-class DirectionalLight : public Light {
-public:
-  DirectionalLight(const gl::vec3 &color, const gl::vec3 &direction,
-                   float intensity) {
-    this->color = color;
-    this->defaultFront = direction;
-    this->intensity = intensity;
-    this->position = gl::vec3(0.0f, 0.0f, 0.0f);
-    this->type = LightType::DIRECTIONAL_LIGHT;
-  };
-
-  ~DirectionalLight() = default;
-};
-
-class SpotLight : public Light {
-public:
-  SpotLight(const gl::vec3 &direction, const gl::vec3 &position,
-            const gl::vec3 &color, float intensity,
-            float cutoff_angle = gl::to_radian(180.0f),
-            float dropoff_rate = 1.0f) {
-    this->defaultFront = direction;
-    this->position = position;
-    this->color = color;
-    this->intensity = intensity;
-    this->cutoff_angle = cutoff_angle;
-    this->dropoff_rate = dropoff_rate;
-    this->type = LightType::SPOT_LIGHT;
-  };
-
-  ~SpotLight() = default;
-  float cutoff_angle = gl::to_radian(180.0f);
-  float dropoff_rate = 1.0f;
-};
-
-class QuadLight : public Light {
+class QuadLight : public Light
+{
 public:
   std::array<gl::vec3, 4> vertices;
-  QuadLight(const PolyLightInfo &info) {
+  QuadLight(const PolyLightInfo &info)
+  {
     this->type = LightType::QUAD_LIGHT;
     assert(info.vertices.size() == 4);
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++)
+    {
       this->vertices[i] = info.vertices[i];
     }
-    this->color = info.color;
+    this->color = std::make_shared<ConstantTexture>(info.color);
     this->intensity = info.intensity;
   }
 
   QuadLight(std::shared_ptr<AARectangle<Axis::X>> quad, gl::vec3 color,
-            float intensity) {
+            float intensity)
+  {
+    this->type = LightType::QUAD_LIGHT;
+    gl::vec3 v0 = {quad->_k, quad->_d0_min, quad->_d1_min};
+    gl::vec3 v1 = {quad->_k, quad->_d0_max, quad->_d1_min};
+    gl::vec3 v2 = {quad->_k, quad->_d0_max, quad->_d1_max};
+    gl::vec3 v3 = {quad->_k, quad->_d0_min, quad->_d1_max};
+    this->vertices = {v0, v1, v2, v3};
+    this->color = std::make_shared<ConstantTexture>(color);
+    this->intensity = intensity;
+  };
+
+  QuadLight(std::shared_ptr<AARectangle<Axis::X>> quad, std::shared_ptr<Texture2D> color,
+            float intensity)
+  {
     this->type = LightType::QUAD_LIGHT;
     gl::vec3 v0 = {quad->_k, quad->_d0_min, quad->_d1_min};
     gl::vec3 v1 = {quad->_k, quad->_d0_max, quad->_d1_min};
@@ -112,7 +95,21 @@ public:
   };
 
   QuadLight(std::shared_ptr<AARectangle<Axis::Y>> quad, gl::vec3 color,
-            float intensity) {
+            float intensity)
+  {
+    this->type = LightType::QUAD_LIGHT;
+    gl::vec3 v0 = {quad->_d0_min, quad->_k, quad->_d1_min};
+    gl::vec3 v1 = {quad->_d0_max, quad->_k, quad->_d1_min};
+    gl::vec3 v2 = {quad->_d0_max, quad->_k, quad->_d1_max};
+    gl::vec3 v3 = {quad->_d0_min, quad->_k, quad->_d1_max};
+    this->vertices = {v0, v1, v2, v3};
+    this->color = std::make_shared<ConstantTexture>(color);
+    this->intensity = intensity;
+  };
+
+  QuadLight(std::shared_ptr<AARectangle<Axis::Y>> quad, std::shared_ptr<Texture2D> color,
+            float intensity)
+  {
     this->type = LightType::QUAD_LIGHT;
     gl::vec3 v0 = {quad->_d0_min, quad->_k, quad->_d1_min};
     gl::vec3 v1 = {quad->_d0_max, quad->_k, quad->_d1_min};
@@ -124,7 +121,21 @@ public:
   };
 
   QuadLight(std::shared_ptr<AARectangle<Axis::Z>> quad, gl::vec3 color,
-            float intensity) {
+            float intensity)
+  {
+    this->type = LightType::QUAD_LIGHT;
+    gl::vec3 v0 = {quad->_d0_min, quad->_d1_min, quad->_k};
+    gl::vec3 v1 = {quad->_d0_max, quad->_d1_min, quad->_k};
+    gl::vec3 v2 = {quad->_d0_max, quad->_d1_max, quad->_k};
+    gl::vec3 v3 = {quad->_d0_min, quad->_d1_max, quad->_k};
+    this->vertices = {v0, v1, v2, v3};
+    this->color = std::make_shared<ConstantTexture>(color);
+    this->intensity = intensity;
+  };
+
+  QuadLight(std::shared_ptr<AARectangle<Axis::Z>> quad, std::shared_ptr<Texture2D> color,
+            float intensity)
+  {
     this->type = LightType::QUAD_LIGHT;
     gl::vec3 v0 = {quad->_d0_min, quad->_d1_min, quad->_k};
     gl::vec3 v1 = {quad->_d0_max, quad->_d1_min, quad->_k};
@@ -136,15 +147,17 @@ public:
   };
 
   QuadLight(std::array<gl::vec3, 4> vertices, const gl::vec3 &color,
-            float intensity) {
+            float intensity)
+  {
     this->type = LightType::QUAD_LIGHT;
     this->vertices = vertices;
-    this->color = color;
+    this->color = std::make_shared<ConstantTexture>(color);
     this->intensity = intensity;
   };
 
   // uniformly sample a point on the light
-  virtual gl::vec3 uniform_sample() const override {
+  virtual gl::vec3 uniform_sample() const override
+  {
     using namespace gl;
     float u = rand_num();
     float v = rand_num();
@@ -154,7 +167,8 @@ public:
     return p;
   };
 
-  virtual gl::vec3 get_sample(float u, float v) const override {
+  virtual gl::vec3 get_sample(float u, float v) const override
+  {
     using namespace gl;
     vec3 v1 = vertices[1] - vertices[0];
     vec3 v2 = vertices[3] - vertices[0];
@@ -162,7 +176,8 @@ public:
     return p;
   };
 
-  virtual gl::vec3 get_normal_at(const gl::vec3 &p) const override {
+  virtual gl::vec3 get_normal_at(const gl::vec3 &p) const override
+  {
     using namespace gl;
     vec3 v1 = vertices[1] - vertices[0];
     vec3 v2 = vertices[3] - vertices[0];
@@ -170,7 +185,8 @@ public:
     return normal;
   }
 
-  virtual float get_area() const override {
+  virtual float get_area() const override
+  {
     using namespace gl;
     vec3 v1 = vertices[1] - vertices[0];
     vec3 v2 = vertices[3] - vertices[0];
@@ -178,7 +194,8 @@ public:
   }
 
   virtual float pdf_value(const gl::vec3 &origin,
-                          const gl::vec3 &dir) const override {
+                          const gl::vec3 &dir) const override
+  {
     using namespace gl;
     // 1) intersect ray (origin + t*dir) with plane of the quad
     vec3 v0 = vertices[0];
@@ -196,7 +213,8 @@ public:
     vec3 P = origin + dir * t;
 
     // 2) test if P is inside the quad via two‐triangle test
-    auto inTri = [&](const vec3 &A, const vec3 &B, const vec3 &C) {
+    auto inTri = [&](const vec3 &A, const vec3 &B, const vec3 &C)
+    {
       // barycentric‐style edge tests
       vec3 nABC = N;
       if (dot(cross(B - A, C - A), nABC) < 0)
@@ -223,21 +241,34 @@ public:
   ~QuadLight() = default;
 };
 
-class SphereLight : public Light {
+class SphereLight : public Light
+{
 public:
   gl::vec3 center;
   float radius;
   SphereLight(const gl::vec3 &center, float radius, const gl::vec3 &color,
-              float intensity) {
+              float intensity)
+  {
     this->type = LightType::SPHERE_LIGHT;
     this->center = center;
     this->radius = radius;
-    this->color = color;
+    this->color = std::make_shared<ConstantTexture>(color);
     this->intensity = intensity;
   };
 
   SphereLight(std::shared_ptr<Sphere> sphere, const gl::vec3 &color,
-              float intensity) {
+              float intensity)
+  {
+    this->type = LightType::SPHERE_LIGHT;
+    this->center = sphere->center;
+    this->radius = sphere->radius;
+    this->color = std::make_shared<ConstantTexture>(color);
+    this->intensity = intensity;
+  };
+
+  SphereLight(std::shared_ptr<Sphere> sphere, std::shared_ptr<Texture2D> color,
+              float intensity)
+  {
     this->type = LightType::SPHERE_LIGHT;
     this->center = sphere->center;
     this->radius = sphere->radius;
@@ -245,7 +276,8 @@ public:
     this->intensity = intensity;
   };
 
-  virtual gl::vec3 uniform_sample() const override {
+  virtual gl::vec3 uniform_sample() const override
+  {
     using namespace gl;
     float u = rand_num();
     float v = rand_num();
@@ -258,7 +290,8 @@ public:
     return p;
   };
 
-  virtual gl::vec3 get_sample(float u, float v) const override {
+  virtual gl::vec3 get_sample(float u, float v) const override
+  {
     using namespace gl;
     float theta = 2 * M_PI * u;
     float phi = std::acos(2 * v - 1);
@@ -269,19 +302,22 @@ public:
     return p;
   };
 
-  virtual gl::vec3 get_normal_at(const gl::vec3 &p) const override {
+  virtual gl::vec3 get_normal_at(const gl::vec3 &p) const override
+  {
     using namespace gl;
     vec3 normal = (p - center).normalize();
     return normal;
   }
 
-  virtual float get_area() const override {
+  virtual float get_area() const override
+  {
     using namespace gl;
     return 2 * M_PI * radius * radius;
   }
 
   virtual float pdf_value(const gl::vec3 &origin,
-                          const gl::vec3 &dir) const override {
+                          const gl::vec3 &dir) const override
+  {
     using namespace gl;
     // Vector from shading point to sphere center
     vec3 wc = center - origin;

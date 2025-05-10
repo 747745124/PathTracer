@@ -6,7 +6,8 @@
 #include "sampler/sampler.hpp"
 static inline gl::vec3
 getIrradianceVector(const std::vector<gl::vec3> &vertices,
-                    const HitRecord &hit_record) {
+                    const HitRecord &hit_record)
+{
   using namespace gl;
   using namespace std;
 
@@ -19,19 +20,22 @@ getIrradianceVector(const std::vector<gl::vec3> &vertices,
   for (const auto &v : vertices)
     u_k.push_back((v - p).normalize());
 
-  for (int i = 0; i < u_k.size(); i++) {
+  for (int i = 0; i < u_k.size(); i++)
+  {
     float cos_theta = dot(u_k[i], u_k[(i + 1) % u_k.size()]);
     float theta = std::acos(cos_theta);
     theta_k.push_back(theta);
   }
 
-  for (int i = 0; i < u_k.size(); i++) {
+  for (int i = 0; i < u_k.size(); i++)
+  {
     vec3 gamma = cross(u_k[i], u_k[(i + 1) % u_k.size()]).normalize();
     gamma_k.push_back(gamma);
   }
 
   vec3 irr_vec = vec3(0.0);
-  for (int i = 0; i < u_k.size(); i++) {
+  for (int i = 0; i < u_k.size(); i++)
+  {
     irr_vec += 0.5f * gamma_k[i] * theta_k[i];
   }
 
@@ -40,7 +44,8 @@ getIrradianceVector(const std::vector<gl::vec3> &vertices,
 
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                             gl::vec3 bg_color, const LightList &light_info,
-                            std::shared_ptr<BVHNode> bvh = nullptr) {
+                            std::shared_ptr<BVHNode> bvh = nullptr)
+{
   using namespace gl;
 
   HitRecord hit_record;
@@ -60,7 +65,8 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   auto mat = hit_record.material;
   float uc = halton_sampler.get1D();
   vec2 u = halton_sampler.get2D();
-  if (mat->scatter(ray, hit_record, srec, uc, u, MODE)) {
+  if (mat->scatter(ray, hit_record, srec, uc, u, MODE))
+  {
     auto light = light_info.uniform_get();
     if (light->type == LightType::SPHERE_LIGHT)
       throw std::runtime_error(
@@ -76,7 +82,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     float irr_term = fabs(dot(irr_vec, hit_record.normal));
 
     return mat->emit(ray, hit_record) +
-           albedo / M_PI * light->color * light->intensity * irr_term;
+           albedo / M_PI * light->color->getTexelColor(u) * light->intensity * irr_term;
   }
 
   return mat->emit(ray, hit_record);

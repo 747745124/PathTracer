@@ -51,7 +51,7 @@ public:
     return srec.pdf_ptr->at(wi_world.getDirection().normalize());
   }
 
-  // optional to override,usually required multiple lobe materials
+  // optional to override,usually required for multiple lobe materials
   virtual float
   scatter_pdf(const gl::vec3 &wo_world, const gl::vec3 &wi_world, const HitRecord &rec,
               TransportMode mode = TransportMode::Radiance,
@@ -66,6 +66,14 @@ public:
   }
 
   virtual bool is_emitter() const { return false; }
+
+  // return the emission properties of the material, used for light-conversion
+  virtual void get_emission_properties(std::shared_ptr<Texture2D> &out_texture, float &out_intensity) const
+  {
+    out_texture = nullptr;
+    out_intensity = 0.f;
+    return;
+  }
 };
 
 class Lambertian : public Material
@@ -476,14 +484,19 @@ public:
 
   gl::vec3 emit(const Ray &ray_in, HitRecord &rec) const override
   {
-
     // use unidirectional light or not
-    //  if (rec.is_inside)
-    return _text->getTexelColor(rec.texCoords) * _intensity;
-    // return gl::vec3(0.0f);
+    if (gl::dot(rec.normal, -ray_in.getDirection()) > 0)
+      return _text->getTexelColor(rec.texCoords) * _intensity;
+    return gl::vec3(0.0f);
   }
 
   bool is_emitter() const override { return true; }
+
+  virtual void get_emission_properties(std::shared_ptr<Texture2D> &out_texture, float &out_intensity) const override
+  {
+    out_texture = _text;
+    out_intensity = _intensity;
+  }
 
 private:
   std::shared_ptr<Texture2D> _text;

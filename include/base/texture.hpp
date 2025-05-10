@@ -4,27 +4,36 @@
 #include "utils/utility.hpp"
 #include <string>
 
-enum class LERP_MODE { NEAREST, BILINEAR, CORNER };
+enum class LERP_MODE
+{
+  NEAREST,
+  BILINEAR,
+  CORNER
+};
 
-class Texture2D {
+class Texture2D
+{
 public:
   Texture2D() = default;
   ~Texture2D() = default;
   virtual gl::vec3 getTexelColor(float u, float v,
                                  LERP_MODE mode = LERP_MODE::BILINEAR) = 0;
   virtual gl::vec3 getTexelColor(gl::vec2 uv,
-                                 LERP_MODE mode = LERP_MODE::BILINEAR) {
+                                 LERP_MODE mode = LERP_MODE::BILINEAR)
+  {
     return this->getTexelColor(uv.x(), uv.y(), mode);
   }
 };
 
-class ConstantTexture : public Texture2D {
+class ConstantTexture : public Texture2D
+{
 public:
   ConstantTexture() = default;
-  ConstantTexture(gl::vec3 color) : _color(color){};
+  ConstantTexture(gl::vec3 color) : _color(color) {};
   ~ConstantTexture() = default;
   gl::vec3 getTexelColor(float u, float v,
-                         LERP_MODE mode = LERP_MODE::BILINEAR) override {
+                         LERP_MODE mode = LERP_MODE::BILINEAR) override
+  {
     return this->_color;
   }
 
@@ -32,7 +41,8 @@ private:
   gl::vec3 _color;
 };
 
-class ImageTexture : public Texture2D {
+class ImageTexture : public Texture2D
+{
 public:
   ImageTexture() = default;
   // by default rgb
@@ -48,7 +58,8 @@ private:
   uint _height;
 };
 
-class CheckerTexture : public Texture2D {
+class CheckerTexture : public Texture2D
+{
 public:
   CheckerTexture(float scale = 10.f);
   CheckerTexture(gl::vec3 color1, gl::vec3 color2, float scale = 10.f);
@@ -62,11 +73,12 @@ private:
   float _scale;
 };
 
-class NoiseTexture : public Texture2D {
+class NoiseTexture : public Texture2D
+{
 public:
   NoiseTexture() = default;
   NoiseTexture(float scale, int fractal = 1)
-      : _scale(scale), _fractal(fractal){};
+      : _scale(scale), _fractal(fractal) {};
   ~NoiseTexture() = default;
   gl::vec3 getTexelColor(float u, float v,
                          LERP_MODE mode = LERP_MODE::BILINEAR) override;
