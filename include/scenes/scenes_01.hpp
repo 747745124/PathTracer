@@ -745,21 +745,20 @@ SceneInfo custom_mesh()
     objects.addObject(make_shared<Sphere>(vec3(0, -1000, 0), 999.5,
                                           make_shared<Lambertian>(noise_text)));
 
-    uint intensity = 3;
+    uint intensity = 10;
     auto difflight = make_shared<DiffuseEmitter>(gl::DefaultTexture, intensity);
-
     auto left_sphere_light = make_shared<Sphere>(vec3(-8, 4, 5), 2, difflight);
-
     auto top_light =
         make_shared<AARectangle<Axis::Y>>(14, -2, 6, -3, 5, difflight);
 
-    auto difflight_high = make_shared<DiffuseEmitter>(gl::DefaultTexture, 10);
-    auto right_sphere_light =
-        make_shared<Sphere>(vec3(-6, 0, -5), 2, difflight_high);
+    // auto difflight_high = make_shared<DiffuseEmitter>(gl::DefaultTexture, 10);
+
+    // auto right_sphere_light =
+    //     make_shared<Sphere>(vec3(-6, 0, -5), 2, difflight_high);
 
     objects.addObject(top_light);
     objects.addObject(left_sphere_light);
-    objects.addObject(right_sphere_light);
+    // objects.addObject(right_sphere_light);
 
     // adding a backdrop
     objects.addObject(
