@@ -4,6 +4,8 @@
 #include "utils/constants.hpp"
 #include "base/texture.hpp"
 #include "probs/mfPDF.hpp"
+#include <variant>
+
 class DisneyMetal : public Material
 {
 private:
@@ -11,9 +13,13 @@ private:
     TrowbridgeReitzDistribution distribution;
 
 public:
-    DisneyMetal(std::shared_ptr<Texture2D> a, float roughness, float anisotropic) : albedo(a), distribution(TrowbridgeReitzDistribution::fromRoughnessAnisotropic(roughness, anisotropic)) {};
-    DisneyMetal(const gl::vec3 &a, float roughness, float anisotropic)
-        : albedo(std::make_shared<ConstantTexture>(a)), distribution(TrowbridgeReitzDistribution::fromRoughnessAnisotropic(roughness, anisotropic)) {};
+    using ColorVariant = std::variant<gl::vec3, std::shared_ptr<Texture2D>>;
+
+    DisneyMetal(const ColorVariant &a, float roughness, float anisotropic)
+        : distribution(TrowbridgeReitzDistribution::fromRoughnessAnisotropic(roughness, anisotropic))
+    {
+        albedo = gl::texture::to_texture2d(a);
+    }
 
     bool effectivelySmooth() const { return distribution.effectivelySmooth(); }
     bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,

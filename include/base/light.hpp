@@ -5,6 +5,8 @@
 #include "utils/utility.hpp"
 #include <iostream>
 #include <memory>
+#include <variant>
+
 struct PolyLightInfo
 {
   std::vector<gl::vec3> vertices;
@@ -22,17 +24,10 @@ public:
     intensity = 1.0f;
   };
 
-  Light(const gl::vec3 &position, const gl::vec3 &color, float intensity)
-  {
-    this->color = std::make_shared<ConstantTexture>(color);
-    this->intensity = 1.0f;
-  }
-
-  Light(const gl::vec3 &position, std::shared_ptr<Texture2D> color,
-        float intensity)
+  Light(const gl::vec3 &position, const ColorVariant &color_var, float intensity)
   {
     this->position = position;
-    this->color = color;
+    this->color = gl::texture::to_texture2d(color_var);
     this->intensity = intensity;
   }
 
@@ -68,7 +63,7 @@ public:
     this->intensity = info.intensity;
   }
 
-  QuadLight(std::shared_ptr<AARectangle<Axis::X>> quad, gl::vec3 color,
+  QuadLight(std::shared_ptr<AARectangle<Axis::X>> quad, const ColorVariant &color_var,
             float intensity)
   {
     this->type = LightType::QUAD_LIGHT;
@@ -77,24 +72,11 @@ public:
     gl::vec3 v2 = {quad->_k, quad->_d0_max, quad->_d1_max};
     gl::vec3 v3 = {quad->_k, quad->_d0_min, quad->_d1_max};
     this->vertices = {v0, v1, v2, v3};
-    this->color = std::make_shared<ConstantTexture>(color);
+    this->color = gl::texture::to_texture2d(color_var);
     this->intensity = intensity;
-  };
+  }
 
-  QuadLight(std::shared_ptr<AARectangle<Axis::X>> quad, std::shared_ptr<Texture2D> color,
-            float intensity)
-  {
-    this->type = LightType::QUAD_LIGHT;
-    gl::vec3 v0 = {quad->_k, quad->_d0_min, quad->_d1_min};
-    gl::vec3 v1 = {quad->_k, quad->_d0_max, quad->_d1_min};
-    gl::vec3 v2 = {quad->_k, quad->_d0_max, quad->_d1_max};
-    gl::vec3 v3 = {quad->_k, quad->_d0_min, quad->_d1_max};
-    this->vertices = {v0, v1, v2, v3};
-    this->color = color;
-    this->intensity = intensity;
-  };
-
-  QuadLight(std::shared_ptr<AARectangle<Axis::Y>> quad, gl::vec3 color,
+  QuadLight(std::shared_ptr<AARectangle<Axis::Y>> quad, const ColorVariant &color_var,
             float intensity)
   {
     this->type = LightType::QUAD_LIGHT;
@@ -103,24 +85,11 @@ public:
     gl::vec3 v2 = {quad->_d0_max, quad->_k, quad->_d1_max};
     gl::vec3 v3 = {quad->_d0_min, quad->_k, quad->_d1_max};
     this->vertices = {v0, v1, v2, v3};
-    this->color = std::make_shared<ConstantTexture>(color);
+    this->color = gl::texture::to_texture2d(color_var);
     this->intensity = intensity;
-  };
+  }
 
-  QuadLight(std::shared_ptr<AARectangle<Axis::Y>> quad, std::shared_ptr<Texture2D> color,
-            float intensity)
-  {
-    this->type = LightType::QUAD_LIGHT;
-    gl::vec3 v0 = {quad->_d0_min, quad->_k, quad->_d1_min};
-    gl::vec3 v1 = {quad->_d0_max, quad->_k, quad->_d1_min};
-    gl::vec3 v2 = {quad->_d0_max, quad->_k, quad->_d1_max};
-    gl::vec3 v3 = {quad->_d0_min, quad->_k, quad->_d1_max};
-    this->vertices = {v0, v1, v2, v3};
-    this->color = color;
-    this->intensity = intensity;
-  };
-
-  QuadLight(std::shared_ptr<AARectangle<Axis::Z>> quad, gl::vec3 color,
+  QuadLight(std::shared_ptr<AARectangle<Axis::Z>> quad, const ColorVariant &color_var,
             float intensity)
   {
     this->type = LightType::QUAD_LIGHT;
@@ -129,29 +98,16 @@ public:
     gl::vec3 v2 = {quad->_d0_max, quad->_d1_max, quad->_k};
     gl::vec3 v3 = {quad->_d0_min, quad->_d1_max, quad->_k};
     this->vertices = {v0, v1, v2, v3};
-    this->color = std::make_shared<ConstantTexture>(color);
+    this->color = gl::texture::to_texture2d(color_var);
     this->intensity = intensity;
-  };
+  }
 
-  QuadLight(std::shared_ptr<AARectangle<Axis::Z>> quad, std::shared_ptr<Texture2D> color,
-            float intensity)
-  {
-    this->type = LightType::QUAD_LIGHT;
-    gl::vec3 v0 = {quad->_d0_min, quad->_d1_min, quad->_k};
-    gl::vec3 v1 = {quad->_d0_max, quad->_d1_min, quad->_k};
-    gl::vec3 v2 = {quad->_d0_max, quad->_d1_max, quad->_k};
-    gl::vec3 v3 = {quad->_d0_min, quad->_d1_max, quad->_k};
-    this->vertices = {v0, v1, v2, v3};
-    this->color = color;
-    this->intensity = intensity;
-  };
-
-  QuadLight(std::array<gl::vec3, 4> vertices, const gl::vec3 &color,
+  QuadLight(std::array<gl::vec3, 4> vertices, const ColorVariant &color_var,
             float intensity)
   {
     this->type = LightType::QUAD_LIGHT;
     this->vertices = vertices;
-    this->color = std::make_shared<ConstantTexture>(color);
+    this->color = gl::texture::to_texture2d(color_var);
     this->intensity = intensity;
   };
 
@@ -246,33 +202,23 @@ class SphereLight : public Light
 public:
   gl::vec3 center;
   float radius;
-  SphereLight(const gl::vec3 &center, float radius, const gl::vec3 &color,
+  SphereLight(const gl::vec3 &center, float radius, const ColorVariant &color_var,
               float intensity)
   {
     this->type = LightType::SPHERE_LIGHT;
     this->center = center;
     this->radius = radius;
-    this->color = std::make_shared<ConstantTexture>(color);
+    this->color = gl::texture::to_texture2d(color_var);
     this->intensity = intensity;
   };
 
-  SphereLight(std::shared_ptr<Sphere> sphere, const gl::vec3 &color,
+  SphereLight(std::shared_ptr<Sphere> sphere, const ColorVariant &color_var,
               float intensity)
   {
     this->type = LightType::SPHERE_LIGHT;
     this->center = sphere->center;
     this->radius = sphere->radius;
-    this->color = std::make_shared<ConstantTexture>(color);
-    this->intensity = intensity;
-  };
-
-  SphereLight(std::shared_ptr<Sphere> sphere, std::shared_ptr<Texture2D> color,
-              float intensity)
-  {
-    this->type = LightType::SPHERE_LIGHT;
-    this->center = sphere->center;
-    this->radius = sphere->radius;
-    this->color = color;
+    this->color = gl::texture::to_texture2d(color_var);
     this->intensity = intensity;
   };
 

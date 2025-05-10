@@ -80,9 +80,10 @@ class Lambertian : public Material
 {
 
 public:
-  Lambertian(std::shared_ptr<Texture2D> a) : albedo(a) {};
-  Lambertian(const gl::vec3 &a)
-      : albedo(std::make_shared<ConstantTexture>(a)) {};
+  Lambertian(const ColorVariant &a)
+  {
+    albedo = gl::texture::to_texture2d(a);
+  }
   // scatter the ray with lambertian reflection
   bool
   scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
@@ -466,10 +467,11 @@ public:
 class DiffuseEmitter : public Material
 {
 public:
-  DiffuseEmitter(std::shared_ptr<Texture2D> a, float intensity = 1.0f)
-      : _text(a), _intensity(intensity) {};
-  DiffuseEmitter(const gl::vec3 &a, float intensity = 1.0f)
-      : _text(std::make_shared<ConstantTexture>(a)), _intensity(intensity) {};
+  DiffuseEmitter(const ColorVariant &a, float intensity = 1.0f)
+      : _intensity(intensity)
+  {
+    _text = gl::texture::to_texture2d(a);
+  }
 
   bool
   scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
@@ -558,8 +560,10 @@ public:
 class Isotropic : public Material
 {
 public:
-  Isotropic(std::shared_ptr<Texture2D> a) : _text(a) {};
-  Isotropic(const gl::vec3 &a) : _text(std::make_shared<ConstantTexture>(a)) {};
+  Isotropic(const ColorVariant &a)
+  {
+    _text = gl::texture::to_texture2d(a);
+  }
 
   bool
   scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,

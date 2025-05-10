@@ -3,6 +3,8 @@
 #include "utils/utility.hpp"
 #include "utils/constants.hpp"
 #include "base/texture.hpp"
+#include <variant>
+
 class DisneyDiffuse : public Material
 {
 private:
@@ -11,9 +13,11 @@ private:
     float subsurface;
 
 public:
-    DisneyDiffuse(std::shared_ptr<Texture2D> a, float r, float s) : albedo(a), roughness(r), subsurface(s) {};
-    DisneyDiffuse(const gl::vec3 &a, float r, float s)
-        : albedo(std::make_shared<ConstantTexture>(a)), roughness(r), subsurface(s) {};
+    DisneyDiffuse(const ColorVariant &a, float r, float s)
+        : roughness(r), subsurface(s)
+    {
+        albedo = gl::texture::to_texture2d(a);
+    }
 
     bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
                  float uc = gl::rand_num(), // coin-flip sample

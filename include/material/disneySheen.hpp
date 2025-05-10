@@ -11,11 +11,11 @@ private:
     float sheen_tint;
 
 public:
-    DisneySheen(const std::shared_ptr<Texture2D> &color, float sheen_tint = 0.0f)
-        : color(color), sheen_tint(sheen_tint) {};
-
-    DisneySheen(const gl::vec3 &color, float sheen_tint = 0.0f)
-        : color(std::make_shared<ConstantTexture>(color)), sheen_tint(sheen_tint) {};
+    DisneySheen(const ColorVariant &color_var, float sheen_tint = 0.0f)
+        : sheen_tint(sheen_tint)
+    {
+        color = gl::texture::to_texture2d(color_var);
+    }
 
     bool scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
                  float uc = gl::rand_num(), // coin-flip sample

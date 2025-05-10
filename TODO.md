@@ -2,6 +2,7 @@
 
 ## CODE LEVEL
 * ✅ Refactor code for dependency management
+* ✅ Add std::variant to unify ConstantTexture and vec3 during construction
 
 ## TEST LEVEL
 * ✅ Verify obj lodader correctness
@@ -16,7 +17,7 @@
 * Add Kajiya-Kay Material
 
 ## FEATURE LEVEL - Interface
-* Unify light/object interface (instead of separated lightlist)
+* ✅ No longer need a separated lightlist explicitly, light discovery will be done in the scene
 * Possibly medium / volume scattering
 
 ## FEATURE LEVEL - Rendering Method

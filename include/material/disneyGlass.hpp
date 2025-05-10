@@ -10,11 +10,11 @@ private:
     float eta;
 
 public:
-    DisneyGlass(std::shared_ptr<Texture2D> baseColor, float roughness, float anisotropic, float eta = 1.5)
-        : baseColor(baseColor), distribution(TrowbridgeReitzDistribution::fromRoughnessAnisotropic(roughness, anisotropic)), eta(eta) {};
-
-    DisneyGlass(const gl::vec3 &baseColor, float roughness, float anisotropic, float eta = 1.5)
-        : baseColor(std::make_shared<ConstantTexture>(baseColor)), distribution(TrowbridgeReitzDistribution::fromRoughnessAnisotropic(roughness, anisotropic)), eta(eta) {};
+    DisneyGlass(const ColorVariant &baseColor_var, float roughness, float anisotropic, float eta = 1.5)
+        : distribution(TrowbridgeReitzDistribution::fromRoughnessAnisotropic(roughness, anisotropic)), eta(eta)
+    {
+        baseColor = gl::texture::to_texture2d(baseColor_var);
+    }
 
     bool effectivelySmooth() const { return distribution.effectivelySmooth(); }
 

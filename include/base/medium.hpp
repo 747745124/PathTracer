@@ -3,26 +3,21 @@
 #include "material/material.hpp"
 #include "utils/utility.hpp"
 
-class ConstantMedium : public Hittable {
+class ConstantMedium : public Hittable
+{
 public:
-  ConstantMedium(std::shared_ptr<Hittable> boundary, float density,
-                 std::shared_ptr<Texture2D> texture)
+  ConstantMedium(std::shared_ptr<Hittable> boundary, float density, const ColorVariant &color)
       : boundary(boundary), density(density),
-        phase(std::make_shared<Isotropic>(texture)) {
-    this->objtype = ObjType::MEDIUM_OBJ;
-  };
-
-  ConstantMedium(std::shared_ptr<Hittable> boundary, float density,
-                 const gl::vec3 &color)
-      : boundary(boundary), density(density),
-        phase(std::make_shared<Isotropic>(color)) {
+        phase(std::make_shared<Isotropic>(color))
+  {
     this->objtype = ObjType::MEDIUM_OBJ;
   };
 
   bool intersect(const Ray &ray, HitRecord &hit_record, float tmin = 0.0001,
                  float tmax = 10000.f) const override;
 
-  AABB getAABB(float t0, float t1) override {
+  AABB getAABB(float t0, float t1) override
+  {
     return boundary->getAABB(t0, t1);
   };
 
@@ -32,7 +27,8 @@ public:
 };
 
 inline bool ConstantMedium::intersect(const Ray &ray, HitRecord &hit_record,
-                                      float tmin, float tmax) const {
+                                      float tmin, float tmax) const
+{
   HitRecord rec_1, rec_2;
   if (!boundary->intersect(ray, rec_1, tmin, tmax))
     return false;
@@ -54,7 +50,8 @@ inline bool ConstantMedium::intersect(const Ray &ray, HitRecord &hit_record,
   if (hit_distance > boundary_distance)
     return false;
 
-  if (hit_distance < boundary_distance) {
+  if (hit_distance < boundary_distance)
+  {
     hit_record.t = rec_1.t + hit_distance / ray.getDirection().length();
     hit_record.position = ray.getOrigin() + hit_record.t * ray.getDirection();
     hit_record.normal = gl::vec3(1, 0, 0);
