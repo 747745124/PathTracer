@@ -87,7 +87,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
         auto f = mat->f(wo_world, wi_world, hit_record, MODE);
 
         gl::vec3 candidate_contrib = f * light_sample->intensity *
-                                     light_sample->color->getTexelColor(offsets[i]) *
+                                     light_sample->texture->getTexelColor(offsets[i]) *
                                      light_sample->get_area() * G * V;
 
         float w = candidate_contrib.length();

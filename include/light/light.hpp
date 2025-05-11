@@ -20,14 +20,14 @@ public:
   Light()
   {
     position = gl::vec3(0.f, 0.f, 0.0f);
-    color = std::make_shared<ConstantTexture>(gl::vec3(1.0f, 1.0f, 1.0f));
+    texture = std::make_shared<ConstantTexture>(gl::vec3(1.0f, 1.0f, 1.0f));
     intensity = 1.0f;
   };
 
   Light(const gl::vec3 &position, const ColorVariant &color_var, float intensity)
   {
     this->position = position;
-    this->color = gl::texture::to_texture2d(color_var);
+    this->texture = gl::texture::to_texture2d(color_var);
     this->intensity = intensity;
   }
 
@@ -40,10 +40,20 @@ public:
     return 0.f;
   }
 
+  // --- NEW/UPDATED: Emitted Radiance ---
+  // Returns the radiance Le emitted from a point on the light (light_hit_rec.position, .normal, .texCoords)
+  // in the direction w_from_light_normalized (world space, normalized, pointing away from the light surface).
+  virtual gl::vec3 L_emit(const HitRecord &light_hit_rec, const gl::vec3 &w_from_light_normalized) const
+  {
+    if (texture)
+      return texture->getTexelColor(light_hit_rec.texCoords) * intensity;
+    return gl::vec3(0.f);
+  }
+
   ~Light() = default;
 
   float intensity = 1.0f;
-  std::shared_ptr<Texture2D> color = nullptr;
+  std::shared_ptr<Texture2D> texture = nullptr;
   LightType type = LightType::POINT_LIGHT;
 };
 
@@ -59,7 +69,7 @@ public:
     {
       this->vertices[i] = info.vertices[i];
     }
-    this->color = std::make_shared<ConstantTexture>(info.color);
+    this->texture = std::make_shared<ConstantTexture>(info.color);
     this->intensity = info.intensity;
   }
 
@@ -72,7 +82,7 @@ public:
     gl::vec3 v2 = {quad->_k, quad->_d0_max, quad->_d1_max};
     gl::vec3 v3 = {quad->_k, quad->_d0_min, quad->_d1_max};
     this->vertices = {v0, v1, v2, v3};
-    this->color = gl::texture::to_texture2d(color_var);
+    this->texture = gl::texture::to_texture2d(color_var);
     this->intensity = intensity;
   }
 
@@ -85,7 +95,7 @@ public:
     gl::vec3 v2 = {quad->_d0_max, quad->_k, quad->_d1_max};
     gl::vec3 v3 = {quad->_d0_min, quad->_k, quad->_d1_max};
     this->vertices = {v0, v1, v2, v3};
-    this->color = gl::texture::to_texture2d(color_var);
+    this->texture = gl::texture::to_texture2d(color_var);
     this->intensity = intensity;
   }
 
@@ -98,7 +108,7 @@ public:
     gl::vec3 v2 = {quad->_d0_max, quad->_d1_max, quad->_k};
     gl::vec3 v3 = {quad->_d0_min, quad->_d1_max, quad->_k};
     this->vertices = {v0, v1, v2, v3};
-    this->color = gl::texture::to_texture2d(color_var);
+    this->texture = gl::texture::to_texture2d(color_var);
     this->intensity = intensity;
   }
 
@@ -107,7 +117,7 @@ public:
   {
     this->type = LightType::QUAD_LIGHT;
     this->vertices = vertices;
-    this->color = gl::texture::to_texture2d(color_var);
+    this->texture = gl::texture::to_texture2d(color_var);
     this->intensity = intensity;
   };
 
@@ -148,6 +158,16 @@ public:
     vec3 v2 = vertices[3] - vertices[0];
     return cross(v1, v2).length();
   }
+
+  gl::vec3 L_emit(const HitRecord &light_hit_rec, const gl::vec3 &w_from_light_normalized) const override
+  {
+
+    if (gl::dot(light_hit_rec.normal, w_from_light_normalized) > 0.0f)
+    {
+      return this->texture->getTexelColor(light_hit_rec.texCoords) * this->intensity;
+    }
+    return gl::vec3(0.f);
+  };
 
   virtual float pdf_value(const gl::vec3 &origin,
                           const gl::vec3 &dir) const override
@@ -208,7 +228,7 @@ public:
     this->type = LightType::SPHERE_LIGHT;
     this->center = center;
     this->radius = radius;
-    this->color = gl::texture::to_texture2d(color_var);
+    this->texture = gl::texture::to_texture2d(color_var);
     this->intensity = intensity;
   };
 
@@ -218,7 +238,7 @@ public:
     this->type = LightType::SPHERE_LIGHT;
     this->center = sphere->center;
     this->radius = sphere->radius;
-    this->color = gl::texture::to_texture2d(color_var);
+    this->texture = gl::texture::to_texture2d(color_var);
     this->intensity = intensity;
   };
 
@@ -276,6 +296,15 @@ public:
     // solid angle of visible cap
     float omega = 2.f * M_PI * (1.f - cosΘmax);
     return 1.f / omega;
+  }
+
+  gl::vec3 L_emit(const HitRecord &light_hit_rec, const gl::vec3 &w_from_light_normalized) const override
+  {
+
+    if (gl::dot(light_hit_rec.normal, w_from_light_normalized) > 0.0f)
+      return this->texture->getTexelColor(light_hit_rec.texCoords) * this->intensity;
+
+    return gl::vec3(0.f);
   }
 
   ~SphereLight() = default;

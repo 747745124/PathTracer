@@ -82,7 +82,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     float irr_term = fabs(dot(irr_vec, hit_record.normal));
 
     return mat->emit(ray, hit_record) +
-           albedo / M_PI * light->color->getTexelColor(u) * light->intensity * irr_term;
+           albedo / M_PI * light->texture->getTexelColor(u) * light->intensity * irr_term;
   }
 
   return mat->emit(ray, hit_record);

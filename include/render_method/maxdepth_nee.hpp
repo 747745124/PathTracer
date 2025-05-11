@@ -114,7 +114,7 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
       auto f = mat->f(wo_world, wi_world, hit_record, MODE);
 
       auto direct_term =
-          f * light_sample->intensity * light_sample->color->getTexelColor(offsets[i]) * G * V / light_pdf;
+          f * light_sample->intensity * light_sample->texture->getTexelColor(offsets[i]) * G * V / light_pdf;
       light_term += direct_term;
     }
 

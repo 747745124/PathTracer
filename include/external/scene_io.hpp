@@ -33,11 +33,10 @@
 #include <stdio.h>
 #include <string.h>
 
-
 #define _CRT_NONSTDC_NO_DEPRECATE
 
 #ifdef __APPLE__
-#define fopen_s(pFile, filename, mode)                                         \
+#define fopen_s(pFile, filename, mode) \
   ((*(pFile)) = fopen((filename), (mode))) == NULL
 #endif
 
@@ -55,7 +54,8 @@ typedef Vec Color;  /* Float rep. of a color (r, g, b) where	*/
 
 /* Definition of a perspective camera (projection/viewing) */
 
-struct CameraIO {
+struct CameraIO
+{
   Point position;    /* Position of viewer				*/
   Vec viewDirection; /* Viewing direction				*/
   Flt focalDistance; /* Distance from viewer to focal plane		*/
@@ -63,7 +63,8 @@ struct CameraIO {
   Flt verticalFOV;   /* Total vertical field of view, in radians	*/
 };
 
-struct MaterialIO {
+struct MaterialIO
+{
   Color diffColor;  /* Diffuse color				*/
   Color ambColor;   /* Ambient color				*/
   Color specColor;  /* Specular color 				*/
@@ -76,15 +77,18 @@ struct MaterialIO {
 
 /* We allow point, directional, and spot lights. */
 
-enum class LightType {
+enum class LightType
+{
   POINT_LIGHT,
   DIRECTIONAL_LIGHT,
   SPOT_LIGHT,
   QUAD_LIGHT,
-  SPHERE_LIGHT
+  SPHERE_LIGHT,
+  ENVIRONMENT_LIGHT
 };
 
-struct LightIO {
+struct LightIO
+{
   LightIO *next;  /* Pointer to next light in linked list	*/
   LightType type; /* Point, directional, or spot light		*/
 
@@ -96,7 +100,8 @@ struct LightIO {
   Flt cutOffAngle; /* Angle at which spot light intensity is zero  */
 };
 
-struct SceneIO {
+struct SceneIO
+{
   struct CameraIO *camera; /* Perspective camera		      */
   struct LightIO *lights;  /* Head of the linked list of lights    */
   struct ObjIO *objects;   /* Head of the linked list of objects   */
@@ -104,7 +109,8 @@ struct SceneIO {
 /* Definition of a generic object.		*/
 /* We support spheres and sets of polygons. */
 
-enum class ObjType {
+enum class ObjType
+{
   SPHERE_OBJ,
   RECTANGLE_OBJ,
   POLYSET_OBJ,
@@ -115,7 +121,8 @@ enum class ObjType {
   MESH_OBJ
 };
 
-struct ObjIO {
+struct ObjIO
+{
   ObjIO *next; /* Pointer to next object node	    */
   char *name;  /* Name of the object               */
 
@@ -153,7 +160,8 @@ struct ObjIO {
 /* for convenience as half the average axis length, which is    */
 /* exact for spheres.					    */
 
-struct SphereIO {
+struct SphereIO
+{
   Point origin; /* Origin of the sphere/ellipsoid		*/
   Flt radius;   /* Half the sum of the axis lengths		*/
 
@@ -167,7 +175,8 @@ struct SphereIO {
 
 /* Definition of a vertex */
 
-struct VertexIO {
+struct VertexIO
+{
   Point pos;         /* Vertex position */
   Vec norm;          /* Normal to vertex (if PER_VERTEX_NORMAL) */
   int materialIndex; /* Index into materials list (see ObjIO), */
@@ -177,7 +186,8 @@ struct VertexIO {
 
 /* Definition of a polygon */
 
-struct PolygonIO {
+struct PolygonIO
+{
   int numVertices;       /* Number of vertices			*/
   struct VertexIO *vert; /* Vertex array				*/
 };
@@ -199,7 +209,8 @@ struct PolygonIO {
 /*     planar, i.e. the 4 vertices of each quad may not lie in	*/
 /*     the same plane.  						*/
 
-enum class PolySetType {
+enum class PolySetType
+{
   POLYSET_TRI_MESH,
   POLYSET_FACE_SET,
   POLYSET_QUAD_MESH
@@ -209,7 +220,11 @@ enum class PolySetType {
 /*   at every vertex for smooth shading of meshed objects  */
 /*   or at every face for sharp-edged shading as in boxes  */
 
-enum class NormType { PER_VERTEX_NORMAL, PER_FACE_NORMAL };
+enum class NormType
+{
+  PER_VERTEX_NORMAL,
+  PER_FACE_NORMAL
+};
 
 /* We support two kinds of material bindings:			*/
 /*	PER_OBJECT    one material for the whole object			*/
@@ -218,9 +233,14 @@ enum class NormType { PER_VERTEX_NORMAL, PER_FACE_NORMAL };
 /*									*/
 /* PER_VERTEX obviously only applies to polygonal objects.		*/
 
-enum class MaterialBinding { PER_OBJECT_MATERIAL, PER_VERTEX_MATERIAL };
+enum class MaterialBinding
+{
+  PER_OBJECT_MATERIAL,
+  PER_VERTEX_MATERIAL
+};
 
-struct PolySetIO {
+struct PolySetIO
+{
   PolySetType type;
   NormType normType;
   MaterialBinding materialBinding;
@@ -238,46 +258,47 @@ struct PolySetIO {
 };
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/* SceneIO *readScene(filename)
- *    - loads a scene description
- *
- * void delete_scene(scene)
- *    - call this when you are finished with a scene returned by
- *      read_scene()
- */
+  /* SceneIO *readScene(filename)
+   *    - loads a scene description
+   *
+   * void delete_scene(scene)
+   *    - call this when you are finished with a scene returned by
+   *      read_scene()
+   */
 
-SceneIO *readScene(const char *filename);
-void deleteScene(SceneIO *);
+  SceneIO *readScene(const char *filename);
+  void deleteScene(SceneIO *);
 
-/* The following routines are used to construct new scenes.  They are
- * used by "composer" when translating Inventor files.  You should not
- * need to access them.
- */
+  /* The following routines are used to construct new scenes.  They are
+   * used by "composer" when translating Inventor files.  You should not
+   * need to access them.
+   */
 
-struct SceneIO *new_scene(void);
-struct CameraIO *new_camera(void);
-struct LightIO *new_light(void);
-struct ObjIO *new_object(void);
-struct MaterialIO *new_material(int n);
+  struct SceneIO *new_scene(void);
+  struct CameraIO *new_camera(void);
+  struct LightIO *new_light(void);
+  struct ObjIO *new_object(void);
+  struct MaterialIO *new_material(int n);
 
-struct LightIO *append_light(struct LightIO **);
-struct ObjIO *append_object(struct ObjIO **);
+  struct LightIO *append_light(struct LightIO **);
+  struct ObjIO *append_object(struct ObjIO **);
 
-/* writeSceneAscii() writes a scene in an ASCII format.  This format is
- * useful for debugging, or transferring scene files between different
- * machine architectures.  By writing to the file "/dev/tty" you can
- * write to the terminal window in which your application was invoked.
- *
- * writeSceneBinary() writes a scene in binary format; the Export function
- * in composer uses this format to write the scene.  This format can only
- * be read back on a machine that uses the same format for integers
- * and floating-point numbers.
- */
-void writeSceneAscii(struct SceneIO *, const char *);
-void writeSceneBinary(struct SceneIO *, const char *);
+  /* writeSceneAscii() writes a scene in an ASCII format.  This format is
+   * useful for debugging, or transferring scene files between different
+   * machine architectures.  By writing to the file "/dev/tty" you can
+   * write to the terminal window in which your application was invoked.
+   *
+   * writeSceneBinary() writes a scene in binary format; the Export function
+   * in composer uses this format to write the scene.  This format can only
+   * be read back on a machine that uses the same format for integers
+   * and floating-point numbers.
+   */
+  void writeSceneAscii(struct SceneIO *, const char *);
+  void writeSceneBinary(struct SceneIO *, const char *);
 
 #ifdef __cplusplus
 }

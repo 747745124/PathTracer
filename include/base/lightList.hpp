@@ -1,5 +1,6 @@
 #pragma once
 #include "light/light.hpp"
+#include "light/envLight.hpp"
 // a manager for lights
 class LightList
 {
@@ -34,6 +35,16 @@ public:
   }
 
   uint64_t size() const { return this->lights.size(); }
+
+  std::shared_ptr<Light> getEnvironmentLight() const
+  {
+    for (auto light : this->lights)
+    {
+      if (light->type == LightType::ENVIRONMENT_LIGHT)
+        return std::dynamic_pointer_cast<EnvironmentLight>(light);
+    }
+    return nullptr;
+  }
 
 private:
   std::vector<std::shared_ptr<Light>> lights;

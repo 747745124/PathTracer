@@ -14,6 +14,7 @@
 #include "utils/objectTransform.hpp"
 #include "utils/timeit.hpp"
 #include "base/lightDiscovery.hpp"
+#include "light/envLight.hpp"
 
 #ifdef USE_ANALYTICAL_ILLUMIN
 #include "render_method/analytical_illumin.hpp"
@@ -34,6 +35,7 @@ struct SceneInfo
   std::shared_ptr<PerspectiveCamera> camera = nullptr;
   std::shared_ptr<BVHNode> bvh = nullptr;
   ObjectList objects;
+  std::shared_ptr<EnvironmentLight> environment_light = nullptr;
   gl::vec3 bg_color = gl::vec3(0.7, 0.8, 1.0);
   bool use_bvh = true;
   uint _width = 800;
@@ -83,6 +85,11 @@ struct SceneInfo
     LightList discovered_lights = discover_emissive_objects_as_lights(objects);
     // compatibility with old RTOWK integrator, which requires object to have sample method
     ObjectList light_objects = ObjectList(discovered_lights);
+
+    if (environment_light)
+    {
+      discovered_lights.addLight(environment_light);
+    }
 
 #pragma omp parallel for
     {
