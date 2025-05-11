@@ -2,6 +2,12 @@
 
 An NEE + MIS sampled path tracer, supports Disney Principled BSDF / Marschner Hair / Phong / Dielectric / Conductor material and various Monte Carlo effects. 
 
+<img src="https://s2.loli.net/2025/05/11/J6r89WGFh4kf7j3.png" alt="image-20250511035107124" style="zoom: 41%;" />
+
+> Rough glass (alpha = 0.05) bunny with HDRI lighting
+
+
+
 <img src="images/dielectric.png" alt="image" style="zoom: 67%;" />
 
 > Rough glass bunny with Microfacet Conductor background 
@@ -11,6 +17,8 @@ An NEE + MIS sampled path tracer, supports Disney Principled BSDF / Marschner Ha
 <img src="https://s2.loli.net/2025/05/09/iXeMfBgGxCU1t6r.png" alt="output" style="zoom:67%;" />
 
 >  Disney Principled Bunny with Microfacet Conductor background
+
+
 
 ![image](images/sample.png)
 
@@ -61,9 +69,10 @@ The path tracer supports DoF, motion blur. Image filtering and tone-mapping.
 3. Dielectric (Microfacet BxDF + simple dispersion approximation)
    * Thin Dielectric 
    * This branch introduces a split-ray variant for noise reduction.
-4. Conductor (Microfacet BRDF)
+4. Conductor (Microfacet BRDF, VNDF)
 5. Lambertian
 6. Kajiya-Kay
+7. Disney Principled BSDF (A mix of 2015 / 2012 impl.)
 
 
 
@@ -71,6 +80,14 @@ The path tracer supports DoF, motion blur. Image filtering and tone-mapping.
 
 1. .obj
 2. .fbx (WIP)
+
+
+
+### Light
+
+* Area light
+* Sphere light
+* HDRI (IBL)
 
 
 

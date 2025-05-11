@@ -1,5 +1,6 @@
 #pragma once
-#include "scenes_02.hpp"
+#include "scenes_hdri.hpp"
+#include "scenes_disney.hpp"
 #include "base/colors.hpp"
 #include "material/commonMaterials.hpp"
 #include "render/renderManager.hpp"

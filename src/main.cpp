@@ -25,7 +25,9 @@ int main()
   // SceneInfo scene = cornell_box_disneyClearcoat();
   //  SceneInfo scene = checkpoint_diffuse();
   // SceneInfo scene = cornell_box_modified();
-  SceneInfo scene = custom_mesh();
+  // SceneInfo scene = custom_mesh();
+  // SceneInfo scene = hdri_directional_check();
+  SceneInfo scene = hdri_sunset_check();
   //   SceneInfo scene;
   // #ifdef HAS_FBX_SDK
   //   scene = fbx_mesh();

@@ -62,7 +62,7 @@ namespace gl
         std::make_shared<MFDielectric>(1.5f, 0.0001f, 0.0001f);
 
     static std::shared_ptr<Material> ROUGH_GLASS_MAT =
-        std::make_shared<MFDielectric>(1.5f, 0.3f, 0.3f);
+        std::make_shared<MFDielectric>(1.5f, 0.07f, 0.01f);
 
     static std::shared_ptr<ConstantTexture> DefaultTexture =
         std::make_shared<ConstantTexture>(gl::vec3(1.0f));
