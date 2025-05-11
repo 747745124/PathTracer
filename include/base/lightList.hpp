@@ -1,5 +1,5 @@
 #pragma once
-#include "./light.hpp"
+#include "light/light.hpp"
 // a manager for lights
 class LightList
 {

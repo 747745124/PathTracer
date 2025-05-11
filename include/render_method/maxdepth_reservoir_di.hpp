@@ -54,49 +54,50 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     gl::vec3 reservoir_sample = gl::vec3(0.f);
     float W = 0.0f;
     auto offsets = getOffsets(LIGHT_SAMPLE_X, LIGHT_SAMPLE_Y);
-    for (int i = 0; i < LIGHT_SAMPLE_NUM; i++)
-    {
-      auto light_sample = lights.uniform_get();
-      auto light_p = light_sample->get_sample(offsets[i][0], offsets[i][1]);
-      auto light_dir = light_p - hit_record.position;
-      auto light_normal = light_sample->get_normal_at(light_p);
-
-      Ray shadow_ray(hit_record.position, light_dir.normalize());
-      HitRecord shadow_hit_record;
-
-      bool is_shadow_hit = false;
-      // note that the tmin and tmax are set to exclude the light
-      if (bvh == nullptr)
-        is_shadow_hit = prims.intersect(shadow_ray, shadow_hit_record, 0.001f,
-                                        light_dir.length() - 0.001f);
-      else
-        is_shadow_hit = bvh->intersect(shadow_ray, shadow_hit_record, 0.001f,
-                                       light_dir.length() - 0.001f);
-
-      // cos wi
-      auto NoI =
-          std::max(dot(hit_record.normal, shadow_ray.getDirection()), 0.f);
-      // cos wl
-      auto NoL = std::max(dot(light_normal, -shadow_ray.getDirection()), 0.f);
-
-      auto G = NoL * NoI / (dot(light_dir, light_dir));
-      auto hit_light = false;
-      auto V = is_shadow_hit ? 0.0f : 1.0f;
-      auto wi_world = shadow_ray.getDirection().normalize();
-      auto f = mat->f(wo_world, wi_world, hit_record, MODE);
-
-      gl::vec3 candidate_contrib = f * light_sample->intensity *
-                                   light_sample->color->getTexelColor(offsets[i]) *
-                                   light_sample->get_area() * G * V;
-
-      float w = candidate_contrib.length();
-      W += w;
-
-      if (rand_num() < w / W)
+    if (lights.size() > 0)
+      for (int i = 0; i < LIGHT_SAMPLE_NUM; i++)
       {
-        reservoir_sample = candidate_contrib;
+        auto light_sample = lights.uniform_get();
+        auto light_p = light_sample->get_sample(offsets[i][0], offsets[i][1]);
+        auto light_dir = light_p - hit_record.position;
+        auto light_normal = light_sample->get_normal_at(light_p);
+
+        Ray shadow_ray(hit_record.position, light_dir.normalize());
+        HitRecord shadow_hit_record;
+
+        bool is_shadow_hit = false;
+        // note that the tmin and tmax are set to exclude the light
+        if (bvh == nullptr)
+          is_shadow_hit = prims.intersect(shadow_ray, shadow_hit_record, 0.001f,
+                                          light_dir.length() - 0.001f);
+        else
+          is_shadow_hit = bvh->intersect(shadow_ray, shadow_hit_record, 0.001f,
+                                         light_dir.length() - 0.001f);
+
+        // cos wi
+        auto NoI =
+            std::max(dot(hit_record.normal, shadow_ray.getDirection()), 0.f);
+        // cos wl
+        auto NoL = std::max(dot(light_normal, -shadow_ray.getDirection()), 0.f);
+
+        auto G = NoL * NoI / (dot(light_dir, light_dir));
+        auto hit_light = false;
+        auto V = is_shadow_hit ? 0.0f : 1.0f;
+        auto wi_world = shadow_ray.getDirection().normalize();
+        auto f = mat->f(wo_world, wi_world, hit_record, MODE);
+
+        gl::vec3 candidate_contrib = f * light_sample->intensity *
+                                     light_sample->color->getTexelColor(offsets[i]) *
+                                     light_sample->get_area() * G * V;
+
+        float w = candidate_contrib.length();
+        W += w;
+
+        if (rand_num() < w / W)
+        {
+          reservoir_sample = candidate_contrib;
+        }
       }
-    }
 
     gl::vec3 di_term = reservoir_sample * (W / LIGHT_SAMPLE_NUM);
 

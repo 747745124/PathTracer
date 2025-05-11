@@ -1,10 +1,11 @@
 #pragma once
-#include "./objectList.hpp"
+#include "objectList.hpp"
 #include "utils/matrix.hpp"
 #include "utils/utility.hpp"
 #include <cstdint>
 
-class FrameBuffer {
+class FrameBuffer
+{
 public:
   FrameBuffer(uint width, uint height, uint spp_x = 4, uint spp_y = 4,
               uint channels = 3);
@@ -17,7 +18,8 @@ public:
 
   void setPixelColor(uint u, uint v, gl::vec3 color);
   // the input should be 2 integers
-  gl::vec3 getPixelColor(uint u, uint v) const {
+  gl::vec3 getPixelColor(uint u, uint v) const
+  {
     return this->_pixel_color[u][v];
   };
 

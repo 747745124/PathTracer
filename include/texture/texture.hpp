@@ -2,6 +2,7 @@
 #include "utils/matrix.hpp"
 #include "utils/pattern.hpp"
 #include "utils/utility.hpp"
+#include "utils/random.hpp"
 #include <string>
 #include <variant>
 #include <memory>
@@ -22,9 +23,9 @@ public:
   Texture2D() = default;
   ~Texture2D() = default;
   virtual gl::vec3 getTexelColor(float u, float v,
-                                 LERP_MODE mode = LERP_MODE::BILINEAR) = 0;
+                                 LERP_MODE mode = LERP_MODE::BILINEAR) const = 0;
   virtual gl::vec3 getTexelColor(gl::vec2 uv,
-                                 LERP_MODE mode = LERP_MODE::BILINEAR)
+                                 LERP_MODE mode = LERP_MODE::BILINEAR) const
   {
     return this->getTexelColor(uv.x(), uv.y(), mode);
   }
@@ -37,7 +38,7 @@ public:
   ConstantTexture(const gl::vec3 color) : _color(color) {};
   ~ConstantTexture() = default;
   gl::vec3 getTexelColor(float u, float v,
-                         LERP_MODE mode = LERP_MODE::BILINEAR) override
+                         LERP_MODE mode = LERP_MODE::BILINEAR) const override
   {
     return this->_color;
   }
@@ -51,10 +52,10 @@ class ImageTexture : public Texture2D
 public:
   ImageTexture() = default;
   // by default rgb
-  ImageTexture(const std::string &filename, bool flip_y = false);
+  ImageTexture(const std::string &filename, bool flip_y = false, bool isHDR = false);
   ~ImageTexture() = default;
-  gl::vec3 getTexelColor(float u, float v,
-                         LERP_MODE mode = LERP_MODE::BILINEAR) override;
+  virtual gl::vec3 getTexelColor(float u, float v,
+                                 LERP_MODE mode = LERP_MODE::BILINEAR) const override;
 
 private:
   std::string _path;
@@ -70,7 +71,7 @@ public:
   CheckerTexture(gl::vec3 color1, gl::vec3 color2, float scale = 10.f);
   ~CheckerTexture() = default;
   gl::vec3 getTexelColor(float u, float v,
-                         LERP_MODE mode = LERP_MODE::BILINEAR) override;
+                         LERP_MODE mode = LERP_MODE::BILINEAR) const override;
 
 private:
   gl::vec3 _color1;
@@ -86,11 +87,48 @@ public:
       : _scale(scale), _fractal(fractal) {};
   ~NoiseTexture() = default;
   gl::vec3 getTexelColor(float u, float v,
-                         LERP_MODE mode = LERP_MODE::BILINEAR) override;
+                         LERP_MODE mode = LERP_MODE::BILINEAR) const override;
 
 private:
   float _scale;
   int _fractal;
+};
+
+class HDRITexture : public ImageTexture
+{
+public:
+  HDRITexture() = default;
+  HDRITexture(const std::string &filename, bool flip_y = false, bool isHDR = true)
+      : ImageTexture(filename, flip_y, isHDR) {};
+  ~HDRITexture() = default;
+  // / Sample the HDRI given a world-space direction vector
+  gl::vec3 getTexelColor(const gl::vec3 &direction) const
+  {
+    gl::vec3 dir_norm = direction.normalize();
+    float theta = std::acos(-dir_norm.y());                     // theta from [0, PI] (angle with -Y)
+    float phi = std::atan2(-dir_norm.z(), dir_norm.x()) + M_PI; // phi from [0, 2PI]
+
+    // Convert (phi, theta) to UV coordinates [0,1]x[0,1]
+    float u_coord = phi / (2.0f * M_PI);
+    float v_coord = theta / M_PI;
+    return ImageTexture::getTexelColor(u_coord, v_coord, LERP_MODE::BILINEAR);
+  };
+
+  // Method to sample a direction from the HDRI (for importance sampling the environment map)
+  // Returns a sampled direction and its PDF (w.r.t. solid angle)
+  // This requires building a distribution (e.g., from image luminance)
+  void sample_direction(float u1, float u2, gl::vec3 &sampled_dir, float &pdf_solid_angle)
+  {
+    sampled_dir = gl::uniformSampleSphere(u1, u2);
+    pdf_solid_angle = 1.f / (4.f * M_PI);
+  }
+
+  float pdf_direction(const gl::vec3 &dir) const
+  {
+    // PDF for uniform spherical sampling
+    return 1.f / (4.f * M_PI);
+    // For proper importance sampling, this would return PDF based on image luminance.
+  }
 };
 
 using ColorVariant = std::variant<gl::vec3, std::shared_ptr<Texture2D>>;

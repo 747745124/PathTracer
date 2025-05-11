@@ -1,6 +1,6 @@
 #pragma once
-#include "object3D.hpp"
-#include "primitive.hpp"
+#include "base/object3D.hpp"
+#include "base/primitive.hpp"
 #include "external/scene_io.hpp"
 #include "utils/utility.hpp"
 #include <iostream>

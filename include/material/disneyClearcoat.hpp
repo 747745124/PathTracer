@@ -2,7 +2,7 @@
 #include "material.hpp"
 #include "utils/utility.hpp"
 #include "utils/constants.hpp"
-#include "base/texture.hpp"
+#include "texture/texture.hpp"
 #include "probs/clearcoatPDF.hpp"
 class DisneyClearcoat : public Material
 {

@@ -1,6 +1,6 @@
 #pragma once
 #include "base/camera.hpp"
-#include "base/light.hpp"
+#include "light/light.hpp"
 #include "base/lightList.hpp"
 #include "base/primitive.hpp"
 #include "utils/aabb.hpp"
@@ -139,6 +139,11 @@ public:
     int index = (int)(gl::rand_num() * objects.size());
     return this->objects[index % objects.size()];
   };
+
+  void clear()
+  {
+    this->objects.clear();
+  }
 
 private:
   std::vector<std::shared_ptr<Hittable>> objects;

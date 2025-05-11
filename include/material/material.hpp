@@ -1,6 +1,6 @@
 #pragma once
 #include "base/ray.hpp"
-#include "base/texture.hpp"
+#include "texture/texture.hpp"
 #include "external/scene_io.hpp"
 #include "materialBase.hpp"
 #include "materialMath.hpp"

@@ -1,10 +1,10 @@
 #pragma once
 #include "base/camera.hpp"
 #include "base/framebuffer.hpp"
-#include "base/light.hpp"
+#include "light/light.hpp"
 #include "base/primitive.hpp"
 #include "base/ray.hpp"
-#include "base/texture.hpp"
+#include "texture/texture.hpp"
 #include "external/scene_io.hpp"
 #include "material/commonMaterials.hpp"
 #include "material/material.hpp"

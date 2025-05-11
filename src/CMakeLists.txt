@@ -10,7 +10,7 @@ set(SRC_CPP
     material/disneyPrincipledBSDF.cpp
     base/camera.cpp
     base/framebuffer.cpp
-    base/texture.cpp
+    texture/texture.cpp
     base/primitive.cpp
     base/object3D.cpp
     base/objectList.cpp

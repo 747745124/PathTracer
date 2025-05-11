@@ -21,8 +21,8 @@ SceneInfo cornell_box_base()
     vertices[2] = {400, 554, 400};
     vertices[3] = {150, 554, 400};
 
-    objects.addObject(make_shared<FlipFace>(
-        make_shared<AARectangle<Axis::Y>>(554, 150, 400, 100, 400, light)));
+    // objects.addObject(make_shared<FlipFace>(
+    //     make_shared<AARectangle<Axis::Y>>(554, 150, 400, 100, 400, light)));
     objects.addObject(
         make_shared<AARectangle<Axis::X>>(555, 0, 555, 0, 555, green));
     objects.addObject(make_shared<AARectangle<Axis::X>>(0, 0, 555, 0, 555, red_disneydiffuse));
@@ -284,6 +284,7 @@ SceneInfo cornell_box_DisneyPrincipledBSDF()
     using namespace gl;
 
     SceneInfo scene = cornell_box_base();
+    scene.objects.clear();
 
     shared_ptr<Hittable> sphere_00 =
         make_shared<Sphere>(vec3(90, 130, 190), 50,
