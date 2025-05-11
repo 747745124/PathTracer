@@ -43,12 +43,7 @@ public:
   // --- NEW/UPDATED: Emitted Radiance ---
   // Returns the radiance Le emitted from a point on the light (light_hit_rec.position, .normal, .texCoords)
   // in the direction w_from_light_normalized (world space, normalized, pointing away from the light surface).
-  virtual gl::vec3 L_emit(const HitRecord &light_hit_rec, const gl::vec3 &w_from_light_normalized) const
-  {
-    if (texture)
-      return texture->getTexelColor(light_hit_rec.texCoords) * intensity;
-    return gl::vec3(0.f);
-  }
+  virtual gl::vec3 L_emit(const HitRecord &light_hit_rec, const gl::vec3 &w_from_light_normalized) const = 0;
 
   ~Light() = default;
 

@@ -24,12 +24,23 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     is_hit = bvh->intersect(ray, hit_record);
 
   if (!is_hit)
-    return bg_color;
+  {
+    auto env_light = lights.getEnvironmentLight();
+    if (env_light)
+    {
+      HitRecord env_hit_record;
+      env_hit_record.normal = -ray.getDirection().normalize();
+      return env_light->L_emit(env_hit_record, ray.getDirection().normalize());
+    }
+    else
+      return bg_color;
+  }
 
   ScatterRecord srec;
   auto mat = hit_record.material;
   float uc = halton_sampler.get1D();
   vec2 u = halton_sampler.get2D();
+
   if (!mat->scatter(ray, hit_record, srec, uc, u, MODE))
     return mat->emit(ray, hit_record);
 

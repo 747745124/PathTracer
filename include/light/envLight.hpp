@@ -76,7 +76,7 @@ public:
     }
 
     // --- Method to get radiance from a specific direction ---
-    gl::vec3 Le(const gl::vec3 &direction_from_env) const
+    gl::vec3 L_emit(const HitRecord &hit_record, const gl::vec3 &direction_from_env) const
     {
         if (this->texture)
         {
