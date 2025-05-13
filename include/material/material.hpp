@@ -557,30 +557,30 @@ public:
   bool is_emitter() const override { return true; }
 };
 
-class Isotropic : public Material
-{
-public:
-  Isotropic(const ColorVariant &a)
-  {
-    _text = gl::texture::to_texture2d(a);
-  }
+// class Isotropic : public Material
+// {
+// public:
+//   Isotropic(const ColorVariant &a)
+//   {
+//     _text = gl::texture::to_texture2d(a);
+//   }
 
-  bool
-  scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
-          float uc = gl::rand_num(), // coin-flip sample
-          const gl::vec2 &u = {gl::rand_num(),
-                               gl::rand_num()}, // 2D microfacet sample
-          TransportMode mode = TransportMode::Radiance,
-          BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
-  {
-    // scatter the ray with lambertian reflection
-    // any direction scatter with equal probability
-    // ray_scattered = Ray(rec.position, gl::sphere_random_vec());
-    // attenuation = _text->getTexelColor(rec.texCoords.u(), rec.texCoords.v());
-    // return true;
-    return true;
-  }
+//   bool
+//   scatter(const Ray &ray_in, HitRecord &rec, ScatterRecord &srec,
+//           float uc = gl::rand_num(), // coin-flip sample
+//           const gl::vec2 &u = {gl::rand_num(),
+//                                gl::rand_num()}, // 2D microfacet sample
+//           TransportMode mode = TransportMode::Radiance,
+//           BxDFReflTransFlags flags = BxDFReflTransFlags::All) const override
+//   {
+//     // scatter the ray with lambertian reflection
+//     // any direction scatter with equal probability
+//     // scatter = Ray(rec.position, gl::sphere_random_vec());
+//     // attenuation = _text->getTexelColor(rec.texCoords.u(), rec.texCoords.v());
+//     // return true;
+//     return false;
+//   }
 
-private:
-  std::shared_ptr<Texture2D> _text;
-};
+// private:
+//   std::shared_ptr<Texture2D> _text;
+// };

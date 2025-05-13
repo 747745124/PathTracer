@@ -626,6 +626,12 @@ namespace gl
     return gl::vec3(sinTheta * cos(phi), sinTheta * sin(phi), cos(theta));
   }
 
+  inline gl::vec3 sphericalDirection(float sin_theta, float cos_theta,
+                                     float phi)
+  {
+    return gl::vec3(sin_theta * cos(phi), sin_theta * sin(phi), cos_theta);
+  }
+
   // biliner interpolation
   static inline float bilinear(float w1, float w2, float w3, float w4, float q1,
                                float q2, float q3, float q4)

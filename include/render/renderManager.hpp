@@ -1,7 +1,7 @@
 #pragma once
 #include "base/camera.hpp"
 #include "base/framebuffer.hpp"
-#include "base/medium.hpp"
+#include "medium/medium.hpp"
 #include "base/objectList.hpp"
 #include "base/primitive.hpp"
 #include "config.hpp"

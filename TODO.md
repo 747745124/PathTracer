@@ -9,6 +9,7 @@
 
 ## FEATURE LEVEL - Light
 * ✅ Environment Light
+   * Importance sampling to HDRI
 
 ## FEATURE LEVEL - Material
 * ✅ Interface extension
@@ -17,13 +18,18 @@
    * Per channel refract (i.e. dispersion)
 * ✅ Disney Principled BSDF 2012 / 2015 Ver.
 * Add Kajiya-Kay Material
+* Layered BSDF model
+
+## FEATURE LEVEL - Medium
+* ✅ Volume scattering
+* Any BSSRDF
 
 ## FEATURE LEVEL - Interface
 * ✅ No longer need a separated lightlist explicitly, light discovery will be done in the scene
-* Possibly medium / volume scattering
+
 
 ## FEATURE LEVEL - Rendering Method
-* NEE+MIS+Power Heuristic
+* NEE + MIS+Power Heuristic
 * BDPT
 
 ## FEATURE LEVEL - Sampler
