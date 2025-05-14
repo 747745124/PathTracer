@@ -1,7 +1,7 @@
 #pragma once
 #include "base/ray.hpp"
 #include "materialFlags.hpp"
-#include "probs/pdf.hpp"
+#include "PDF/pdf.hpp"
 #include "utils/random.hpp"
 
 class Material;

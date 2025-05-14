@@ -1,5 +1,5 @@
 #include "material/hairMarsch.hpp"
-#include "probs/hairPDF.hpp"
+#include "PDF/hairPDF.hpp"
 
 bool HairMarschner::scatter(const Ray &ray_in, HitRecord &rec,
                             ScatterRecord &srec, float uc,

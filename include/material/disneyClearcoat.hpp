@@ -3,7 +3,7 @@
 #include "utils/utility.hpp"
 #include "utils/constants.hpp"
 #include "texture/texture.hpp"
-#include "probs/clearcoatPDF.hpp"
+#include "PDF/clearcoatPDF.hpp"
 class DisneyClearcoat : public Material
 {
 private:

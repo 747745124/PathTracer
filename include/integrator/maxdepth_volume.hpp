@@ -3,8 +3,8 @@
 #include "base/objectList.hpp"
 #include "config.hpp"
 #include "primitives/bvh.hpp"
-#include "probs/hittablePDF.hpp"
-#include "probs/mixedPDF.hpp"
+#include "PDF/hittablePDF.hpp"
+#include "PDF/mixedPDF.hpp"
 #include "sampler/sampler.hpp"
 
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,

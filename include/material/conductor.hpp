@@ -1,6 +1,6 @@
 #pragma once
 #include "material/material.hpp"
-#include "probs/mfPDF.hpp"
+#include "PDF/mfPDF.hpp"
 class Conductor : public Material
 {
 public:

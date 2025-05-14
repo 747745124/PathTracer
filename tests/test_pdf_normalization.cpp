@@ -1,8 +1,8 @@
-#include "probs/clearcoatPDF.hpp"
-#include "probs/mfPDF.hpp"
+#include "PDF/clearcoatPDF.hpp"
+#include "PDF/mfPDF.hpp"
 #include "pdf_test.hpp"
-#include "probs/hairPDF.hpp"
-#include "probs/mfDielectricPDF.hpp"
+#include "PDF/hairPDF.hpp"
+#include "PDF/mfDielectricPDF.hpp"
 #include "material/commonMaterials.hpp"
 #include <gtest/gtest.h>
 TEST(AnyPDFNormalization, ClearcoatPDFTest)

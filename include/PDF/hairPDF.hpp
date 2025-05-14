@@ -1,11 +1,12 @@
 #pragma once
 #include "material/materialMath.hpp"
-#include "probs/pdf.hpp"
+#include "PDF/pdf.hpp"
 #include "utils/orthoBasis.hpp"
 
 class HairMarschner;
 
-class HairPDF : public PDF {
+class HairPDF : public PDF
+{
 public:
   HairPDF(const HairMarschner &hair_mat, const OrthoBasis &basis,
           const gl::vec3 &wo_world);

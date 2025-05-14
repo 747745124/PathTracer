@@ -1,6 +1,6 @@
 set(SRC_CPP
     utils/objectTransform.cpp
-    probs/hairPDF.cpp
+    PDF/hairPDF.cpp
     mesh_io/meshLoader.cpp
     primitives/triangleMesh.cpp
     primitives/meshBVH.cpp

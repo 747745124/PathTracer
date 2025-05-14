@@ -3,7 +3,7 @@
 #include "utils/utility.hpp"
 #include "utils/constants.hpp"
 #include "texture/texture.hpp"
-#include "probs/mfPDF.hpp"
+#include "PDF/mfPDF.hpp"
 #include <variant>
 
 class DisneyMetal : public Material

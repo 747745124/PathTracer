@@ -3,13 +3,14 @@
 #include "base/objectList.hpp"
 #include "config.hpp"
 #include "primitives/bvh.hpp"
-#include "probs/hittablePDF.hpp"
-#include "probs/mixedPDF.hpp"
+#include "PDF/hittablePDF.hpp"
+#include "PDF/mixedPDF.hpp"
 #include "sampler/sampler.hpp"
 inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                             const ObjectList &light_objects, gl::vec3 bg_color,
                             uint max_depth = 40,
-                            std::shared_ptr<BVHNode> bvh = nullptr) {
+                            std::shared_ptr<BVHNode> bvh = nullptr)
+{
   using namespace gl;
 
   if (max_depth == 0)
@@ -29,7 +30,8 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
   auto mat = hit_record.material;
   float uc = halton_sampler.get1D();
   vec2 u = halton_sampler.get2D();
-  if (mat->scatter(ray, hit_record, srec, uc, u, MODE)) {
+  if (mat->scatter(ray, hit_record, srec, uc, u, MODE))
+  {
 
     bool hasRefl = srec.is_specular_reflection();
     bool hasTran = srec.is_specular_transmission();
@@ -43,7 +45,8 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
                                             max_depth - 1, bvh);
 
     auto pdfs = std::vector<std::shared_ptr<PDF>>();
-    for (int i = 0; i < LIGHT_SAMPLE_NUM; i++) {
+    for (int i = 0; i < LIGHT_SAMPLE_NUM; i++)
+    {
       auto light = light_objects.uniform_get();
       auto light_pdf =
           std::make_shared<HittablePDF>(hit_record.position, light);

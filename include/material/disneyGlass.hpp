@@ -1,6 +1,6 @@
 #pragma once
 #include "material/material.hpp"
-#include "probs/mfDielectricPDF.hpp"
+#include "PDF/mfDielectricPDF.hpp"
 
 class DisneyGlass : public Material
 {

@@ -1,6 +1,6 @@
 #pragma once
 #include "material/materialMath.hpp"
-#include "probs/pdf.hpp"
+#include "PDF/pdf.hpp"
 #include "utils/orthoBasis.hpp"
 extern int rejects;
 class MicrofacetPDF : public PDF

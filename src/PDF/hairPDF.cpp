@@ -1,12 +1,13 @@
-#include "probs/hairPDF.hpp"
+#include "PDF/hairPDF.hpp"
 #include "material/hairMarsch.hpp"
 
 HairPDF::HairPDF(const HairMarschner &hair_mat, const OrthoBasis &basis,
                  const gl::vec3 &wo_world)
-    : hair_mat(hair_mat), basis(basis), wo_local(basis.toLocal(wo_world)){};
+    : hair_mat(hair_mat), basis(basis), wo_local(basis.toLocal(wo_world)) {};
 
 // expecting a wi_world
-gl::vec3 HairPDF::get(float uc, gl::vec2 u) const {
+gl::vec3 HairPDF::get(float uc, gl::vec2 u) const
+{
 
   using namespace gl;
   float sinTheta_o = wo_local.x();
@@ -20,22 +21,29 @@ gl::vec3 HairPDF::get(float uc, gl::vec2 u) const {
                          nullptr, nullptr);
 
   float sinThetap_o, cosThetap_o;
-  if (p == 0) {
+  if (p == 0)
+  {
     sinThetap_o = sinTheta_o * hair_mat.cos2kAlpha[1] -
                   cosTheta_o * hair_mat.sin2kAlpha[1];
     cosThetap_o = cosTheta_o * hair_mat.cos2kAlpha[1] +
                   sinTheta_o * hair_mat.sin2kAlpha[1];
-  } else if (p == 1) {
+  }
+  else if (p == 1)
+  {
     sinThetap_o = sinTheta_o * hair_mat.cos2kAlpha[0] +
                   cosTheta_o * hair_mat.sin2kAlpha[0];
     cosThetap_o = cosTheta_o * hair_mat.cos2kAlpha[0] -
                   sinTheta_o * hair_mat.sin2kAlpha[0];
-  } else if (p == 2) {
+  }
+  else if (p == 2)
+  {
     sinThetap_o = sinTheta_o * hair_mat.cos2kAlpha[2] +
                   cosTheta_o * hair_mat.sin2kAlpha[2];
     cosThetap_o = cosTheta_o * hair_mat.cos2kAlpha[2] -
                   sinTheta_o * hair_mat.sin2kAlpha[2];
-  } else {
+  }
+  else
+  {
     sinThetap_o = sinTheta_o;
     cosThetap_o = cosTheta_o;
   }
@@ -72,7 +80,8 @@ gl::vec3 HairPDF::get(float uc, gl::vec2 u) const {
   return basis.toWorld(wi_local);
 }
 
-float HairPDF::at(const gl::vec3 &wi_world) const {
+float HairPDF::at(const gl::vec3 &wi_world) const
+{
   using namespace gl;
   vec3 wi_local = basis.toLocal(wi_world.normalize());
 
@@ -99,24 +108,32 @@ float HairPDF::at(const gl::vec3 &wi_world) const {
   std::array<float, HairMarschner::pMax + 1> apPDF = hair_mat.ApPDF(cosTheta_o);
 
   float pdf = 0.f;
-  for (int p = 0; p < hair_mat.pMax; ++p) {
+  for (int p = 0; p < hair_mat.pMax; ++p)
+  {
     float sinThetap_o, cosThetap_o;
-    if (p == 0) {
+    if (p == 0)
+    {
       sinThetap_o = sinTheta_o * hair_mat.cos2kAlpha[1] -
                     cosTheta_o * hair_mat.sin2kAlpha[1];
       cosThetap_o = cosTheta_o * hair_mat.cos2kAlpha[1] +
                     sinTheta_o * hair_mat.sin2kAlpha[1];
-    } else if (p == 1) {
+    }
+    else if (p == 1)
+    {
       sinThetap_o = sinTheta_o * hair_mat.cos2kAlpha[0] +
                     cosTheta_o * hair_mat.sin2kAlpha[0];
       cosThetap_o = cosTheta_o * hair_mat.cos2kAlpha[0] -
                     sinTheta_o * hair_mat.sin2kAlpha[0];
-    } else if (p == 2) {
+    }
+    else if (p == 2)
+    {
       sinThetap_o = sinTheta_o * hair_mat.cos2kAlpha[2] +
                     cosTheta_o * hair_mat.sin2kAlpha[2];
       cosThetap_o = cosTheta_o * hair_mat.cos2kAlpha[2] -
                     sinTheta_o * hair_mat.sin2kAlpha[2];
-    } else {
+    }
+    else
+    {
       sinThetap_o = sinTheta_o;
       cosThetap_o = cosTheta_o;
     }
