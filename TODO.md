@@ -19,14 +19,16 @@
 * ✅ Disney Principled BSDF 2012 / 2015 Ver.
 * Add Kajiya-Kay Material
 * Layered BSDF model
+   * Some BSSRDF Maybe
 
 ## FEATURE LEVEL - Medium
-* ✅ Volume scattering
-* Any BSSRDF
+* ✅ One Global Homogeneous Medium with Absorption
+* Homogeneous Medium with Single Scattering
+* Homogeneous Medium with Multiple Scattering
+* Heterogeneous Medium with BDPT
 
 ## FEATURE LEVEL - Interface
 * ✅ No longer need a separated lightlist explicitly, light discovery will be done in the scene
-
 
 ## FEATURE LEVEL - Rendering Method
 * NEE + MIS+Power Heuristic

@@ -244,6 +244,7 @@ namespace gl
     return std::logf(I0f(x));
   }
 
+  // fast exp
   static inline float fastExp(float x)
   {
 
@@ -265,6 +266,11 @@ namespace gl
     bits |= (exp + 127) << 23;
     return BitsToFloat(bits);
   };
+
+  inline vec3 fastExp(const vec3 &v)
+  {
+    return vec3(fastExp(v.x()), fastExp(v.y()), fastExp(v.z()));
+  }
 
   static inline float logistic(float x, float s)
   {

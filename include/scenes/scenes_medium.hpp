@@ -1,0 +1,31 @@
+#pragma once
+#include "scenes_hdri.hpp"
+#include "medium/homogeneous.hpp"
+#include "render/renderManager.hpp"
+
+SceneInfo absorption_only_medium()
+{
+    using namespace std;
+    using namespace gl;
+
+    auto sphere_material = std::make_shared<DiffuseEmitter>(gl::vec3(1.0f, 0.8f, 0.5f), 1.0f); // A warm emissive color
+    auto my_sphere = std::make_shared<Sphere>(gl::vec3(0, 0, -5), 1.0f, sphere_material);
+
+    SceneInfo scene;
+    scene.objects.addObject(my_sphere);
+
+    // In your scene setup:
+    gl::vec3 sigma_a = gl::vec3(0.2f, 0.2f, 0.2f); // Example: absorbs red and green more, appears bluish
+    gl::vec3 sigma_s = gl::vec3(0.0f, 0.0f, 0.0f);
+    gl::vec3 Le_vol = gl::vec3(0.0f, 0.0f, 0.0f);
+    float g_phase = 0.0f; // Not used by this integrator
+
+    auto global_medium_ptr = std::make_shared<HomogeneousMedium>(sigma_a, sigma_s, 1.0f, Le_vol, 1.0f, g_phase);
+    scene.global_medium = global_medium_ptr;
+    scene.camera = make_shared<PerspectiveCamera>(
+        gl::to_radian(40.f), (float)(scene._width) / (float)(scene._height), 10.f,
+        1000.f, vec3(0, 1, 0), vec3(0, 0, -1).normalize(),
+        vec3(0, 0, 0));
+    scene.bg_color = vec3(0.f);
+    return scene;
+}

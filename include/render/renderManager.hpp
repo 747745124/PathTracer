@@ -17,17 +17,19 @@
 #include "light/envLight.hpp"
 
 #ifdef USE_ANALYTICAL_ILLUMIN
-#include "render_method/analytical_illumin.hpp"
+#include "integrator/analytical_illumin.hpp"
 #elif defined USE_MAXDEPTH_MIS
-#include "render_method/maxdepth_mis.hpp"
+#include "integrator/maxdepth_mis.hpp"
 #elif defined USE_MAXDEPTH_NAIVE
-#include "render_method/maxdepth_naive.hpp"
+#include "integrator/maxdepth_naive.hpp"
 #elif defined USE_MAXDEPTH_NEE
-#include "render_method/maxdepth_nee.hpp"
+#include "integrator/maxdepth_nee.hpp"
 #elif defined USE_MAXDEPTH_RESERVOIR
-#include "render_method/maxdepth_reservoir_di.hpp"
+#include "integrator/maxdepth_reservoir_di.hpp"
 #elif defined USE_ROULETTE_NAIVE
-#include "render_method/roulette_naive.hpp"
+#include "integrator/roulette_naive.hpp"
+#elif defined USE_MAXDEPTH_VOLUME
+#include "integrator/maxdepth_volume.hpp"
 #endif
 
 struct SceneInfo
@@ -43,8 +45,9 @@ struct SceneInfo
   uint spp_x = 2;
   uint spp_y = 2;
   float _gamma = 1.0f;
-  SceneInfo() = default;
+  std::shared_ptr<Medium> global_medium = nullptr;
 
+  SceneInfo() = default;
   void render(const std::string &out_path = "./output.png",
               bool show_progress = true)
   {
@@ -131,6 +134,8 @@ struct SceneInfo
 #elif defined USE_MAXDEPTH_MIS
             color +=
                 getRayColor(ray, objects, bg_color, discovered_lights, MAX_RAY_DEPTH, bvh);
+#elif defined USE_MAXDEPTH_VOLUME
+            color += getRayColor(ray, objects, bg_color, discovered_lights, MAX_RAY_DEPTH, bvh, global_medium);
 #else
             std::cout << "No method selected!" << std::endl;
             std::runtime_error(
@@ -138,6 +143,7 @@ struct SceneInfo
 #endif
           }
 
+          // average color
           {
             color /= fb.getSampleCount();
             fb.setPixelColor(j, i, color);

@@ -11,5 +11,5 @@
 #include "primitives/bvh.hpp"
 #include "probs/hairPDF.hpp"
 #include "scenes/scenes_01.hpp"
-#include "render_method/roulette_naive.hpp"
+#include "integrator/roulette_naive.hpp"
 #include <omp.h>

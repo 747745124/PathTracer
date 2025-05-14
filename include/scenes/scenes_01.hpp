@@ -1,6 +1,7 @@
-#pragma once
+
 #include "scenes_hdri.hpp"
 #include "scenes_disney.hpp"
+#include "scenes_medium.hpp"
 #include "base/colors.hpp"
 #include "material/commonMaterials.hpp"
 #include "render/renderManager.hpp"
@@ -574,11 +575,11 @@ SceneInfo checkpoint_2()
     auto boundary = make_shared<Sphere>(vec3(360, 150, 145), 70,
                                         make_shared<Dielectric>(1.5));
     objects.addObject(boundary);
-    objects.addObject(
-        make_shared<ConstantMedium>(boundary, 0.2, vec3(0.2, 0.4, 0.9)));
+    // objects.addObject(
+    //     make_shared<ConstantMedium>(boundary, 0.2, vec3(0.2, 0.4, 0.9)));
     boundary =
         make_shared<Sphere>(vec3(0, 0, 0), 5000, make_shared<Dielectric>(1.5));
-    objects.addObject(make_shared<ConstantMedium>(boundary, .0001f, vec3(1.f)));
+    // objects.addObject(make_shared<ConstantMedium>(boundary, .0001f, vec3(1.f)));
 
     auto emat = make_shared<Lambertian>(
         make_shared<ImageTexture>("../assets/textures/ao.png"));
