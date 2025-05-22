@@ -11,6 +11,7 @@ struct MediumProperties
     gl::vec3 sigma_s;
     std::shared_ptr<PhaseFunction> phase_function;
     gl::vec3 Le;
+    gl::vec3 sigma_t() const { return sigma_a + sigma_s; }
 };
 
 // RayMajorantSegment is a structure that describes a

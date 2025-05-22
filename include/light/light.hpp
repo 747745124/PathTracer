@@ -273,7 +273,7 @@ public:
   virtual float get_area() const override
   {
     using namespace gl;
-    return 2 * M_PI * radius * radius;
+    return 4 * M_PI * radius * radius;
   }
 
   virtual float pdf_value(const gl::vec3 &origin,

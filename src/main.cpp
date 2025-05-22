@@ -27,9 +27,10 @@ int main()
   // SceneInfo scene = cornell_box_modified();
   // SceneInfo scene = custom_mesh();
   // SceneInfo scene = hdri_directional_check();
-  SceneInfo scene = hdri_sunset_check();
+  // SceneInfo scene = hdri_sunset_check();
 
   // SceneInfo scene = absorption_only_medium();
+  SceneInfo scene = single_scatter_medium();
 
   //   SceneInfo scene;
   // #ifdef HAS_FBX_SDK

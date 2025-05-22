@@ -56,7 +56,7 @@ public:
         return gl::maxComponent(Le) > 0.f;
     }
 
-    MediumProperties sample_point(const gl::vec3 &point) const override
+    MediumProperties sample_properties_at(const gl::vec3 &point) const override
     {
         MediumProperties properties;
         properties.sigma_a = sigma_a;
