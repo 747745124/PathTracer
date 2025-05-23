@@ -31,7 +31,7 @@ struct ScatterRecord
 struct HitRecord
 {
 public:
-  float t;
+  float t = FLT_MAX;
   gl::vec3 normal;
   gl::vec3 position;
   std::shared_ptr<Material> material;

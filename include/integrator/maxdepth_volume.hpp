@@ -56,6 +56,9 @@ inline gl::vec3 estimate_l_scatter1(const gl::vec3 &p_scatter,
                 // p is defined as both direction pointing outwards
                 auto phase_val = medium_props.phase_function->p(wo_world, -dir_prime_to_scatter);
                 auto transmittance = exp(-medium_props.sigma_t() * distance_prime_to_scatter);
+
+                if (distance_prime_to_scatter < gl::epsilon)
+                    continue;
                 L_scatter1_accum += (Le_prime * cos_theta * phase_val * transmittance) / pdf_light / square(distance_prime_to_scatter);
             }
         }
@@ -63,7 +66,6 @@ inline gl::vec3 estimate_l_scatter1(const gl::vec3 &p_scatter,
         L_scatter1_accum /= LIGHT_SAMPLE_NUM;
     }
 
-    // return {0.24, 1.0, 0.24};
     return L_scatter1_accum;
 }
 
@@ -84,9 +86,6 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
     else
         is_hit = bvh->intersect(ray, hit_record);
 
-    // if (!is_hit)
-    //     return bg_color;
-
     MediumProperties medium_properties = global_medium->sample_properties_at(ray.getOrigin());
     float u = halton_sampler.get1D();
     float sigma_t = maxComponent(medium_properties.sigma_t());
@@ -94,28 +93,26 @@ inline gl::vec3 getRayColor(const Ray &ray, const ObjectList &prims,
 
     if (t < hit_record.t)
     {
-        float trans_pdf = exp(-sigma_t * t) * sigma_t;
-        float transmittance = exp(-sigma_t * t);
+
+        // float trans_pdf = exp(-sigma_t * t) * sigma_t;
+        // float transmittance = exp(-sigma_t * t);
         vec3 p = ray.at(t);
         vec3 L_s1_estimate = estimate_l_scatter1(p, -ray.getDirection().normalize(), global_medium, prims, lights, bvh);
         vec3 albedo = medium_properties.sigma_s / medium_properties.sigma_t();
 
-        return albedo * L_s1_estimate * transmittance / trans_pdf;
+        return albedo * L_s1_estimate / sigma_t;
     }
     // Surface interaction occurs first (or at the same distance, or ray escapes to infinity if no hit)
     else
     {
-        if (!is_hit)
-            return bg_color;
-
-        float trans_pdf = exp(-sigma_t * hit_record.t);
-        vec3 transmittance = exp(-sigma_t * hit_record.t);
+        // float trans_pdf = exp(-sigma_t * hit_record.t);
+        // vec3 transmittance = exp(-sigma_t * hit_record.t);
         vec3 Le(0.f);
 
-        if (hit_record.material->is_emitter())
+        if (hit_record.material != nullptr && hit_record.material->is_emitter())
             Le = hit_record.material->emit(ray, hit_record);
 
-        return transmittance * Le / trans_pdf;
+        return Le;
     }
 }
 
