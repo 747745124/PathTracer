@@ -1,21 +1,28 @@
 #include "base/primitive.hpp"
-namespace gl {
-uint64_t hit_count = 0;
+namespace gl
+{
+  uint64_t hit_count = 0;
 }
 
-template <> AABB AARectangle<Axis::X>::getAABB(float t0, float t1) {
+template <>
+AABB AARectangle<Axis::X>::getAABB(float t0, float t1)
+{
   AABB aabb(gl::vec3(this->_k - gl::epsilon, this->_d0_min, this->_d1_min),
             gl::vec3(this->_k + gl::epsilon, this->_d0_max, this->_d1_max));
   return aabb;
 }
 
-template <> AABB AARectangle<Axis::Y>::getAABB(float t0, float t1) {
+template <>
+AABB AARectangle<Axis::Y>::getAABB(float t0, float t1)
+{
   AABB aabb(gl::vec3(this->_d0_min, this->_k - gl::epsilon, this->_d1_min),
             gl::vec3(this->_d0_max, this->_k + gl::epsilon, this->_d1_max));
   return aabb;
 }
 
-template <> AABB AARectangle<Axis::Z>::getAABB(float t0, float t1) {
+template <>
+AABB AARectangle<Axis::Z>::getAABB(float t0, float t1)
+{
   AABB aabb(gl::vec3(this->_d0_min, this->_d1_min, this->_k - gl::epsilon),
             gl::vec3(this->_d0_max, this->_d1_max, this->_k + gl::epsilon));
   return aabb;
@@ -23,7 +30,8 @@ template <> AABB AARectangle<Axis::Z>::getAABB(float t0, float t1) {
 
 template <>
 bool AARectangle<Axis::X>::intersect(const Ray &ray, HitRecord &hit_record,
-                                     float tmin, float tmax) const {
+                                     float tmin, float tmax) const
+{
   if (this->intersection_mode != IntersectionMode::DEFAULT)
     throw std::runtime_error("CUSTOM intersection not supported");
   gl::hit_count++;
@@ -47,12 +55,14 @@ bool AARectangle<Axis::X>::intersect(const Ray &ray, HitRecord &hit_record,
   hit_record.texCoords =
       gl::vec2((d0 - this->_d0_min) / (this->_d0_max - this->_d0_min),
                (d1 - this->_d1_min) / (this->_d1_max - this->_d1_min));
+  hit_record.medium_interface = this->medium_interface;
   return true;
 }
 
 template <>
 bool AARectangle<Axis::Y>::intersect(const Ray &ray, HitRecord &hit_record,
-                                     float tmin, float tmax) const {
+                                     float tmin, float tmax) const
+{
   if (this->intersection_mode != IntersectionMode::DEFAULT)
     throw std::runtime_error("CUSTOM intersection not supported");
   gl::hit_count++;
@@ -76,12 +86,14 @@ bool AARectangle<Axis::Y>::intersect(const Ray &ray, HitRecord &hit_record,
   hit_record.texCoords =
       gl::vec2((d0 - this->_d0_min) / (this->_d0_max - this->_d0_min),
                (d1 - this->_d1_min) / (this->_d1_max - this->_d1_min));
+  hit_record.medium_interface = this->medium_interface;
   return true;
 }
 
 template <>
 bool AARectangle<Axis::Z>::intersect(const Ray &ray, HitRecord &hit_record,
-                                     float tmin, float tmax) const {
+                                     float tmin, float tmax) const
+{
   if (this->intersection_mode != IntersectionMode::DEFAULT)
     throw std::runtime_error("CUSTOM intersection not supported");
   gl::hit_count++;
@@ -105,25 +117,29 @@ bool AARectangle<Axis::Z>::intersect(const Ray &ray, HitRecord &hit_record,
   hit_record.texCoords =
       gl::vec2((d0 - this->_d0_min) / (this->_d0_max - this->_d0_min),
                (d1 - this->_d1_min) / (this->_d1_max - this->_d1_min));
+  hit_record.medium_interface = this->medium_interface;
   return true;
 }
 
 template <>
-gl::vec3 AARectangle<Axis::X>::get_sample(const gl::vec3 &origin) const {
+gl::vec3 AARectangle<Axis::X>::get_sample(const gl::vec3 &origin) const
+{
   auto point = gl::vec3(this->_k, gl::C_rand(_d0_min, _d0_max),
                         gl::C_rand(_d1_min, _d1_max));
   return point - origin;
 }
 
 template <>
-gl::vec3 AARectangle<Axis::Y>::get_sample(const gl::vec3 &origin) const {
+gl::vec3 AARectangle<Axis::Y>::get_sample(const gl::vec3 &origin) const
+{
   auto point = gl::vec3(gl::C_rand(_d0_min, _d0_max), this->_k,
                         gl::C_rand(_d1_min, _d1_max));
   return point - origin;
 }
 
 template <>
-gl::vec3 AARectangle<Axis::Z>::get_sample(const gl::vec3 &origin) const {
+gl::vec3 AARectangle<Axis::Z>::get_sample(const gl::vec3 &origin) const
+{
   auto point = gl::vec3(gl::C_rand(_d0_min, _d0_max),
                         gl::C_rand(_d1_min, _d1_max), this->_k);
   return point - origin;

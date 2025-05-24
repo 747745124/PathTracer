@@ -1,10 +1,13 @@
 #pragma once
 #include "utils/matrix.hpp"
 
-class Ray {
+class Medium;
+
+class Ray
+{
 public:
   Ray(const gl::vec3 &origin, const gl::vec3 &direction, float intensity = 1.0f)
-      : origin(origin), direction(direction), intensity(intensity){};
+      : origin(origin), direction(direction), intensity(intensity) {};
   ~Ray() = default;
   Ray() = default;
 
@@ -20,7 +23,7 @@ public:
 
   float intensity = 1.0f;
 
-private:
+  std::shared_ptr<Medium> current_medium;
   gl::vec3 origin;
   gl::vec3 direction;
 };

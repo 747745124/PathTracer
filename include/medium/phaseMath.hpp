@@ -4,7 +4,7 @@
 #include "utils/orthoBasis.hpp"
 namespace gl
 {
-    float HenyeyGreenstein(float cos_theta, float g)
+    inline float HenyeyGreenstein(float cos_theta, float g)
     {
         float upper = 1 - square(g);
         // this (+) is for PBRT convention (wi,wo);
@@ -14,7 +14,7 @@ namespace gl
         return upper * INV4PI / lower;
     };
 
-    gl::vec3 sampleHenyeyGreenstein(const vec3 &wo_world, float g, const gl::vec2 &u, float *pdf = nullptr)
+    inline gl::vec3 sampleHenyeyGreenstein(const vec3 &wo_world, float g, const gl::vec2 &u, float *pdf = nullptr)
     {
         vec3 wo_normalized = wo_world.normalize();
         float cos_theta = 0.f;

@@ -6,6 +6,7 @@
 #include "ray.hpp"
 #include "utils/aabb.hpp"
 #include "utils/utility.hpp"
+#include "medium/mediumBase.hpp"
 #include <memory>
 
 using Materials = std::vector<std::shared_ptr<Material>>;
@@ -67,14 +68,21 @@ public:
     return std::enable_shared_from_this<Hittable>::shared_from_this();
   }
 
+  virtual std::shared_ptr<MediumInterface> get_medium_interface() const
+  {
+    return medium_interface;
+  }
+
   ObjType objtype;
   IntersectionMode intersection_mode = IntersectionMode::DEFAULT;
+  std::shared_ptr<MediumInterface> medium_interface = nullptr;
 };
 
 class Sphere : public Hittable
 {
 private:
   std::shared_ptr<Material> material;
+  std::shared_ptr<MediumInterface> medium_interface;
 
 public:
   float radius;
@@ -94,6 +102,14 @@ public:
   Sphere(const gl::vec3 &center, float radius,
          std::shared_ptr<Material> material)
       : center(center), radius(radius), material(material)
+  {
+    this->objtype = ObjType::SPHERE_OBJ;
+  };
+
+  Sphere(const gl::vec3 &center, float radius,
+         std::shared_ptr<Material> material,
+         std::shared_ptr<MediumInterface> medium_interface)
+      : center(center), radius(radius), material(material), medium_interface(medium_interface)
   {
     this->objtype = ObjType::SPHERE_OBJ;
   };
@@ -148,6 +164,7 @@ public:
     hit_record.texCoords.u() = fmodf(hit_record.texCoords.u() + 0.75f, 1.0f);
     hit_record.material =
         this->material == nullptr ? gl::DefaultMaterial : this->material;
+    hit_record.medium_interface = this->medium_interface;
 
     return true;
   };
@@ -178,6 +195,11 @@ public:
   {
     return this->material;
   }
+
+  std::shared_ptr<MediumInterface> get_medium_interface() const override
+  {
+    return this->medium_interface;
+  }
 };
 
 template <Axis axis>
@@ -186,6 +208,7 @@ class AARectangle : public Hittable
 
 private:
   std::shared_ptr<Material> material;
+  std::shared_ptr<MediumInterface> medium_interface;
 
 public:
   float _d0_min, _d0_max, _d1_min, _d1_max, _k;
@@ -200,6 +223,15 @@ public:
               std::shared_ptr<Material> material)
       : _d0_min(d0_min), _d0_max(d0_max), _d1_min(d1_min), _d1_max(d1_max),
         _k(k), material(material)
+  {
+    this->objtype = ObjType::RECTANGLE_OBJ;
+  };
+
+  AARectangle(float k, float d0_min, float d0_max, float d1_min, float d1_max,
+              std::shared_ptr<Material> material,
+              std::shared_ptr<MediumInterface> medium_interface)
+      : _d0_min(d0_min), _d0_max(d0_max), _d1_min(d1_min), _d1_max(d1_max),
+        _k(k), material(material), medium_interface(medium_interface)
   {
     this->objtype = ObjType::RECTANGLE_OBJ;
   };
@@ -228,6 +260,11 @@ public:
   std::shared_ptr<Material> get_material() const override
   {
     return this->material;
+  }
+
+  std::shared_ptr<MediumInterface> get_medium_interface() const override
+  {
+    return this->medium_interface;
   }
 };
 

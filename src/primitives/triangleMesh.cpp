@@ -2,12 +2,15 @@
 #include <limits>
 #include <numeric>
 
-TriangleMesh::TriangleMesh(MeshData &&data, std::shared_ptr<Material> mat)
-    : mesh(std::move(data)), material(std::move(mat)) {
+TriangleMesh::TriangleMesh(MeshData &&data, std::shared_ptr<Material> mat,
+                           std::shared_ptr<MediumInterface> medium_interface)
+    : mesh(std::move(data)), material(std::move(mat)), medium_interface(medium_interface)
+{
 
   // compute mesh AABB once
   gl::vec3 mn(+INFINITY), mx(-INFINITY);
-  for (auto &v : mesh.positions) {
+  for (auto &v : mesh.positions)
+  {
     mn = gl::min(mn, v);
     mx = gl::max(mx, v);
   }
@@ -23,15 +26,18 @@ TriangleMesh::TriangleMesh(MeshData &&data, std::shared_ptr<Material> mat)
 }
 
 bool TriangleMesh::intersect(const Ray &ray, HitRecord &rec, float tmin,
-                             float tmax) const {
+                             float tmax) const
+{
 
   if (!bvh->intersect(ray, rec, tmin, tmax))
     return false;
 
   rec.set_normal(ray, rec.normal);
   rec.material = material;
+  rec.medium_interface = this->medium_interface;
   // planar UV fallback
-  if (mesh.uvs.empty()) {
+  if (mesh.uvs.empty())
+  {
     auto n = gl::abs(rec.normal);
     int axis_u = (n.x() > n.y() && n.x() > n.z()) ? 1 : 0;
     int axis_v = (axis_u == 1) ? 2 : (n.y() > n.z() ? 2 : 1);

@@ -48,7 +48,7 @@ SceneInfo single_scatter_medium()
     gl::vec3 sigma_a = gl::vec3(0.1f, 0.1f, 0.1f);
     gl::vec3 sigma_s = gl::vec3(0.7f, 0.7f, 0.7f);
     gl::vec3 Le_vol = gl::vec3(0.0f, 0.0f, 0.0f);
-    float g_phase = 0.0f; // Not used by this integrator
+    float g_phase = 0.0f;
 
     auto global_medium_ptr = std::make_shared<HomogeneousMedium>(sigma_a, sigma_s, 1.0f, Le_vol, 1.0f, g_phase);
     scene.global_medium = global_medium_ptr;

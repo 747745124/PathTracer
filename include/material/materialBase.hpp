@@ -3,6 +3,7 @@
 #include "materialFlags.hpp"
 #include "PDF/pdf.hpp"
 #include "utils/random.hpp"
+#include "medium/mediumBase.hpp"
 
 class Material;
 extern int rejects;
@@ -35,6 +36,7 @@ public:
   gl::vec3 normal;
   gl::vec3 position;
   std::shared_ptr<Material> material;
+  std::shared_ptr<MediumInterface> medium_interface = nullptr;
   gl::vec2 texCoords = gl::vec2(0.0f);
   gl::vec3 hair_tangent = gl::vec3(0.0f);
   // the tangent of the hair, used for hair shading
