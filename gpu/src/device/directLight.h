@@ -5,6 +5,7 @@
 #pragma once
 
 #include "pt/math/vec.h"
+#include "reprojection.h"
 #include "shading/bsdf.h"
 #include "device/prd.h"
 #include "device/visibility.h"
@@ -41,7 +42,8 @@ __device__ inline bool acceptTemporalReservoirCandidate(
   const PRD &prd,
   const BSDF &bsdf,
   const vec3f &wo,
-  pt::RestirDirectLightCandidate &outTemporalCandidate);
+  pt::RestirDirectLightCandidate &outTemporalCandidate,
+  pt::RestirReservoir &outPrevReservoir);
 
 // Re-evaluate a previous-frame reservoir sample at the current hit point.
 __device__ inline bool evaluateReservoirSampleAtCurrentHit(
@@ -90,9 +92,11 @@ __device__ inline bool acceptTemporalReservoirCandidate(
   const PRD &prd,
   const BSDF &bsdf,
   const vec3f &wo,
-  pt::RestirDirectLightCandidate &outTemporalCandidate)
+  pt::RestirDirectLightCandidate &outTemporalCandidate,
+  pt::RestirReservoir &outPrevReservoir)
 {
   outTemporalCandidate = pt::RestirDirectLightCandidate();
+  outPrevReservoir = pt::RestirReservoir();
 
   // This is same-pixel history validation only. It is useful for static-camera
   // plumbing and debug views, but camera motion still needs real reprojection.
@@ -102,14 +106,19 @@ __device__ inline bool acceptTemporalReservoirCandidate(
     return false;
   }
 
-  const pt::RestirReservoir prevReservoir = params.prevRestirReservoirs[pxIdx];
+  int prevPxIdx = -1;
+  reprojectCurrentHitToPreviousPixel(params, prd, prevPxIdx);
+  if (prevPxIdx < 0) {
+    return false;
+  }
+  const pt::RestirReservoir prevReservoir = params.prevRestirReservoirs[prevPxIdx];
   if (prevReservoir.M == 0 ||
       prevReservoir.W <= 0.f ||
       prevReservoir.y.target <= 0.f) {
     return false;
   }
 
-  const pt::RestirSurfaceData prevSurface = params.prevRestirSurfaceData[pxIdx];
+  const pt::RestirSurfaceData prevSurface = params.prevRestirSurfaceData[prevPxIdx];
   if (!prevSurface.valid || !prd.didHit) {
     return false;
   }
@@ -145,6 +154,7 @@ __device__ inline bool acceptTemporalReservoirCandidate(
     return false;
   }
 
+  outPrevReservoir = prevReservoir;
   return true;
 }
 
@@ -224,9 +234,15 @@ __device__ inline vec3f estimateDirectLightReservoir(
 
   // temporal merge reservoir
   pt::RestirDirectLightCandidate temporalCandidate;
-  if (acceptTemporalReservoirCandidate(params, pxIdx, prd, bsdf, wo, temporalCandidate))
+  pt::RestirReservoir prevReservoir;
+  if (acceptTemporalReservoirCandidate(params,
+                                       pxIdx,
+                                       prd,
+                                       bsdf,
+                                       wo,
+                                       temporalCandidate,
+                                       prevReservoir))
   {
-    const pt::RestirReservoir prevReservoir = params.prevRestirReservoirs[pxIdx];
     const uint32_t representedM =
       min(prevReservoir.M, uint32_t(params.restirMaxHistory));
     

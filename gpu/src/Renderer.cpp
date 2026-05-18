@@ -403,6 +403,7 @@ namespace pt {
       const int accumulatedSpp = (accumID_ + 1) * samplesPerPixel_;
 
       if (debugView_ == pt::DebugViewKind::Beauty &&
+          progressiveAccumulation_ &&
           denoiserEnabled_ && accumulatedSpp >= denoiserMinAccumulatedSpp_) {
         const bool shouldUpdateDenoiser =
           ((accumID_ + 1) % denoiserInterval_) == 0 || !denoiser_.output();

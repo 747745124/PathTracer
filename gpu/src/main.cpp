@@ -10,6 +10,7 @@
 #include "pt/scene/render_settings.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <cuda_runtime.h>
 #include <iostream>
@@ -21,6 +22,13 @@
 #include "external/stb_image_write.h"
 
 namespace {
+  struct CameraSpec {
+    owl::vec3f from;
+    owl::vec3f at;
+    owl::vec3f up;
+    float fovyDegrees = 45.f;
+  };
+
   // Parse `--frames N` from argv. Returns -1 when not specified, meaning
   // "run interactively forever". Used by profilers (nsys/ncu) to make the
   // app self-terminate after a deterministic number of accumulated frames.
@@ -147,35 +155,50 @@ namespace {
     return ok != 0;
   }
 
-  void setDefaultCamera(pt::Renderer &renderer,
-                        const pt::RenderSettings &settings,
-                        const pt::Scene &scene,
-                        float fovyDegrees = 45.f)
+  CameraSpec resolveDefaultCamera(const pt::RenderSettings &settings,
+                                  const pt::Scene &scene,
+                                  float fovyDegrees = 45.f)
   {
     if (settings.hasCameraOverride) {
-      const owl::vec3f origin =
+      CameraSpec camera;
+      camera.from =
         owl::vec3f(settings.cameraOrigin.x, settings.cameraOrigin.y, settings.cameraOrigin.z);
-      const owl::vec3f target =
+      camera.at =
         owl::vec3f(settings.cameraTarget.x, settings.cameraTarget.y, settings.cameraTarget.z);
-      const owl::vec3f up =
+      camera.up =
         owl::vec3f(settings.cameraUp.x, settings.cameraUp.y, settings.cameraUp.z);
-      renderer.setCamera(origin, target, up, settings.fov);
-      return;
+      camera.fovyDegrees = settings.fov;
+      return camera;
     }
 
     if (scene.hasCamera) {
-      renderer.setCamera(scene.cameraFrom,
-                         scene.cameraAt,
-                         scene.cameraUp,
-                         scene.cameraFovy);
-      return;
+      return CameraSpec{scene.cameraFrom, scene.cameraAt, scene.cameraUp, scene.cameraFovy};
     }
 
     const owl::box3f &sceneBounds = scene.bounds;
     const owl::vec3f center = sceneBounds.center();
     const float radius = owl::length(sceneBounds.size()) * 0.5f;
     const owl::vec3f from = center + owl::vec3f(0.f, radius * 0.5f, radius * 1.8f);
-    renderer.setCamera(from, center, owl::vec3f(0.f, 1.f, 0.f), fovyDegrees);
+    return CameraSpec{from, center, owl::vec3f(0.f, 1.f, 0.f), fovyDegrees};
+  }
+
+  CameraSpec orbitCamera(const CameraSpec &base, float degrees)
+  {
+    const float radians = degrees * float(M_PI) / 180.f;
+    const owl::vec3f offset = base.from - base.at;
+    const float c = std::cos(radians);
+    const float s = std::sin(radians);
+
+    CameraSpec camera = base;
+    camera.from = base.at + owl::vec3f(c * offset.x + s * offset.z,
+                                       offset.y,
+                                      -s * offset.x + c * offset.z);
+    return camera;
+  }
+
+  void applyCamera(pt::Renderer &renderer, const CameraSpec &camera)
+  {
+    renderer.setCamera(camera.from, camera.at, camera.up, camera.fovyDegrees);
   }
 }
 
@@ -187,6 +210,8 @@ int main(int argc, char **argv)
   const std::string_view outputPath = parseStringArg(argc, argv, "--output");
   const std::string_view outputFramePrefix =
     parseStringArg(argc, argv, "--output-frame-prefix");
+  const float cameraOrbitDegrees =
+    parseFloatArg(argc, argv, "--camera-orbit-degrees", 0.f);
   if (maxFrames < 0 && !outputPath.empty()) {
     maxFrames = 1;
   }
@@ -250,9 +275,14 @@ int main(int argc, char **argv)
     }
 
     renderer.resize(deviceFb, owl::vec2i(width, height));
-    setDefaultCamera(renderer, settings, scene);
+    const CameraSpec baseCamera = resolveDefaultCamera(settings, scene);
+    applyCamera(renderer, baseCamera);
     const int frames = std::max(1, maxFrames);
     for (int i = 0; i < frames; ++i) {
+      if (cameraOrbitDegrees != 0.f) {
+        const float t = frames > 1 ? float(i) / float(frames - 1) : 0.f;
+        applyCamera(renderer, orbitCamera(baseCamera, cameraOrbitDegrees * t));
+      }
       renderer.render();
       if (!outputFramePrefix.empty()) {
         const std::string framePath =

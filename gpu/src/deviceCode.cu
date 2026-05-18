@@ -157,18 +157,16 @@ OPTIX_RAYGEN_PROGRAM(rayGen)()
           estimateDirectLightReservoir(params, pxIdx, prd, bsdf, wo, rng);
 
           if ((debugView == pt::DebugViewKind::TemporalCandidateTarget ||
-               debugView == pt::DebugViewKind::TemporalTargetRatio) &&
-              params.prevRestirReservoirs) {
-            const pt::RestirReservoir prevReservoir = params.prevRestirReservoirs[pxIdx];
+               debugView == pt::DebugViewKind::TemporalTargetRatio)) {
             pt::RestirDirectLightCandidate temporalCandidate;
-            if (prevReservoir.M > 0 &&
-                prevReservoir.W > 0.f &&
-                prevReservoir.y.target > 0.f &&
-                evaluateReservoirSampleAtCurrentHit(prd,
-                                                    bsdf,
-                                                    wo,
-                                                    prevReservoir.y,
-                                                    temporalCandidate)) {
+            pt::RestirReservoir prevReservoir;
+            if (acceptTemporalReservoirCandidate(params,
+                                                 pxIdx,
+                                                 prd,
+                                                 bsdf,
+                                                 wo,
+                                                 temporalCandidate,
+                                                 prevReservoir)) {
               float v = compressDebugScalar(temporalCandidate.sample.target);
               if (debugView == pt::DebugViewKind::TemporalTargetRatio) {
                 const float ratio = temporalCandidate.sample.target / prevReservoir.y.target;
@@ -181,12 +179,14 @@ OPTIX_RAYGEN_PROGRAM(rayGen)()
 
           if (debugView == pt::DebugViewKind::TemporalAccepted) {
             pt::RestirDirectLightCandidate temporalCandidate;
+            pt::RestirReservoir prevReservoir;
             if (acceptTemporalReservoirCandidate(params,
                                                  pxIdx,
                                                  prd,
                                                  bsdf,
                                                  wo,
-                                                 temporalCandidate)) {
+                                                 temporalCandidate,
+                                                 prevReservoir)) {
               L = L + vec3f(1.f);
               continue;
             }
