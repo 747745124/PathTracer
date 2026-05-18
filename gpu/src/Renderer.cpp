@@ -109,11 +109,21 @@ namespace pt {
       { "seed",           OWL_INT,         OWL_OFFSETOF(LaunchParams, seed)           },
       { "progressiveAccumulation",
                           OWL_INT,         OWL_OFFSETOF(LaunchParams, progressiveAccumulation)},
+      { "hasPreviousCamera",
+                          OWL_INT,         OWL_OFFSETOF(LaunchParams, hasPreviousCamera)},
       { "world",          OWL_GROUP,       OWL_OFFSETOF(LaunchParams, world)          },
       { "camera.pos",     OWL_FLOAT3,      OWL_OFFSETOF(LaunchParams, camera.pos)     },
       { "camera.dir_00",  OWL_FLOAT3,      OWL_OFFSETOF(LaunchParams, camera.dir_00)  },
       { "camera.dir_du",  OWL_FLOAT3,      OWL_OFFSETOF(LaunchParams, camera.dir_du)  },
       { "camera.dir_dv",  OWL_FLOAT3,      OWL_OFFSETOF(LaunchParams, camera.dir_dv)  },
+      { "previousCamera.pos",
+                          OWL_FLOAT3,      OWL_OFFSETOF(LaunchParams, previousCamera.pos) },
+      { "previousCamera.dir_00",
+                          OWL_FLOAT3,      OWL_OFFSETOF(LaunchParams, previousCamera.dir_00) },
+      { "previousCamera.dir_du",
+                          OWL_FLOAT3,      OWL_OFFSETOF(LaunchParams, previousCamera.dir_du) },
+      { "previousCamera.dir_dv",
+                          OWL_FLOAT3,      OWL_OFFSETOF(LaunchParams, previousCamera.dir_dv) },
       {}
     };
     lp_ = owlParamsCreate(ctx_, sizeof(LaunchParams), lpVars, -1);
@@ -211,6 +221,9 @@ namespace pt {
                                                          fbSize.x * fbSize.y,
                                                          nullptr);
 
+    restirHistoryValid_ = false;
+    hasPrevCam_ = false;
+    restirWriteIndex_ = 0;
     resetAccum();
   }
 
@@ -259,6 +272,9 @@ namespace pt {
     restirInitialCandidates_ = std::max(1, restirInitialCandidates);
     restirTemporal_ = restirTemporal;
     restirMaxHistory_ = std::max(1, restirMaxHistory);
+    restirHistoryValid_ = false;
+    hasPrevCam_ = false;
+    restirWriteIndex_ = 0;
     resetAccum();
   }
 
@@ -303,9 +319,9 @@ namespace pt {
     owlParamsSet1i (lp_, "lightCount", lightCount_);
 
     // set the restir reservoir and surface data buffers
-    const int currentRestirBuffer = accumID_ & 1;
+    const int currentRestirBuffer = restirWriteIndex_;
     const int previousRestirBuffer = 1 - currentRestirBuffer;
-    const bool hasPreviousRestirFrame = accumID_ > 0;
+    const bool hasPreviousRestirFrame = restirHistoryValid_ && hasPrevCam_;
     // update buffer per-frame
     OWLBuffer currentReservoirBuffer = restirReservoirBuffers_[currentRestirBuffer];
     OWLBuffer previousReservoirBuffer = hasPreviousRestirFrame
@@ -349,10 +365,19 @@ namespace pt {
     owlParamsSet1i (lp_, "seed", seed_);
     owlParamsSet1i (lp_, "progressiveAccumulation",
                     progressiveAccumulation_ ? 1 : 0);
+    owlParamsSet1i (lp_, "hasPreviousCamera", hasPreviousRestirFrame ? 1 : 0);
     owlParamsSet3f (lp_, "camera.pos",    owl3f{ cam_.pos.x,    cam_.pos.y,    cam_.pos.z    });
     owlParamsSet3f (lp_, "camera.dir_00", owl3f{ cam_.dir_00.x, cam_.dir_00.y, cam_.dir_00.z });
     owlParamsSet3f (lp_, "camera.dir_du", owl3f{ cam_.dir_du.x, cam_.dir_du.y, cam_.dir_du.z });
     owlParamsSet3f (lp_, "camera.dir_dv", owl3f{ cam_.dir_dv.x, cam_.dir_dv.y, cam_.dir_dv.z });
+    owlParamsSet3f (lp_, "previousCamera.pos",
+                    owl3f{ prevCam_.pos.x, prevCam_.pos.y, prevCam_.pos.z });
+    owlParamsSet3f (lp_, "previousCamera.dir_00",
+                    owl3f{ prevCam_.dir_00.x, prevCam_.dir_00.y, prevCam_.dir_00.z });
+    owlParamsSet3f (lp_, "previousCamera.dir_du",
+                    owl3f{ prevCam_.dir_du.x, prevCam_.dir_du.y, prevCam_.dir_du.z });
+    owlParamsSet3f (lp_, "previousCamera.dir_dv",
+                    owl3f{ prevCam_.dir_dv.x, prevCam_.dir_dv.y, prevCam_.dir_dv.z });
   }
 
   void Renderer::render()
@@ -416,6 +441,10 @@ namespace pt {
                 << std::endl;
     }
 
+    prevCam_ = cam_;
+    hasPrevCam_ = true;
+    restirHistoryValid_ = true;
+    restirWriteIndex_ = 1 - restirWriteIndex_;
     ++accumID_;
   }
 

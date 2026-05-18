@@ -26,6 +26,7 @@ namespace {
     case pt::DebugViewKind::TemporalTargetRatio: return "temporal-target-ratio";
     case pt::DebugViewKind::TemporalAccepted: return "temporal-accepted";
     case pt::DebugViewKind::TemporalSource: return "temporal-source";
+    case pt::DebugViewKind::TemporalReprojectValid: return "temporal-reproject-valid";
     default: return "unknown";
     }
   }
@@ -48,6 +49,7 @@ namespace {
     case 'r': view = pt::DebugViewKind::TemporalTargetRatio; return true;
     case 'a': view = pt::DebugViewKind::TemporalAccepted; return true;
     case 's': view = pt::DebugViewKind::TemporalSource; return true;
+    case 'v': view = pt::DebugViewKind::TemporalReprojectValid; return true;
     default: return false;
     }
   }

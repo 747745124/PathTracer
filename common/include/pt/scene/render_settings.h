@@ -158,6 +158,9 @@ inline RenderSettings parseRenderSettings(int argc, char **argv, const RenderSet
   } else if (debugView == "temporal-source" ||
              debugView == "temporal_source") {
     settings.debugView = DebugViewKind::TemporalSource;
+  } else if (debugView == "temporal-reproject-valid" ||
+             debugView == "temporal_reproject_valid") {
+    settings.debugView = DebugViewKind::TemporalReprojectValid;
   } else {
     settings.debugView = DebugViewKind::Beauty;
   }

@@ -141,13 +141,16 @@ namespace pt {
     owl::vec3f       missColor_       = owl::vec3f(0.f);
     float            gamma_           = 2.2f;
     bool             useReinhardTonemap_ = true;
+    bool             restirHistoryValid_ = false;
+    int              restirWriteIndex_ = 0;
 
     struct CamFrame {
       owl::vec3f pos;
       owl::vec3f dir_00;
       owl::vec3f dir_du;
       owl::vec3f dir_dv;
-    } cam_{};
+    } cam_{}, prevCam_{};
+    bool             hasPrevCam_ = false;
 
     bool             hasScene_      = false;
   };

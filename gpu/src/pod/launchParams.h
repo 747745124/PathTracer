@@ -31,6 +31,13 @@ struct MissProgData {
   vec3f skyColorBottom;
 };
 
+struct CameraFrameGPU {
+  vec3f pos;
+  vec3f dir_00;   // lower-left ray direction
+  vec3f dir_du;   // per-pixel x delta
+  vec3f dir_dv;   // per-pixel y delta
+};
+
 // LaunchParams - updated every frame, no SBT rebuild needed.
 struct LaunchParams {
   // Accumulator: HDR, one float4 per pixel, cleared on reset.
@@ -64,13 +71,10 @@ struct LaunchParams {
   int                  restirMaxHistory;
   int                  seed;
   int                  progressiveAccumulation;
+  int                  hasPreviousCamera;
 
   OptixTraversableHandle world;
 
-  struct {
-    vec3f pos;
-    vec3f dir_00;   // lower-left ray direction
-    vec3f dir_du;   // per-pixel x delta
-    vec3f dir_dv;   // per-pixel y delta
-  } camera;
+  CameraFrameGPU       camera;
+  CameraFrameGPU       previousCamera;
 };

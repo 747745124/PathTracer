@@ -10,6 +10,7 @@
 
 #include "shading/bsdf.h"
 #include "shading/bxdfFlags.h"
+#include "device/reprojection.h"
 #include "device/debugViews.h"
 #include "device/directLight.h"
 #include "device/prd.h"
@@ -133,6 +134,15 @@ OPTIX_RAYGEN_PROGRAM(rayGen)()
 
       if (isRestirDebugView(debugView) && prd.didHit) {
         storeRestirSurfaceData(params, pxIdx, prd);
+
+        if (debugView == pt::DebugViewKind::TemporalReprojectValid) {
+          int prevPxIdx = -1;
+          if (reprojectCurrentHitToPreviousPixel(params, prd, prevPxIdx) &&
+              validateReprojectedSurface(params, prd, prevPxIdx)) {
+            L = L + vec3f(1.f);
+            continue;
+          }
+        }
 
         const MaterialGPU &material = params.materials[prd.materialId];
         const OrthoBasis basis = makeOrthoBasis(prd.N);
