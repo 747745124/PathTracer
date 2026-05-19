@@ -278,15 +278,16 @@ __device__ inline bool acceptSpatialReservoirCandidate(
   }
 
   const float normalAgreement = dot(neighborSurface.normal, prd.N);
-  if (normalAgreement < 0.9f) {
+  if (normalAgreement < 0.97f) {
     return false;
   }
 
-  // Initial debug threshold. This should become scale/depth aware before it is
-  // used for final spatial merging.
+  // Spatial reuse is very sensitive to mixing across geometric edges. Keep this
+  // conservative until the merge has proper MIS/bias correction.
   const vec3f surfaceDelta = neighborSurface.hitP - prd.hitP;
   const float surfaceDist2 = dot(surfaceDelta, surfaceDelta);
-  if (surfaceDist2 > 1.f) {
+  const float planeDistance = fabsf(dot(surfaceDelta, prd.N));
+  if (surfaceDist2 > 0.25f || planeDistance > 0.03f) {
     return false;
   }
 
@@ -300,7 +301,7 @@ __device__ inline bool acceptSpatialReservoirCandidate(
 
   const float targetRatio =
     outSpatialCandidate.sample.target / neighborReservoir.y.target;
-  if (targetRatio < 0.1f || targetRatio > 10.f) {
+  if (targetRatio < 0.25f || targetRatio > 4.f) {
     return false;
   }
 
@@ -531,6 +532,45 @@ __device__ inline vec3f estimateDirectLightReservoir(
 
   return vec3f(0.f);
 };
+
+__device__ inline vec3f estimateDirectLightReservoirLocal(
+  const LaunchParams &params,
+  const PRD &prd,
+  const BSDF &bsdf,
+  const vec3f &wo,
+  RNG &rng)
+{
+  pt::RestirReservoir reservoir;
+  pt::RestirDirectLightCandidate selectedCandidate;
+
+  for (int i = 0; i < params.restirInitialCandidates; ++i) {
+    pt::RestirDirectLightCandidate candidate;
+    if (!generateDirectLightCandidate(params,
+                                      prd,
+                                      bsdf,
+                                      wo,
+                                      rng(),
+                                      vec2f(rng(), rng()),
+                                      candidate)) {
+      continue;
+    }
+
+    if (pt::updateReservoir(reservoir, candidate.sample, rng())) {
+      selectedCandidate = candidate;
+    }
+  }
+
+  pt::finalizeReservoir(reservoir);
+  if (reservoir.W > 0.f && reservoir.y.target > 0.f) {
+    const vec3f lightP = fromPtVec(selectedCandidate.sample.position);
+    const vec3f V = traceVisibility(params.world, prd.hitP, lightP);
+    if (V.x > 0.f || V.y > 0.f || V.z > 0.f) {
+      return fromPtVec(selectedCandidate.unshadowedContribution) * V * reservoir.W;
+    }
+  }
+
+  return vec3f(0.f);
+}
 
 __device__ inline void storeRestirSurfaceData(const LaunchParams &params,
                                              int pxIdx,

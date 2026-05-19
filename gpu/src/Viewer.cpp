@@ -68,7 +68,12 @@ namespace pt {
   Viewer::Viewer(Renderer &renderer,
                  const owl::box3f &sceneBounds,
                  const owl::vec2i &initialSize,
-                 bool visible)
+                 bool visible,
+                 bool hasInitialCamera,
+                 const owl::vec3f &initialFrom,
+                 const owl::vec3f &initialAt,
+                 const owl::vec3f &initialUp,
+                 float initialFovyDegrees)
     : owl::viewer::OWLViewer("PathTracer GPU - OWL/OptiX",
                              initialSize,
                              visible,
@@ -79,7 +84,11 @@ namespace pt {
     const float      radius = length(sceneBounds.size()) * 0.5f;
     const owl::vec3f from   = center + owl::vec3f(0.f, radius * 0.5f, radius * 1.8f);
 
-    setCameraOrientation(from, center, owl::vec3f(0.f, 1.f, 0.f), 45.f);
+    if (hasInitialCamera) {
+      setCameraOrientation(initialFrom, initialAt, initialUp, initialFovyDegrees);
+    } else {
+      setCameraOrientation(from, center, owl::vec3f(0.f, 1.f, 0.f), 45.f);
+    }
     setWorldScale(length(sceneBounds.size()));
     enableInspectMode(owl::box3f(sceneBounds.lower, sceneBounds.upper));
   }

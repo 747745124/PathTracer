@@ -60,9 +60,14 @@
 * ✅ Add `--direct-light nee|restir` backend selection
 * ✅ Implement per-pixel RIS without temporal or spatial reuse
 * ✅ Validate no-reuse ReSTIR against current NEE on Cornell box XML
-* Add ReSTIR debug views (`reservoir-weight`, `reservoir-m`, `reservoir-target`, `restir-light-id`)
-* Add temporal reuse after no-reuse RIS is stable
-* Add spatial reuse after temporal rejection/debugging is stable
+* ✅ Add ReSTIR debug views (`reservoir-weight`, `reservoir-m`, `reservoir-target`, `restir-light-id`, temporal/spatial diagnostics)
+* ✅ Add temporal reuse after no-reuse RIS is stable
+* ✅ Add spatial reuse after temporal rejection/debugging is stable
+* ✅ Validate temporal + spatial reuse on Sponza many-lights direct-light sequences
+* Add reproducible scripts for ReSTIR sequence rendering and per-frame metric reporting
+* Improve temporal disocclusion and visibility validation for moving cameras
+* Improve spatial reuse bias handling, reconnection/Jacobian terms, and MIS-style weighting
+* Add HDR/EXR validation output so ReSTIR metrics are not limited by tone-mapped PNGs
 
 ## FEATURE LEVEL - Light
 * ✅ Environment Light

@@ -126,9 +126,18 @@ namespace {
         if (name == "disney-gallery")
           return pt::Scene::makeDisneyPrincipledGalleryScene();
         if (name == "disney-lab") return pt::Scene::makeDisneyMaterialLabScene();
+        if (name == "sponza-many-lights") {
+          return pt::Scene::loadMitsubaXml(
+            std::string(PATHTRACER_ASSET_DIR) + "/validation/sponza_many_lights_32.xml");
+        }
+        if (name == "sponza-many-tiny-lights") {
+          return pt::Scene::loadMitsubaXml(
+            std::string(PATHTRACER_ASSET_DIR) + "/validation/sponza_many_tiny_lights_64.xml");
+        }
       }
     }
-    return pt::Scene::makeDisneyMaterialLabScene();
+    return pt::Scene::loadMitsubaXml(
+      std::string(PATHTRACER_ASSET_DIR) + "/validation/sponza_many_tiny_lights_64.xml");
   }
 
   bool saveDeviceFrameBuffer(const std::string &path,
@@ -297,7 +306,16 @@ int main(int argc, char **argv)
     return ok ? 0 : 2;
   }
 
-  pt::Viewer viewer(renderer, scene.bounds, owl::vec2i(width, height), visible);
+  const CameraSpec initialCamera = resolveDefaultCamera(settings, scene);
+  pt::Viewer viewer(renderer,
+                    scene.bounds,
+                    owl::vec2i(width, height),
+                    visible,
+                    true,
+                    initialCamera.from,
+                    initialCamera.at,
+                    initialCamera.up,
+                    initialCamera.fovyDegrees);
   viewer.enableFlyMode();
   viewer.enableInspectMode(owl::box3f(scene.bounds.lower, scene.bounds.upper));
 

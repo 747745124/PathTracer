@@ -6,6 +6,8 @@ An NEE + MIS path tracer, supports various BxDFs / Lights / Volumes and Monte Ca
 
 - [Feature Roadmap / TODO](TODO.md)
 - [ReSTIR DI Roadmap](docs/restir_di_roadmap.md)
+- [ReSTIR DI No-Reuse Validation](docs/restir_no_reuse_validation.md)
+- [ReSTIR DI Temporal + Spatial Validation](docs/restir_temporal_spatial_validation.md)
 - [GPU Backend Notes](gpu/README.md)
 
 ![images/array.png](images/array.png)
@@ -170,9 +172,22 @@ Both backends support deterministic debug output modes:
 --debug-view light-id
 ```
 
-These modes are intended for CPU/GPU alignment and future ReSTIR DI debugging.
-For the ReSTIR DI implementation plan, see
-`docs/restir_di_roadmap.md`.
+These modes are intended for CPU/GPU alignment and ReSTIR DI debugging. The GPU
+backend also supports ReSTIR DI direct lighting with optional temporal and
+spatial reuse:
+
+```powershell
+--direct-light restir
+--restir-initial-candidates 4
+--restir-temporal 1
+--restir-spatial 1
+--restir-spatial-samples 5
+--restir-spatial-radius 16
+```
+
+For implementation notes and validation data, see
+`docs/restir_di_roadmap.md`, `docs/restir_no_reuse_validation.md`, and
+`docs/restir_temporal_spatial_validation.md`.
 
 
 

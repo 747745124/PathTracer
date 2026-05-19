@@ -21,7 +21,12 @@ namespace pt {
     Viewer(Renderer &renderer,
            const owl::box3f &sceneBounds,
            const owl::vec2i &initialSize = owl::vec2i(1280, 720),
-           bool visible = true);
+           bool visible = true,
+           bool hasInitialCamera = false,
+           const owl::vec3f &initialFrom = owl::vec3f(0.f),
+           const owl::vec3f &initialAt = owl::vec3f(0.f),
+           const owl::vec3f &initialUp = owl::vec3f(0.f, 1.f, 0.f),
+           float initialFovyDegrees = 45.f);
 
     void render()        override;
     void resize(const owl::vec2i &newSize) override;

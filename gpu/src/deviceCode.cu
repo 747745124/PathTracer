@@ -100,6 +100,8 @@ OPTIX_RAYGEN_PROGRAM(rayGen)()
   const int   pxIdx   = pixelID.x + params.fbSize.x * pixelID.y;
 
   RNG rng(pxIdx, params.seed + params.accumID + 1);
+  RNG pathRng(pxIdx, params.seed + params.accumID + 10007);
+  RNG lightRng(pxIdx, params.seed + params.accumID + 20011);
 
   vec3f L = vec3f(0.f);
   const pt::DebugViewKind debugView = toDebugViewKind(params.debugView);
@@ -120,7 +122,7 @@ OPTIX_RAYGEN_PROGRAM(rayGen)()
   }
 
   for (int s = 0; s < spp; ++s) {
-    const vec2f jitter = debugMode ? vec2f(0.5f) : vec2f(rng(), rng());
+    const vec2f jitter = debugMode ? vec2f(0.5f) : vec2f(pathRng(), pathRng());
     const vec2f screen = (vec2f(pixelID) + jitter) / vec2f(params.fbSize);
 
     vec3f rayOrigin = params.camera.pos;
@@ -284,24 +286,25 @@ OPTIX_RAYGEN_PROGRAM(rayGen)()
       {
         const pt::DirectLightMode directLightMode =
           toDirectLightMode(params.directLightMode);
-        const bool useRestirAtThisVertex =
-          directLightMode == pt::DirectLightMode::Restir &&
-          (!params.restirSpatialPass || depth == 0);
-        const vec3f direct_term =
-          useRestirAtThisVertex
-            ? estimateDirectLightReservoir(params, pxIdx, prd, bsdf, wo, rng)
-            : estimateDirectLightNee(params,
-                                     prd,
-                                     bsdf,
-                                     wo,
-                                     rng(),
-                                     vec2f(rng(), rng()));
+        vec3f direct_term(0.f);
+        if (directLightMode == pt::DirectLightMode::Restir) {
+          direct_term = (depth == 0)
+            ? estimateDirectLightReservoir(params, pxIdx, prd, bsdf, wo, lightRng)
+            : estimateDirectLightReservoirLocal(params, prd, bsdf, wo, lightRng);
+        } else {
+          direct_term = estimateDirectLightNee(params,
+                                              prd,
+                                              bsdf,
+                                              wo,
+                                              lightRng(),
+                                              vec2f(lightRng(), lightRng()));
+        }
         radiance += throughput * direct_term;
       }
 
       // 02. generate uc and u from RNG
-      const float uc = rng();
-      const vec2f u(rng(), rng());
+      const float uc = pathRng();
+      const vec2f u(pathRng(), pathRng());
 
       // 03. sample BSDF
       BSDFSample sample;
@@ -317,7 +320,7 @@ OPTIX_RAYGEN_PROGRAM(rayGen)()
       const float pRR = fminf(0.95f, fmaxf(throughput.x,
                               fmaxf(throughput.y, throughput.z)));
       if (depth >= 3) {
-        if (rng() >= pRR) break;
+        if (pathRng() >= pRR) break;
         throughput = throughput * (1.f / pRR);
       }
 
