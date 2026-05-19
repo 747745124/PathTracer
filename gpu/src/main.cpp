@@ -232,18 +232,7 @@ int main(int argc, char **argv)
             << scene.bounds.lower << " .. " << scene.bounds.upper << "]"
             << std::endl;
 
-  pt::RenderSettings defaultSettings;
-  defaultSettings.width = 1280;
-  defaultSettings.height = 720;
-  defaultSettings.spp = 1;
-  defaultSettings.maxDepth = 8;
-  defaultSettings.toneMap = pt::ToneMapKind::Reinhard;
-  defaultSettings.directLightMode = pt::DirectLightMode::Restir;
-  defaultSettings.restirInitialCandidates = 16;
-  defaultSettings.restirTemporal = true;
-  defaultSettings.restirMaxHistory = 20;
-  defaultSettings.seed = 0;
-  pt::RenderSettings settings = pt::parseRenderSettings(argc, argv, defaultSettings);
+  pt::RenderSettings settings = pt::parseRenderSettings(argc, argv);
 
   pt::Renderer renderer;
   renderer.setSamplesPerPixel(settings.spp);

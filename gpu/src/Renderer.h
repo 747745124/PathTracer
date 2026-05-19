@@ -134,11 +134,11 @@ namespace pt {
     int              samplesPerPixel_ = 1;
     int              maxBounces_      = 8;
     pt::DebugViewKind debugView_      = pt::DebugViewKind::Beauty;
-    pt::DirectLightMode directLightMode_ = pt::DirectLightMode::Nee;
-    int              restirInitialCandidates_ = 1;
+    pt::DirectLightMode directLightMode_ = pt::DirectLightMode::Restir;
+    int              restirInitialCandidates_ = 16;
     bool             restirTemporal_ = true;
     int              restirMaxHistory_ = 20;
-    bool             restirSpatial_ = false;
+    bool             restirSpatial_ = true;
     int              restirSpatialSamples_ = 4;
     int              restirSpatialRadius_ = 16;
     int              seed_ = 0;

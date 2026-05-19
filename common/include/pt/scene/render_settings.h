@@ -29,7 +29,7 @@ struct RenderSettings {
   int restirInitialCandidates = 16;
   bool restirTemporal = true;
   int restirMaxHistory = 20;
-  bool restirSpatial = false;
+  bool restirSpatial = true;
   int restirSpatialSamples = 4;
   int restirSpatialRadius = 16;
   int seed = 0;
@@ -181,7 +181,10 @@ inline RenderSettings parseRenderSettings(int argc, char **argv, const RenderSet
   }
 
   const std::string_view directLight =
-    parseStringArg(argc, argv, "--direct-light", "nee");
+    parseStringArg(argc,
+                   argv,
+                   "--direct-light",
+                   settings.directLightMode == DirectLightMode::Restir ? "restir" : "nee");
   settings.directLightMode =
     directLight == "restir" ? DirectLightMode::Restir : DirectLightMode::Nee;
   settings.restirInitialCandidates =
