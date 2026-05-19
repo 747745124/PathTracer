@@ -107,13 +107,15 @@ OPTIX_RAYGEN_PROGRAM(rayGen)()
   const int spp = debugMode ? 1 : params.samplesPerPixel;
 
   // initialize the reservoir and surface data
-  if (params.restirReservoirs) {
+  if (params.restirSpatialPass && params.spatialOutputReservoirs) {
+    pt::clearReservoir(params.spatialOutputReservoirs[pxIdx]);
+  } else if (params.restirReservoirs) {
     pt::clearReservoir(params.restirReservoirs[pxIdx]);
   }
-  if (params.restirSurfaceData) {
+  if (!params.restirSpatialPass && params.restirSurfaceData) {
     params.restirSurfaceData[pxIdx] = RestirSurfaceData();
   }
-  if (params.restirSelectionSources) {
+  if (!params.restirSpatialPass && params.restirSelectionSources) {
     params.restirSelectionSources[pxIdx] = 0;
   }
 
@@ -133,13 +135,34 @@ OPTIX_RAYGEN_PROGRAM(rayGen)()
       owl::traceRay(params.world, ray, prd);
 
       if (isRestirDebugView(debugView) && prd.didHit) {
-        storeRestirSurfaceData(params, pxIdx, prd);
+        const bool spatialCandidateDebug =
+          debugView == pt::DebugViewKind::SpatialAccepted ||
+          debugView == pt::DebugViewKind::SpatialTargetRatio;
+        if (!params.restirSpatialPass && !spatialCandidateDebug) {
+          storeRestirSurfaceData(params, pxIdx, prd);
+        }
 
         if (debugView == pt::DebugViewKind::TemporalReprojectValid) {
           int prevPxIdx = -1;
           if (reprojectCurrentHitToPreviousPixel(params, prd, prevPxIdx) &&
               validateReprojectedSurface(params, prd, prevPxIdx)) {
             L = L + vec3f(1.f);
+            continue;
+          }
+        }
+
+        if (debugView == pt::DebugViewKind::SpatialNeighborOffset) {
+          int neighborPxIdx = -1;
+          vec2f normalizedOffset(0.f);
+          if (sampleSpatialNeighborPixel(params,
+                                         pxIdx,
+                                         rng(),
+                                         rng(),
+                                         neighborPxIdx,
+                                         normalizedOffset)) {
+            L = L + vec3f(0.5f + 0.5f * normalizedOffset.x,
+                          0.5f + 0.5f * normalizedOffset.y,
+                          1.f);
             continue;
           }
         }
@@ -154,7 +177,9 @@ OPTIX_RAYGEN_PROGRAM(rayGen)()
         // so headless --debug-view reservoir-* runs do not depend on a prior
         // beauty launch having populated the reservoir buffer.
         if (bsdf.hasNonDelta()) {
-          estimateDirectLightReservoir(params, pxIdx, prd, bsdf, wo, rng);
+          if (!spatialCandidateDebug) {
+            estimateDirectLightReservoir(params, pxIdx, prd, bsdf, wo, rng);
+          }
 
           if ((debugView == pt::DebugViewKind::TemporalCandidateTarget ||
                debugView == pt::DebugViewKind::TemporalTargetRatio)) {
@@ -191,6 +216,37 @@ OPTIX_RAYGEN_PROGRAM(rayGen)()
               continue;
             }
           }
+
+          if (debugView == pt::DebugViewKind::SpatialAccepted ||
+              debugView == pt::DebugViewKind::SpatialTargetRatio) {
+            int neighborPxIdx = -1;
+            vec2f normalizedOffset(0.f);
+            pt::RestirDirectLightCandidate spatialCandidate;
+            pt::RestirReservoir neighborReservoir;
+            if (sampleSpatialNeighborPixel(params,
+                                           pxIdx,
+                                           rng(),
+                                           rng(),
+                                           neighborPxIdx,
+                                           normalizedOffset) &&
+                acceptSpatialReservoirCandidate(params,
+                                                pxIdx,
+                                                neighborPxIdx,
+                                                prd,
+                                                bsdf,
+                                                wo,
+                                                spatialCandidate,
+                                                neighborReservoir)) {
+              float v = 1.f;
+              if (debugView == pt::DebugViewKind::SpatialTargetRatio) {
+                const float ratio =
+                  spatialCandidate.sample.target / neighborReservoir.y.target;
+                v = compressDebugScalar(ratio);
+              }
+              L = L + vec3f(v);
+              continue;
+            }
+          }
         }
       }
 
@@ -209,7 +265,7 @@ OPTIX_RAYGEN_PROGRAM(rayGen)()
       RadianceRay ray(rayOrigin, rayDir, 1e-3f, 1e20f);
       owl::traceRay(params.world, ray, prd);
 
-      if (depth == 0) {
+      if (depth == 0 && !params.restirSpatialPass) {
         storeRestirSurfaceData(params, pxIdx, prd);
       }
 
@@ -228,8 +284,11 @@ OPTIX_RAYGEN_PROGRAM(rayGen)()
       {
         const pt::DirectLightMode directLightMode =
           toDirectLightMode(params.directLightMode);
+        const bool useRestirAtThisVertex =
+          directLightMode == pt::DirectLightMode::Restir &&
+          (!params.restirSpatialPass || depth == 0);
         const vec3f direct_term =
-          directLightMode == pt::DirectLightMode::Restir
+          useRestirAtThisVertex
             ? estimateDirectLightReservoir(params, pxIdx, prd, bsdf, wo, rng)
             : estimateDirectLightNee(params,
                                      prd,
@@ -270,6 +329,10 @@ OPTIX_RAYGEN_PROGRAM(rayGen)()
   }
 
   L = L * (1.f / float(spp));
+
+  if (params.restirSpatialSourcePass) {
+    return;
+  }
 
   // Raygen now writes the linear-HDR accumulator only; tone-mapping and
   // fbPtr packing live in postprocess.cu so a denoiser (or any other

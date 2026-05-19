@@ -22,6 +22,22 @@ namespace pt {
   using owl::vec3f;
   using owl::vec3i;
 
+  namespace {
+    bool isSpatialDebugView(pt::DebugViewKind view)
+    {
+      return view == pt::DebugViewKind::SpatialAccepted ||
+             view == pt::DebugViewKind::SpatialSource ||
+             view == pt::DebugViewKind::SpatialTargetRatio;
+    }
+
+    bool isSpatialBeautyPass(pt::DebugViewKind view,
+                             pt::DirectLightMode directLightMode)
+    {
+      return view == pt::DebugViewKind::Beauty &&
+             directLightMode == pt::DirectLightMode::Restir;
+    }
+  }
+
   Renderer::Renderer()
   {
     ctx_    = owlContextCreate(nullptr, 1);
@@ -94,6 +110,12 @@ namespace pt {
                           OWL_RAW_POINTER, OWL_OFFSETOF(LaunchParams, restirSurfaceData)},
       { "prevRestirSurfaceData",
                           OWL_RAW_POINTER, OWL_OFFSETOF(LaunchParams, prevRestirSurfaceData)},
+      { "spatialSourceReservoirs",
+                          OWL_RAW_POINTER, OWL_OFFSETOF(LaunchParams, spatialSourceReservoirs)},
+      { "spatialSourceSurfaceData",
+                          OWL_RAW_POINTER, OWL_OFFSETOF(LaunchParams, spatialSourceSurfaceData)},
+      { "spatialOutputReservoirs",
+                          OWL_RAW_POINTER, OWL_OFFSETOF(LaunchParams, spatialOutputReservoirs)},
       { "restirSelectionSources",
                           OWL_RAW_POINTER, OWL_OFFSETOF(LaunchParams, restirSelectionSources)},
       { "accumID",        OWL_INT,         OWL_OFFSETOF(LaunchParams, accumID)        },
@@ -106,6 +128,15 @@ namespace pt {
       { "restirTemporal", OWL_INT,          OWL_OFFSETOF(LaunchParams, restirTemporal)},
       { "restirMaxHistory",
                           OWL_INT,         OWL_OFFSETOF(LaunchParams, restirMaxHistory)},
+      { "restirSpatial",  OWL_INT,         OWL_OFFSETOF(LaunchParams, restirSpatial)},
+      { "restirSpatialSourcePass",
+                          OWL_INT,         OWL_OFFSETOF(LaunchParams, restirSpatialSourcePass)},
+      { "restirSpatialPass",
+                          OWL_INT,         OWL_OFFSETOF(LaunchParams, restirSpatialPass)},
+      { "restirSpatialSamples",
+                          OWL_INT,         OWL_OFFSETOF(LaunchParams, restirSpatialSamples)},
+      { "restirSpatialRadius",
+                          OWL_INT,         OWL_OFFSETOF(LaunchParams, restirSpatialRadius)},
       { "seed",           OWL_INT,         OWL_OFFSETOF(LaunchParams, seed)           },
       { "progressiveAccumulation",
                           OWL_INT,         OWL_OFFSETOF(LaunchParams, progressiveAccumulation)},
@@ -215,6 +246,12 @@ namespace pt {
                                                  nullptr);
     }
 
+    if (spatialOutputReservoirBuffer_) owlBufferRelease(spatialOutputReservoirBuffer_);
+    spatialOutputReservoirBuffer_ = owlDeviceBufferCreate(ctx_,
+                                                   OWL_USER_TYPE(pt::RestirReservoir),
+                                                   fbSize.x * fbSize.y,
+                                                   nullptr);
+
     if (restirSelectionSourceBuffer_) owlBufferRelease(restirSelectionSourceBuffer_);
     restirSelectionSourceBuffer_ = owlDeviceBufferCreate(ctx_,
                                                          OWL_INT,
@@ -275,6 +312,14 @@ namespace pt {
     restirHistoryValid_ = false;
     hasPrevCam_ = false;
     restirWriteIndex_ = 0;
+    resetAccum();
+  }
+
+  void Renderer::setRestirSpatialReuse(bool enabled, int samples, int radius)
+  {
+    restirSpatial_ = enabled;
+    restirSpatialSamples_ = std::max(0, samples);
+    restirSpatialRadius_ = std::max(1, radius);
     resetAccum();
   }
 
@@ -349,6 +394,18 @@ namespace pt {
       (uint64_t)(previousSurfaceBuffer
         ? owlBufferGetPointer(previousSurfaceBuffer, 0)
         : 0));
+    owlParamsSet1ul(lp_, "spatialSourceReservoirs",
+      (uint64_t)(currentReservoirBuffer
+        ? owlBufferGetPointer(currentReservoirBuffer, 0)
+        : 0));
+    owlParamsSet1ul(lp_, "spatialSourceSurfaceData",
+      (uint64_t)(currentSurfaceBuffer
+        ? owlBufferGetPointer(currentSurfaceBuffer, 0)
+        : 0));
+    owlParamsSet1ul(lp_, "spatialOutputReservoirs",
+      (uint64_t)(spatialOutputReservoirBuffer_
+        ? owlBufferGetPointer(spatialOutputReservoirBuffer_, 0)
+        : 0));
     owlParamsSet1ul(lp_, "restirSelectionSources",
       (uint64_t)(restirSelectionSourceBuffer_
         ? owlBufferGetPointer(restirSelectionSourceBuffer_, 0)
@@ -362,6 +419,11 @@ namespace pt {
     owlParamsSet1i (lp_, "restirInitialCandidates", restirInitialCandidates_);
     owlParamsSet1i (lp_, "restirTemporal", restirTemporal_ ? 1 : 0);
     owlParamsSet1i (lp_, "restirMaxHistory", restirMaxHistory_);
+    owlParamsSet1i (lp_, "restirSpatial", restirSpatial_ ? 1 : 0);
+    owlParamsSet1i (lp_, "restirSpatialSourcePass", 0);
+    owlParamsSet1i (lp_, "restirSpatialPass", 0);
+    owlParamsSet1i (lp_, "restirSpatialSamples", restirSpatialSamples_);
+    owlParamsSet1i (lp_, "restirSpatialRadius", restirSpatialRadius_);
     owlParamsSet1i (lp_, "seed", seed_);
     owlParamsSet1i (lp_, "progressiveAccumulation",
                     progressiveAccumulation_ ? 1 : 0);
@@ -388,7 +450,49 @@ namespace pt {
     updateLaunchParams();
 
     cudaEventRecord(eventStart_, /*stream=*/0);
+
+    bool didSpatialSecondPass = false;
+    const bool useSpatialSecondPass =
+      restirSpatial_ &&
+      (isSpatialDebugView(debugView_) ||
+       isSpatialBeautyPass(debugView_, directLightMode_));
+    if (useSpatialSecondPass) {
+      // Spatial reuse needs a stable same-frame source reservoir. Build it in
+      // a first launch, then let the second launch read it and write spatial
+      // output without overwriting the source buffer.
+      const int secondPassDebugView = static_cast<int>(debugView_);
+      const int secondPassMaxBounces = maxBounces_;
+      owlParamsSet1i(lp_, "debugView", static_cast<int>(pt::DebugViewKind::Beauty));
+      owlParamsSet1i(lp_, "directLightMode", static_cast<int>(pt::DirectLightMode::Restir));
+      owlParamsSet1i(lp_, "maxBounces", 1);
+      owlParamsSet1i(lp_, "restirSpatialSourcePass", 1);
+      owlLaunch2D(rayGen_, fbSize_.x, fbSize_.y, lp_);
+
+      owlParamsSet1i(lp_, "debugView", secondPassDebugView);
+      owlParamsSet1i(lp_, "directLightMode", static_cast<int>(directLightMode_));
+      owlParamsSet1i(lp_, "maxBounces", secondPassMaxBounces);
+      owlParamsSet1i(lp_, "restirSpatialSourcePass", 0);
+      owlParamsSet1i(lp_, "restirSpatialPass", 1);
+      didSpatialSecondPass = true;
+    }
+
     owlLaunch2D(rayGen_, fbSize_.x, fbSize_.y, lp_);
+    if (didSpatialSecondPass) {
+      owlParamsSet1i(lp_, "restirSpatialPass", 0);
+      if (isSpatialBeautyPass(debugView_, directLightMode_) &&
+          spatialOutputReservoirBuffer_ &&
+          restirReservoirBuffers_[restirWriteIndex_]) {
+        const size_t bytes =
+          size_t(fbSize_.x) * size_t(fbSize_.y) * sizeof(pt::RestirReservoir);
+        void *dstHistory = const_cast<void *>(owlBufferGetPointer(
+          restirReservoirBuffers_[restirWriteIndex_], 0));
+        const void *srcSpatial = owlBufferGetPointer(spatialOutputReservoirBuffer_, 0);
+        cudaMemcpy(dstHistory,
+                   srcSpatial,
+                   bytes,
+                   cudaMemcpyDeviceToDevice);
+      }
+    }
 
     // Post-process: tone-map the HDR accumulator to the GL-shared fbPtr.
     // Lives outside the OptiX PTX so additional post steps (denoise,

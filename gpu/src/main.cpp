@@ -256,6 +256,9 @@ int main(int argc, char **argv)
                               settings.restirInitialCandidates,
                               settings.restirTemporal,
                               settings.restirMaxHistory);
+  renderer.setRestirSpatialReuse(settings.restirSpatial,
+                                 settings.restirSpatialSamples,
+                                 settings.restirSpatialRadius);
   renderer.setSeed(settings.seed);
   renderer.setProgressiveAccumulation(settings.progressiveAccumulation);
   renderer.setOutputTransform(settings.gamma, settings.toneMap == pt::ToneMapKind::Reinhard);

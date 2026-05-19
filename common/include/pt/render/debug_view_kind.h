@@ -19,6 +19,10 @@ enum class DebugViewKind : int {
   TemporalAccepted = 13,
   TemporalSource = 14,
   TemporalReprojectValid = 15,
+  SpatialAccepted = 16,
+  SpatialSource = 17,
+  SpatialNeighborOffset = 18,
+  SpatialTargetRatio = 19,
 };
 
 } // namespace pt

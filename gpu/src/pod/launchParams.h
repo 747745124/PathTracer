@@ -59,6 +59,9 @@ struct LaunchParams {
   pt::RestirReservoir *prevRestirReservoirs;
   pt::RestirSurfaceData *restirSurfaceData;
   pt::RestirSurfaceData *prevRestirSurfaceData;
+  pt::RestirReservoir *spatialSourceReservoirs;
+  pt::RestirSurfaceData *spatialSourceSurfaceData;
+  pt::RestirReservoir *spatialOutputReservoirs;
   int                  *restirSelectionSources;
 
   int                  accumID;       // frames accumulated so far
@@ -69,6 +72,11 @@ struct LaunchParams {
   int                  restirInitialCandidates;
   int                  restirTemporal; // bool as int; Stage B temporal reuse toggle
   int                  restirMaxHistory;
+  int                  restirSpatial; // bool as int; scaffold only, not merged into beauty yet
+  int                  restirSpatialSourcePass; // bool as int; source build pass, no framebuffer write
+  int                  restirSpatialPass; // bool as int; second pass writes spatial output
+  int                  restirSpatialSamples;
+  int                  restirSpatialRadius;
   int                  seed;
   int                  progressiveAccumulation;
   int                  hasPreviousCamera;

@@ -62,6 +62,7 @@ namespace pt {
                             int restirInitialCandidates,
                             bool restirTemporal,
                             int restirMaxHistory);
+    void setRestirSpatialReuse(bool enabled, int samples, int radius);
     void setSeed(int seed) { seed_ = seed; resetAccum(); }
     void setProgressiveAccumulation(bool enabled)
     {
@@ -119,6 +120,7 @@ namespace pt {
     OWLBuffer        lightBuffer_    = nullptr;
     OWLBuffer        restirReservoirBuffers_[2] = { nullptr, nullptr };
     OWLBuffer        restirSurfaceBuffers_[2] = { nullptr, nullptr };
+    OWLBuffer        spatialOutputReservoirBuffer_ = nullptr;
     OWLBuffer        restirSelectionSourceBuffer_ = nullptr;
     Denoiser         denoiser_;
     bool             denoiserEnabled_ = true;
@@ -136,6 +138,9 @@ namespace pt {
     int              restirInitialCandidates_ = 1;
     bool             restirTemporal_ = true;
     int              restirMaxHistory_ = 20;
+    bool             restirSpatial_ = false;
+    int              restirSpatialSamples_ = 4;
+    int              restirSpatialRadius_ = 16;
     int              seed_ = 0;
     bool             progressiveAccumulation_ = true;
     owl::vec3f       missColor_       = owl::vec3f(0.f);

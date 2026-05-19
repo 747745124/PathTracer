@@ -27,6 +27,10 @@ namespace {
     case pt::DebugViewKind::TemporalAccepted: return "temporal-accepted";
     case pt::DebugViewKind::TemporalSource: return "temporal-source";
     case pt::DebugViewKind::TemporalReprojectValid: return "temporal-reproject-valid";
+    case pt::DebugViewKind::SpatialAccepted: return "spatial-accepted";
+    case pt::DebugViewKind::SpatialSource: return "spatial-source";
+    case pt::DebugViewKind::SpatialNeighborOffset: return "spatial-neighbor-offset";
+    case pt::DebugViewKind::SpatialTargetRatio: return "spatial-target-ratio";
     default: return "unknown";
     }
   }
@@ -50,6 +54,9 @@ namespace {
     case 'a': view = pt::DebugViewKind::TemporalAccepted; return true;
     case 's': view = pt::DebugViewKind::TemporalSource; return true;
     case 'v': view = pt::DebugViewKind::TemporalReprojectValid; return true;
+    case 'x': view = pt::DebugViewKind::SpatialAccepted; return true;
+    case 'c': view = pt::DebugViewKind::SpatialSource; return true;
+    case 'n': view = pt::DebugViewKind::SpatialNeighborOffset; return true;
     default: return false;
     }
   }

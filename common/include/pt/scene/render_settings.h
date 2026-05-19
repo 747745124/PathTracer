@@ -29,6 +29,9 @@ struct RenderSettings {
   int restirInitialCandidates = 16;
   bool restirTemporal = true;
   int restirMaxHistory = 20;
+  bool restirSpatial = false;
+  int restirSpatialSamples = 4;
+  int restirSpatialRadius = 16;
   int seed = 0;
   bool progressiveAccumulation = true;
   Vec3f background = Vec3f(0.f);
@@ -161,6 +164,18 @@ inline RenderSettings parseRenderSettings(int argc, char **argv, const RenderSet
   } else if (debugView == "temporal-reproject-valid" ||
              debugView == "temporal_reproject_valid") {
     settings.debugView = DebugViewKind::TemporalReprojectValid;
+  } else if (debugView == "spatial-accepted" ||
+             debugView == "spatial_accepted") {
+    settings.debugView = DebugViewKind::SpatialAccepted;
+  } else if (debugView == "spatial-source" ||
+             debugView == "spatial_source") {
+    settings.debugView = DebugViewKind::SpatialSource;
+  } else if (debugView == "spatial-neighbor-offset" ||
+             debugView == "spatial_neighbor_offset") {
+    settings.debugView = DebugViewKind::SpatialNeighborOffset;
+  } else if (debugView == "spatial-target-ratio" ||
+             debugView == "spatial_target_ratio") {
+    settings.debugView = DebugViewKind::SpatialTargetRatio;
   } else {
     settings.debugView = DebugViewKind::Beauty;
   }
@@ -180,6 +195,14 @@ inline RenderSettings parseRenderSettings(int argc, char **argv, const RenderSet
   settings.restirMaxHistory =
     parseIntArg(argc, argv, "--restir-max-history", settings.restirMaxHistory);
   settings.restirMaxHistory = std::max(1, settings.restirMaxHistory);
+  settings.restirSpatial =
+    parseBoolArg(argc, argv, "--restir-spatial", settings.restirSpatial);
+  settings.restirSpatialSamples =
+    parseIntArg(argc, argv, "--restir-spatial-samples", settings.restirSpatialSamples);
+  settings.restirSpatialSamples = std::max(0, settings.restirSpatialSamples);
+  settings.restirSpatialRadius =
+    parseIntArg(argc, argv, "--restir-spatial-radius", settings.restirSpatialRadius);
+  settings.restirSpatialRadius = std::max(1, settings.restirSpatialRadius);
   settings.seed = parseIntArg(argc, argv, "--seed", settings.seed);
   settings.progressiveAccumulation =
     !hasArg(argc, argv, "--no-accumulation");

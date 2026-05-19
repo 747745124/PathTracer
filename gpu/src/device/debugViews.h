@@ -44,7 +44,11 @@ __device__ inline bool isRestirDebugView(pt::DebugViewKind debugView)
          debugView == pt::DebugViewKind::TemporalTargetRatio ||
          debugView == pt::DebugViewKind::TemporalAccepted ||
          debugView == pt::DebugViewKind::TemporalSource ||
-         debugView == pt::DebugViewKind::TemporalReprojectValid;
+         debugView == pt::DebugViewKind::TemporalReprojectValid ||
+         debugView == pt::DebugViewKind::SpatialAccepted ||
+         debugView == pt::DebugViewKind::SpatialSource ||
+         debugView == pt::DebugViewKind::SpatialNeighborOffset ||
+         debugView == pt::DebugViewKind::SpatialTargetRatio;
 }
 
 __device__ inline float compressDebugScalar(float v)
@@ -71,15 +75,20 @@ __device__ inline vec3f shadeRestirDebugView(const LaunchParams &params,
   if (debugView == pt::DebugViewKind::TemporalCandidateTarget ||
       debugView == pt::DebugViewKind::TemporalTargetRatio ||
       debugView == pt::DebugViewKind::TemporalAccepted ||
-      debugView == pt::DebugViewKind::TemporalReprojectValid) {
+      debugView == pt::DebugViewKind::TemporalReprojectValid ||
+      debugView == pt::DebugViewKind::SpatialAccepted ||
+      debugView == pt::DebugViewKind::SpatialNeighborOffset ||
+      debugView == pt::DebugViewKind::SpatialTargetRatio) {
     return vec3f(0.f);
   }
 
-  if (debugView == pt::DebugViewKind::TemporalSource) {
+  if (debugView == pt::DebugViewKind::TemporalSource ||
+      debugView == pt::DebugViewKind::SpatialSource) {
     if (!params.restirSelectionSources) return vec3f(0.f);
     const int source = params.restirSelectionSources[pxIdx];
     if (source == 1) return vec3f(0.1f, 0.35f, 1.f); // current
     if (source == 2) return vec3f(1.f, 0.45f, 0.05f); // temporal
+    if (source == 3) return vec3f(0.45f, 1.f, 0.1f); // spatial
     return vec3f(0.f);
   }
 
